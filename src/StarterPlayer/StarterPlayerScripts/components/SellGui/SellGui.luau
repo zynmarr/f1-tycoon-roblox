@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local React = require(ReplicatedStorage.Packages.React)
+local ViewportManager = require(script.Parent.ViewportManager)
 
 local e = React.createElement
 local useState = React.useState
@@ -11,157 +12,10 @@ local playerGui = player:WaitForChild("PlayerGui")
 local backpack = player:WaitForChild("Backpack")
 
 -- ===== UTILITIES =====
-local renderCache = {}
-local MAX_CACHE_SIZE = 10
+local viewportCache = ViewportManager.new()
 
 local function formatPrice(price)
-	local str = tostring(price)
-	return str:reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
-end
-
-local function clearCacheEntry(carTool)
-	if renderCache[carTool] then
-		local cache = renderCache[carTool]
-		if cache.Model then
-			pcall(function()
-				if cache.Model.Parent then
-					cache.Model.Parent = nil
-				end
-				cache.Model:Destroy()
-			end)
-		end
-		if cache.Camera then
-			pcall(function()
-				if cache.Camera.Parent then
-					cache.Camera.Parent = nil
-				end
-				cache.Camera:Destroy()
-			end)
-		end
-		renderCache[carTool] = nil
-	end
-end
-
-local function trimCache()
-	if #renderCache > MAX_CACHE_SIZE then
-		local count = 0
-		for key in pairs(renderCache) do
-			if count >= MAX_CACHE_SIZE then
-				clearCacheEntry(key)
-			end
-			count = count + 1
-		end
-	end
-end
-
-local function setupCarViewport(viewport, carTool)
-	local toolID = tostring(carTool)
-	if viewport:GetAttribute("LastCar") == toolID then
-		return
-	end
-
-	viewport:SetAttribute("LastCar", toolID)
-	viewport.BackgroundTransparency = 0.95
-
-	for _, child in pairs(viewport:GetChildren()) do
-		if child:IsA("Camera") or child:IsA("Model") then
-			if child.Parent then
-				child.Parent = nil
-			end
-		end
-	end
-
-	if not renderCache[carTool] then
-		local originalModel = nil
-		local retryCount = 0
-		while not originalModel and retryCount < 20 do
-			originalModel = carTool:FindFirstChild("Model") or carTool:FindFirstChildOfClass("Model")
-			if not originalModel then
-				task.wait(0.1)
-				retryCount = retryCount + 1
-			end
-		end
-
-		if not originalModel then
-			warn("[SellGui] Model tidak ditemukan untuk: " .. tostring(carTool.Name))
-			return
-		end
-
-		local carClone = originalModel:Clone()
-		carClone:PivotTo(CFrame.new(0, 0, 0))
-		task.wait(0.05)
-
-		local minX, minY, minZ = math.huge, math.huge, math.huge
-		local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
-		local hasVisuals = false
-
-		for _, p in pairs(carClone:GetDescendants()) do
-			if p:IsA("BasePart") or p:IsA("MeshPart") then
-				p.CastShadow = false
-				if p.Name == "Hitbox" or p.Name == "Handle" then
-					p.Transparency = 1
-				end
-				if p.Transparency < 1 then
-					hasVisuals = true
-					local pos, size = p.Position, p.Size
-					minX = math.min(minX, pos.X - (size.X / 2))
-					minY = math.min(minY, pos.Y - (size.Y / 2))
-					minZ = math.min(minZ, pos.Z - (size.Z / 2))
-					maxX = math.max(maxX, pos.X + (size.X / 2))
-					maxY = math.max(maxY, pos.Y + (size.Y / 2))
-					maxZ = math.max(maxZ, pos.Z + (size.Z / 2))
-				end
-			end
-		end
-
-		if not hasVisuals then
-			carClone:Destroy()
-			warn("[SellGui] Mobil tidak memiliki visual: " .. tostring(carTool.Name))
-			return
-		end
-
-		local center = Vector3.new((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2)
-		local size = Vector3.new(maxX - minX, maxY - minY, maxZ - minZ)
-		local maxDim = math.max(size.X, size.Y, size.Z)
-		if maxDim < 1 then
-			maxDim = 15
-		end
-
-		local cam = Instance.new("Camera")
-		cam.FieldOfView = 40
-		local dist = (maxDim / 2) / math.tan(math.rad(20)) * 1.2
-		local camPos = center + Vector3.new(-dist * 0.5, dist * 0.4, -dist * 0.7)
-		cam.CFrame = CFrame.new(camPos, center + Vector3.new(0, maxDim * 0.1, 0))
-
-		renderCache[carTool] = { Model = carClone, Camera = cam }
-		trimCache()
-	end
-
-	local cache = renderCache[carTool]
-	if cache then
-		if cache.Model.Parent then
-			cache.Model.Parent = nil
-		end
-
-		local success = pcall(function()
-			cache.Model.Parent = viewport
-		end)
-
-		if not success then
-			warn("[SellGui] Failed to parent model for: " .. tostring(carTool.Name))
-			return
-		end
-
-		task.wait(0.02)
-
-		if cache.Camera.Parent then
-			cache.Camera.Parent = nil
-		end
-		cache.Camera.Parent = viewport
-		viewport.CurrentCamera = cache.Camera
-		viewport.Ambient = Color3.fromRGB(200, 200, 200)
-		viewport.LightColor = Color3.fromRGB(255, 255, 255)
-	end
+	return ViewportManager.formatPrice(price)
 end
 
 -- ===== CAR ITEM COMPONENT =====
@@ -333,14 +187,14 @@ local function SellGui(props)
 				local carItem = playerGui:FindFirstChild("SellGui")
 					and playerGui.SellGui:FindFirstDescendant("CarView_" .. i)
 				if carItem then
-					setupCarViewport(carItem, car)
+					ViewportManager.setupViewport(viewportCache, carItem, car, { bgTransparency = 0.95 })
 				end
 			end
 		end)
 
 		return function()
 			for _, car in ipairs(cars) do
-				clearCacheEntry(car)
+				ViewportManager.clearCache(viewportCache, car)
 			end
 		end
 	end)

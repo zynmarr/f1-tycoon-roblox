@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
 local HotbarModule = require(script:WaitForChild("HotbarModule"))
+local ViewportManager = require(script.Parent.components.ViewportManager)
 
 -- REFERENCES
 local player = Players.LocalPlayer
@@ -25,7 +26,7 @@ local MAX_HOTBAR_SLOTS = UserInputService.TouchEnabled and 5 or 9
 local updateQueued = false
 local knownTools = {}
 local slotInputConnections = {}
-local renderCache = {}
+local viewportCache = ViewportManager.new()
 
 -- 1. INITIAL UI STATE
 hotbarContainer.Visible = true
@@ -43,157 +44,15 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- VISUALIZER 3D (OPTIMIZED WITH ASSET LOADING WAIT)
+-- VISUALIZER 3D (USING VIEWPORT MANAGER)
 -- ==========================================
 local function setupCarViewport(viewport, carTool)
-	local toolID = tostring(carTool)
-	if viewport:GetAttribute("LastCar") == toolID then
-		return
-	end
-
-	viewport:SetAttribute("LastCar", toolID)
-	viewport.BackgroundTransparency = 1
-
-	for _, child in pairs(viewport:GetChildren()) do
-		child.Parent = nil
-	end
-
-	if not renderCache[carTool] then
-		-- ===== FIX: Wait untuk Model siap (penting untuk car baru dari gacha) =====
-		local originalModel = nil
-		local retryCount = 0
-		while not originalModel and retryCount < 20 do -- Max 4 detik (20 * 0.2s)
-			originalModel = carTool:FindFirstChild("Model") or carTool:FindFirstChildOfClass("Model")
-			if not originalModel then
-				task.wait(0.2)
-				retryCount = retryCount + 1
-			end
-		end
-
-		if not originalModel then
-			warn("[CustomHotbar] Model tidak ditemukan setelah wait untuk: " .. carTool.Name)
-			return
-		end
-
-		-- ===== FIX: Pastikan Model punya descendants sebelum clone =====
-		local modelDescendantCount = #originalModel:GetDescendants()
-		local descendantRetries = 0
-		while modelDescendantCount == 0 and descendantRetries < 10 do
-			task.wait(0.1)
-			modelDescendantCount = #originalModel:GetDescendants()
-			descendantRetries = descendantRetries + 1
-		end
-
-		if modelDescendantCount == 0 then
-			warn("[CustomHotbar] Model empty (no descendants) for: " .. carTool.Name)
-			return
-		end
-
-		local carClone = originalModel:Clone()
-		carClone:PivotTo(CFrame.new(0, 0, 0))
-
-		-- ===== FIX: Wait untuk semua descendants fully loaded (terutama textures) =====
-		task.wait(0.1)
-		for _, part in pairs(carClone:GetDescendants()) do
-			if part:IsA("BasePart") then
-				part:IsDescendantOf(carClone) -- Force stability check
-			end
-		end
-		task.wait(0.2)
-
-		local minX, minY, minZ = math.huge, math.huge, math.huge
-		local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
-		local hasVisuals = false
-		local partCount = 0
-
-		for _, p in pairs(carClone:GetDescendants()) do
-			if p:IsA("BasePart") or p:IsA("MeshPart") then
-				p.CastShadow = false
-				-- ===== FIX: Handle hitbox/invisible parts properly =====
-				if p.Name == "Hitbox" or p.Name == "Handle" then
-					p.Transparency = 1
-				else
-					-- Make sure part is visible (transparency < 1)
-					if p.Transparency >= 1 then
-						p.Transparency = 0 -- Force visibility for debugging
-					end
-				end
-
-				if p.Transparency < 1 then
-					hasVisuals = true
-					partCount = partCount + 1
-					local pos, size = p.Position, p.Size
-					minX = math.min(minX, pos.X - (size.X / 2))
-					minY = math.min(minY, pos.Y - (size.Y / 2))
-					minZ = math.min(minZ, pos.Z - (size.Z / 2))
-					maxX = math.max(maxX, pos.X + (size.X / 2))
-					maxY = math.max(maxY, pos.Y + (size.Y / 2))
-					maxZ = math.max(maxZ, pos.Z + (size.Z / 2))
-				end
-			end
-		end
-
-		if not hasVisuals or partCount == 0 then
-			warn("[CustomHotbar] No visible parts found for model: " .. carTool.Name .. " (Parts count: " .. partCount .. ")")
-			carClone:Destroy()
-			return
-		end
-
-		-- ===== FIX: Better bounding box calculation with margin =====
-		local center = Vector3.new((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2)
-		local size = Vector3.new(maxX - minX, maxY - minY, maxZ - minZ)
-		local maxDim = math.max(size.X, size.Y, size.Z)
-
-		-- Add safety margin for small models
-		if maxDim < 1 then
-			maxDim = 15
-		elseif maxDim < 2 then
-			maxDim = maxDim * 1.5
-		end
-
-		local cam = Instance.new("Camera")
-		if carTool:GetAttribute("Price") then
-			cam.FieldOfView = 40
-			local dist = (maxDim / 2) / math.tan(math.rad(20)) * 1.5
-			local camPos = center + Vector3.new(-dist * 0.6, dist * 0.5, -dist * 0.75)
-			cam.CFrame = CFrame.new(camPos, center + Vector3.new(0, maxDim * 0.1, 0))
-		else
-			cam.FieldOfView = 30
-			local dist = (maxDim / 2) / math.tan(math.rad(15)) * 1.5
-			local camPos = center + Vector3.new(-dist * 0.6, dist * 0.5, -dist * 0.75)
-			cam.CFrame = CFrame.new(camPos, center)
-		end
-
-		renderCache[carTool] = { Model = carClone, Camera = cam, LoadTime = tick() }
-	end
-
-	local cache = renderCache[carTool]
-	if cache then
-		-- ===== FIX: Detach before reparenting to prevent lock =====
-		if cache.Model.Parent then
-			cache.Model.Parent = nil
-		end
-
-		local success = pcall(function()
-			cache.Model.Parent = viewport
-		end)
-
-		if not success then
-			warn("[CustomHotbar] Failed to parent model for: " .. carTool.Name)
-			return
-		end
-
-		task.wait(0.05) -- Frame stabilization
-
-		if cache.Camera.Parent then
-			cache.Camera.Parent = nil
-		end
-		cache.Camera.Parent = viewport
-		task.wait(0.05)
-		viewport.CurrentCamera = cache.Camera
-		viewport.Ambient = Color3.fromRGB(220, 220, 220)
-		viewport.LightColor = Color3.fromRGB(255, 255, 255)
-	end
+	ViewportManager.setupViewport(viewportCache, viewport, carTool, {
+		bgTransparency = 1,
+		fieldOfView = 40,
+		ambientColor = Color3.fromRGB(220, 220, 220),
+		lightColor = Color3.fromRGB(255, 255, 255),
+	})
 end
 
 local function queueRefresh()
