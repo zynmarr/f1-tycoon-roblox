@@ -22,7 +22,7 @@ task.wait(0.5)
 
 -- ===== CREATE DEDICATED SCREENGUI (tidak timpa UI lain) =====
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "SellGuiScreen"
+screenGui.Name = "SellGui"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui

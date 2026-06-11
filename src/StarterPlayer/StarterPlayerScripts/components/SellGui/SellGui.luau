@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local React = require(ReplicatedStorage.Packages.React)
-local ViewportManager = require(script.Parent.ViewportManager)
+local ViewportManager = require(script.Parent.Parent.ViewportManager)
 
 local e = React.createElement
 local useState = React.useState
@@ -46,7 +46,7 @@ local function CarItem(props)
 		LayoutOrder = props.layoutOrder or 1,
 	}, {
 		ViewportFrame = e("ViewportFrame", {
-			Name = "CarView",
+			Name = "CarView_" .. (props.layoutOrder or 1),
 			Size = UDim2.new(0, 100, 0, 100),
 			Position = UDim2.new(0, 10, 0, 10),
 			BackgroundColor3 = Color3.fromRGB(30, 30, 30),
@@ -160,8 +160,10 @@ local function SellGui(props)
 		for _, tool in pairs(backpack:GetChildren()) do
 			if tool:IsA("Tool") and tool:GetAttribute("Price") then
 				table.insert(backpackCars, tool)
+				print("[SellGui] Found car: " .. tool.Name .. " - Price: " .. tool:GetAttribute("Price"))
 			end
 		end
+		print("[SellGui] Initial cars loaded: " .. tostring(#backpackCars))
 		setCars(backpackCars)
 
 		local connection = backpack.ChildAdded:Connect(function()
