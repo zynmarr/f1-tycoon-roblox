@@ -14,72 +14,117 @@ local SellGui = require(script.Parent.components.SellGui.SellGui)
 
 local serviceClient = {}
 local root = nil
-local toastRoot = nil
 local SELL_RADIUS = 20
 
 -- Tunggu Player Setup
 task.wait(0.5)
 
--- ===== TOAST NOTIFICATION SYSTEM =====
-local function showToast(message, isSuccess, duration)
-	duration = duration or 3
+-- ===== TOAST STATE MANAGEMENT =====
+local toasts = {}
 
-	if not toastRoot then
-		toastRoot = ReactRoblox.createRoot(playerGui)
+local function ToastComponent(props)
+	local message = props.message
+	local isSuccess = props.isSuccess
+	local toastId = props.id
+	local duration = props.duration or 3
+
+	local show, setShow = React.useState(true)
+
+	React.useEffect(function()
+		local timer = task.delay(duration, function()
+			setShow(false)
+			task.delay(0.3, function()
+				toasts[toastId] = nil
+			end)
+		end)
+
+		return function()
+			task.cancel(timer)
+		end
+	end, {})
+
+	if not show then
+		return nil
 	end
 
-	local function ToastComponent()
-		local show, setShow = React.useState(true)
+	return React.createElement("Frame", {
+		Size = UDim2.new(0, 300, 0, 60),
+		Position = UDim2.new(0.5, -150, 0, 20 + (#toasts > 1 and 70 or 0)),
+		BackgroundColor3 = isSuccess and Color3.fromRGB(40, 140, 40) or Color3.fromRGB(140, 40, 40),
+		BorderSizePixel = 0,
+		ZIndex = 100,
+	}, {
+		UICorner = React.createElement("UICorner", {
+			CornerRadius = UDim.new(0, 8),
+		}),
 
-		React.useEffect(function()
-			local timer = task.delay(duration, function()
-				setShow(false)
-			end)
+		TextLabel = React.createElement("TextLabel", {
+			Text = message,
+			Size = UDim2.new(1, -20, 1, 0),
+			Position = UDim2.new(0, 10, 0, 0),
+			BackgroundTransparency = 1,
+			TextColor3 = Color3.fromRGB(255, 255, 255),
+			TextScaled = true,
+			Font = Enum.Font.GothamBold,
+			TextWrapped = true,
+			ZIndex = 101,
+		}),
+	})
+end
 
-			return function()
-				task.cancel(timer)
-			end
-		end, {})
+local function buildToastList()
+	local toastList = {
+		UIListLayout = React.createElement("UIListLayout", {
+			Padding = UDim.new(0, 10),
+			FillDirection = Enum.FillDirection.Vertical,
+			HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			VerticalAlignment = Enum.VerticalAlignment.Top,
+			SortOrder = Enum.SortOrder.LayoutOrder,
+		}),
+	}
 
-		if not show then
-			toastRoot:render(nil)
-			return nil
-		end
+	local order = 1
+	for id, toast in pairs(toasts) do
+		toastList[id] = React.createElement(ToastComponent, {
+			id = id,
+			message = toast.message,
+			isSuccess = toast.isSuccess,
+			duration = toast.duration,
+			layoutOrder = order,
+		})
+		order = order + 1
+	end
 
-		return React.createElement("ScreenGui", {
-			Name = "ToastGui",
+	return toastList
+end
+
+local function showToast(message, isSuccess, duration)
+	duration = duration or 3
+	local toastId = tostring(os.clock()) .. tostring(math.random())
+
+	toasts[toastId] = {
+		message = message,
+		isSuccess = isSuccess,
+		duration = duration,
+	}
+
+	if root then
+		root:render(React.createElement("ScreenGui", {
+			Name = "CombinedGui",
 			ResetOnSpawn = false,
 			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 		}, {
-			Toast = React.createElement("Frame", {
-				Size = UDim2.new(0, 300, 0, 60),
-				Position = UDim2.new(0.5, -150, 0, 20),
-				BackgroundColor3 = isSuccess and Color3.fromRGB(40, 140, 40) or Color3.fromRGB(140, 40, 40),
+			ToastContainer = React.createElement("Frame", {
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-			}, {
-				UICorner = React.createElement("UICorner", {
-					CornerRadius = UDim.new(0, 8),
-				}),
-
-				TextLabel = React.createElement("TextLabel", {
-					Text = message,
-					Size = UDim2.new(1, -20, 1, 0),
-					Position = UDim2.new(0, 10, 0, 0),
-					BackgroundTransparency = 1,
-					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextScaled = true,
-					Font = Enum.Font.GothamBold,
-					TextWrapped = true,
-				}),
-			}),
-		})
+				Name = "ToastContainer",
+			}, buildToastList()),
+		}))
 	end
-
-	toastRoot:render(React.createElement(ToastComponent))
 end
 
 local function detectSellArea()
-	-- Deteksi sell area dari plot player
 	local plotName = player:GetAttribute("MyPlotName")
 	if not plotName or plotName == "" then
 		return nil
@@ -122,7 +167,6 @@ local function handleSellCar(car)
 
 	print("[SellGui] Selling car: " .. tostring(carName))
 
-	-- Call server via Networker
 	local result = networker:invoke("sellCar", car)
 
 	if result and result.Success then
@@ -144,7 +188,6 @@ local function handleSellAll(cars)
 
 	print("[SellGui] Selling all " .. #cars .. " cars")
 
-	-- Call server via Networker
 	local result = networker:invoke("sellAllCars", cars)
 
 	if result and result.Success then
@@ -162,6 +205,7 @@ end
 -- ===============================================
 task.spawn(function()
 	local lastNearState = false
+	local currentComponent = nil
 
 	while true do
 		task.wait(0.5)
@@ -171,39 +215,81 @@ task.spawn(function()
 		if not humanoidRoot then
 			if lastNearState then
 				lastNearState = false
-				root:render(nil) -- Hide UI
+				currentComponent = nil
+				root:render(React.createElement("ScreenGui", {
+					Name = "CombinedGui",
+					ResetOnSpawn = false,
+					ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+				}, {
+					ToastContainer = React.createElement("Frame", {
+						Size = UDim2.new(1, 0, 1, 0),
+						BackgroundTransparency = 1,
+						BorderSizePixel = 0,
+					}, buildToastList()),
+				}))
 			end
 			continue
 		end
 
-		-- Detect sell area
 		local sellArea = detectSellArea()
 		if not sellArea then
 			if lastNearState then
 				lastNearState = false
-				root:render(nil) -- Hide UI
+				currentComponent = nil
+				root:render(React.createElement("ScreenGui", {
+					Name = "CombinedGui",
+					ResetOnSpawn = false,
+					ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+				}, {
+					ToastContainer = React.createElement("Frame", {
+						Size = UDim2.new(1, 0, 1, 0),
+						BackgroundTransparency = 1,
+						BorderSizePixel = 0,
+					}, buildToastList()),
+				}))
 			end
 			continue
 		end
 
-		-- Calculate distance
 		local distance = (humanoidRoot.Position - sellArea:GetPivot().Position).Magnitude
 		local isNear = distance <= SELL_RADIUS
 
-		-- Update UI visibility
 		if isNear ~= lastNearState then
 			lastNearState = isNear
 			if isNear then
 				print("[SellGui] Player masuk area sell, tampilkan UI")
-				-- Render SellGui
-				root:render(React.createElement(SellGui, {
+				currentComponent = React.createElement(SellGui, {
 					onSellCar = handleSellCar,
 					onSellAll = handleSellAll,
+				})
+
+				root:render(React.createElement("ScreenGui", {
+					Name = "CombinedGui",
+					ResetOnSpawn = false,
+					ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+				}, {
+					SellGuiContent = currentComponent,
+					ToastContainer = React.createElement("Frame", {
+						Size = UDim2.new(1, 0, 1, 0),
+						BackgroundTransparency = 1,
+						BorderSizePixel = 0,
+						Name = "ToastContainer",
+					}, buildToastList()),
 				}))
 			else
 				print("[SellGui] Player keluar area sell, sembunyikan UI")
-				-- Hide UI
-				root:render(nil)
+				currentComponent = nil
+				root:render(React.createElement("ScreenGui", {
+					Name = "CombinedGui",
+					ResetOnSpawn = false,
+					ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+				}, {
+					ToastContainer = React.createElement("Frame", {
+						Size = UDim2.new(1, 0, 1, 0),
+						BackgroundTransparency = 1,
+						BorderSizePixel = 0,
+					}, buildToastList()),
+				}))
 			end
 		end
 	end
