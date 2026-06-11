@@ -43,7 +43,7 @@ task.spawn(function()
 end)
 
 -- ==========================================
--- VISUALIZER 3D (OPTIMIZED)
+-- VISUALIZER 3D (OPTIMIZED WITH ASSET LOADING WAIT)
 -- ==========================================
 local function setupCarViewport(viewport, carTool)
 	local toolID = tostring(carTool)
@@ -59,26 +59,69 @@ local function setupCarViewport(viewport, carTool)
 	end
 
 	if not renderCache[carTool] then
-		local originalModel = carTool:FindFirstChild("Model") or carTool:FindFirstChildOfClass("Model")
+		-- ===== FIX: Wait untuk Model siap (penting untuk car baru dari gacha) =====
+		local originalModel = nil
+		local retryCount = 0
+		while not originalModel and retryCount < 20 do -- Max 4 detik (20 * 0.2s)
+			originalModel = carTool:FindFirstChild("Model") or carTool:FindFirstChildOfClass("Model")
+			if not originalModel then
+				task.wait(0.2)
+				retryCount = retryCount + 1
+			end
+		end
+
 		if not originalModel then
+			warn("[CustomHotbar] Model tidak ditemukan setelah wait untuk: " .. carTool.Name)
+			return
+		end
+
+		-- ===== FIX: Pastikan Model punya descendants sebelum clone =====
+		local modelDescendantCount = #originalModel:GetDescendants()
+		local descendantRetries = 0
+		while modelDescendantCount == 0 and descendantRetries < 10 do
+			task.wait(0.1)
+			modelDescendantCount = #originalModel:GetDescendants()
+			descendantRetries = descendantRetries + 1
+		end
+
+		if modelDescendantCount == 0 then
+			warn("[CustomHotbar] Model empty (no descendants) for: " .. carTool.Name)
 			return
 		end
 
 		local carClone = originalModel:Clone()
 		carClone:PivotTo(CFrame.new(0, 0, 0))
-		task.wait(0.3)
+
+		-- ===== FIX: Wait untuk semua descendants fully loaded (terutama textures) =====
+		task.wait(0.1)
+		for _, part in pairs(carClone:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part:IsDescendantOf(carClone) -- Force stability check
+			end
+		end
+		task.wait(0.2)
+
 		local minX, minY, minZ = math.huge, math.huge, math.huge
 		local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
 		local hasVisuals = false
+		local partCount = 0
 
 		for _, p in pairs(carClone:GetDescendants()) do
 			if p:IsA("BasePart") or p:IsA("MeshPart") then
 				p.CastShadow = false
+				-- ===== FIX: Handle hitbox/invisible parts properly =====
 				if p.Name == "Hitbox" or p.Name == "Handle" then
 					p.Transparency = 1
+				else
+					-- Make sure part is visible (transparency < 1)
+					if p.Transparency >= 1 then
+						p.Transparency = 0 -- Force visibility for debugging
+					end
 				end
+
 				if p.Transparency < 1 then
 					hasVisuals = true
+					partCount = partCount + 1
 					local pos, size = p.Position, p.Size
 					minX = math.min(minX, pos.X - (size.X / 2))
 					minY = math.min(minY, pos.Y - (size.Y / 2))
@@ -90,38 +133,63 @@ local function setupCarViewport(viewport, carTool)
 			end
 		end
 
-		if not hasVisuals then
+		if not hasVisuals or partCount == 0 then
+			warn("[CustomHotbar] No visible parts found for model: " .. carTool.Name .. " (Parts count: " .. partCount .. ")")
 			carClone:Destroy()
 			return
 		end
 
+		-- ===== FIX: Better bounding box calculation with margin =====
 		local center = Vector3.new((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2)
 		local size = Vector3.new(maxX - minX, maxY - minY, maxZ - minZ)
 		local maxDim = math.max(size.X, size.Y, size.Z)
+
+		-- Add safety margin for small models
 		if maxDim < 1 then
 			maxDim = 15
+		elseif maxDim < 2 then
+			maxDim = maxDim * 1.5
 		end
 
 		local cam = Instance.new("Camera")
 		if carTool:GetAttribute("Price") then
 			cam.FieldOfView = 40
-			local dist = (maxDim / 2) / math.tan(math.rad(30)) * 1.25
-			local camPos = center + Vector3.new(-dist * 0.7, dist * 0.4, -dist * 0.8)
-			cam.CFrame = CFrame.new(camPos, center)
+			local dist = (maxDim / 2) / math.tan(math.rad(20)) * 1.5
+			local camPos = center + Vector3.new(-dist * 0.6, dist * 0.5, -dist * 0.75)
+			cam.CFrame = CFrame.new(camPos, center + Vector3.new(0, maxDim * 0.1, 0))
 		else
-			cam.FieldOfView = 25
-			local dist = (maxDim / 2) / math.tan(math.rad(cam.FieldOfView / 2.5)) * 1.25
-			local camPos = center + Vector3.new(-dist * 0.7, dist * 0.4, -dist * 0.8)
+			cam.FieldOfView = 30
+			local dist = (maxDim / 2) / math.tan(math.rad(15)) * 1.5
+			local camPos = center + Vector3.new(-dist * 0.6, dist * 0.5, -dist * 0.75)
 			cam.CFrame = CFrame.new(camPos, center)
 		end
 
-		renderCache[carTool] = { Model = carClone, Camera = cam }
+		renderCache[carTool] = { Model = carClone, Camera = cam, LoadTime = tick() }
 	end
 
 	local cache = renderCache[carTool]
 	if cache then
-		cache.Model.Parent = viewport
+		-- ===== FIX: Detach before reparenting to prevent lock =====
+		if cache.Model.Parent then
+			cache.Model.Parent = nil
+		end
+
+		local success = pcall(function()
+			cache.Model.Parent = viewport
+		end)
+
+		if not success then
+			warn("[CustomHotbar] Failed to parent model for: " .. carTool.Name)
+			return
+		end
+
+		task.wait(0.05) -- Frame stabilization
+
+		if cache.Camera.Parent then
+			cache.Camera.Parent = nil
+		end
 		cache.Camera.Parent = viewport
+		task.wait(0.05)
 		viewport.CurrentCamera = cache.Camera
 		viewport.Ambient = Color3.fromRGB(220, 220, 220)
 		viewport.LightColor = Color3.fromRGB(255, 255, 255)
@@ -134,7 +202,8 @@ local function queueRefresh()
 	end
 	updateQueued = true
 
-	task.defer(function()
+	-- ===== FIX: Spawn dengan delay untuk asset loading =====
+	task.delay(0.15, function()
 		updateQueued = false
 
 		local char = player.Character
@@ -438,9 +507,11 @@ end
 
 searchBox:GetPropertyChangedSignal("Text"):Connect(queueRefresh)
 
+-- ===== FIX: Add delay untuk asset loading pada car baru =====
 backpack.ChildAdded:Connect(function(child)
 	monitorAmount(child)
-	queueRefresh()
+	-- Delay 0.5 detik untuk pastikan Model child sudah ada dan ready
+	task.delay(0.5, queueRefresh)
 end)
 backpack.ChildRemoved:Connect(queueRefresh)
 
@@ -451,7 +522,8 @@ player.CharacterAdded:Connect(function(char)
 	char.ChildAdded:Connect(function(c)
 		if c:IsA("Tool") then
 			monitorAmount(c)
-			queueRefresh()
+			-- Delay 0.5 detik untuk pastikan Model child sudah ada dan ready
+			task.delay(0.5, queueRefresh)
 		end
 	end)
 	char.ChildRemoved:Connect(queueRefresh)

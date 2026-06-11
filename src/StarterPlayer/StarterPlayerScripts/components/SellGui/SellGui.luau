@@ -23,16 +23,20 @@ local function clearCacheEntry(carTool)
 	if renderCache[carTool] then
 		local cache = renderCache[carTool]
 		if cache.Model then
-			if cache.Model.Parent then
-				cache.Model.Parent = nil
-			end
-			cache.Model:Destroy()
+			pcall(function()
+				if cache.Model.Parent then
+					cache.Model.Parent = nil
+				end
+				cache.Model:Destroy()
+			end)
 		end
 		if cache.Camera then
-			if cache.Camera.Parent then
-				cache.Camera.Parent = nil
-			end
-			cache.Camera:Destroy()
+			pcall(function()
+				if cache.Camera.Parent then
+					cache.Camera.Parent = nil
+				end
+				cache.Camera:Destroy()
+			end)
 		end
 		renderCache[carTool] = nil
 	end
@@ -138,8 +142,18 @@ local function setupCarViewport(viewport, carTool)
 		if cache.Model.Parent then
 			cache.Model.Parent = nil
 		end
-		cache.Model.Parent = viewport
+
+		local success = pcall(function()
+			cache.Model.Parent = viewport
+		end)
+
+		if not success then
+			warn("[SellGui] Failed to parent model for: " .. tostring(carTool.Name))
+			return
+		end
+
 		task.wait(0.02)
+
 		if cache.Camera.Parent then
 			cache.Camera.Parent = nil
 		end
