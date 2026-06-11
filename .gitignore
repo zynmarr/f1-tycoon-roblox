@@ -1,9 +1,26 @@
 # Project place file
 /F1-Tycoon.rbxlx
 
-# Roblox Studio lock files
-/*.rbxlx.lock
-/*.rbxl.lock
+# Rojo & Roblox placeholders / binaries
+*.rbxl
+*.rbxlx
+.rojo/
 
+# Package managers (Wally & Rokit)
+# Folder ini diunduh otomatis lewat perintah install, jadi tidak perlu masuk Git
+Packages/
+ServerPackages/
+.rokit/
 
-sourcemap.json
+# Tools & Build artifacts
+build/
+dist/
+
+# OS/Editor specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
