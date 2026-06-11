@@ -14,7 +14,7 @@ local SellGui = require(script.Parent.components.SellGui.SellGui)
 
 local serviceClient = {}
 local root = nil
-local SELL_RADIUS = 20
+local SELL_RADIUS = 16
 local toasts = {}
 
 -- Tunggu Player Setup

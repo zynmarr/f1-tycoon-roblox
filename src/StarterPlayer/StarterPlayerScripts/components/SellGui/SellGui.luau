@@ -178,8 +178,21 @@ local function SellGui(props)
 			end)
 		end)
 
+		local removeConnection = backpack.ChildRemoved:Connect(function()
+			task.delay(0.1, function()
+				local updated = {}
+				for _, tool in pairs(backpack:GetChildren()) do
+					if tool:IsA("Tool") and tool:GetAttribute("Price") then
+						table.insert(updated, tool)
+					end
+				end
+				setCars(updated)
+			end)
+		end)
+
 		return function()
 			connection:Disconnect()
+			removeConnection:Disconnect()
 		end
 	end)
 
@@ -190,6 +203,8 @@ local function SellGui(props)
 					and playerGui.SellGui:FindFirstDescendant("CarView_" .. i)
 				if carItem then
 					ViewportManager.setupViewport(viewportCache, carItem, car, { bgTransparency = 0.95 })
+				else
+					print("[SellGui] Warning: CarView_" .. i .. " not found for " .. car.Name)
 				end
 			end
 		end)
