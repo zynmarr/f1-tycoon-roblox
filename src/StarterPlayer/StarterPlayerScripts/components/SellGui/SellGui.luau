@@ -23,9 +23,15 @@ local function clearCacheEntry(carTool)
 	if renderCache[carTool] then
 		local cache = renderCache[carTool]
 		if cache.Model then
+			if cache.Model.Parent then
+				cache.Model.Parent = nil
+			end
 			cache.Model:Destroy()
 		end
 		if cache.Camera then
+			if cache.Camera.Parent then
+				cache.Camera.Parent = nil
+			end
 			cache.Camera:Destroy()
 		end
 		renderCache[carTool] = nil
@@ -33,7 +39,7 @@ local function clearCacheEntry(carTool)
 end
 
 local function trimCache()
-	if table.getn(renderCache) > MAX_CACHE_SIZE then
+	if #renderCache > MAX_CACHE_SIZE then
 		local count = 0
 		for key in pairs(renderCache) do
 			if count >= MAX_CACHE_SIZE then
@@ -55,7 +61,9 @@ local function setupCarViewport(viewport, carTool)
 
 	for _, child in pairs(viewport:GetChildren()) do
 		if child:IsA("Camera") or child:IsA("Model") then
-			child.Parent = nil
+			if child.Parent then
+				child.Parent = nil
+			end
 		end
 	end
 
@@ -127,8 +135,14 @@ local function setupCarViewport(viewport, carTool)
 
 	local cache = renderCache[carTool]
 	if cache then
+		if cache.Model.Parent then
+			cache.Model.Parent = nil
+		end
 		cache.Model.Parent = viewport
 		task.wait(0.02)
+		if cache.Camera.Parent then
+			cache.Camera.Parent = nil
+		end
 		cache.Camera.Parent = viewport
 		viewport.CurrentCamera = cache.Camera
 		viewport.Ambient = Color3.fromRGB(200, 200, 200)
