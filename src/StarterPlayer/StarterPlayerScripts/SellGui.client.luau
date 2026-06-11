@@ -15,13 +15,19 @@ local SellGui = require(script.Parent.components.SellGui.SellGui)
 local serviceClient = {}
 local root = nil
 local SELL_RADIUS = 20
+local toasts = {}
 
 -- Tunggu Player Setup
 task.wait(0.5)
 
--- ===== TOAST STATE MANAGEMENT =====
-local toasts = {}
+-- ===== CREATE DEDICATED SCREENGUI (tidak timpa UI lain) =====
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "SellGuiScreen"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.Parent = playerGui
 
+-- ===== TOAST STATE MANAGEMENT =====
 local function ToastComponent(props)
 	local message = props.message
 	local isSuccess = props.isSuccess
@@ -49,7 +55,7 @@ local function ToastComponent(props)
 
 	return React.createElement("Frame", {
 		Size = UDim2.new(0, 300, 0, 60),
-		Position = UDim2.new(0.5, -150, 0, 20 + (#toasts > 1 and 70 or 0)),
+		Position = UDim2.new(0.5, -150, 0, 20),
 		BackgroundColor3 = isSuccess and Color3.fromRGB(40, 140, 40) or Color3.fromRGB(140, 40, 40),
 		BorderSizePixel = 0,
 		ZIndex = 100,
@@ -109,18 +115,11 @@ local function showToast(message, isSuccess, duration)
 	}
 
 	if root then
-		root:render(React.createElement("ScreenGui", {
-			Name = "CombinedGui",
-			ResetOnSpawn = false,
-			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-		}, {
-			ToastContainer = React.createElement("Frame", {
-				Size = UDim2.new(1, 0, 1, 0),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				Name = "ToastContainer",
-			}, buildToastList()),
-		}))
+		root:render(React.createElement("Frame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+		}, buildToastList()))
 	end
 end
 
@@ -144,8 +143,8 @@ local function detectSellArea()
 	return sellArea
 end
 
--- ===== SETUP REACT ROOT =====
-root = ReactRoblox.createRoot(playerGui)
+-- ===== SETUP REACT ROOT ON DEDICATED SCREENGUI =====
+root = ReactRoblox.createRoot(screenGui)
 
 -- ===== INITIALIZE NETWORKER CHANNEL =====
 local networker = Networker.client.new("SellGui", serviceClient)
@@ -216,17 +215,11 @@ task.spawn(function()
 			if lastNearState then
 				lastNearState = false
 				currentComponent = nil
-				root:render(React.createElement("ScreenGui", {
-					Name = "CombinedGui",
-					ResetOnSpawn = false,
-					ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-				}, {
-					ToastContainer = React.createElement("Frame", {
-						Size = UDim2.new(1, 0, 1, 0),
-						BackgroundTransparency = 1,
-						BorderSizePixel = 0,
-					}, buildToastList()),
-				}))
+				root:render(React.createElement("Frame", {
+					Size = UDim2.new(1, 0, 1, 0),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+				}, buildToastList()))
 			end
 			continue
 		end
@@ -236,17 +229,11 @@ task.spawn(function()
 			if lastNearState then
 				lastNearState = false
 				currentComponent = nil
-				root:render(React.createElement("ScreenGui", {
-					Name = "CombinedGui",
-					ResetOnSpawn = false,
-					ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-				}, {
-					ToastContainer = React.createElement("Frame", {
-						Size = UDim2.new(1, 0, 1, 0),
-						BackgroundTransparency = 1,
-						BorderSizePixel = 0,
-					}, buildToastList()),
-				}))
+				root:render(React.createElement("Frame", {
+					Size = UDim2.new(1, 0, 1, 0),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+				}, buildToastList()))
 			end
 			continue
 		end
@@ -263,10 +250,10 @@ task.spawn(function()
 					onSellAll = handleSellAll,
 				})
 
-				root:render(React.createElement("ScreenGui", {
-					Name = "CombinedGui",
-					ResetOnSpawn = false,
-					ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+				root:render(React.createElement("Frame", {
+					Size = UDim2.new(1, 0, 1, 0),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
 				}, {
 					SellGuiContent = currentComponent,
 					ToastContainer = React.createElement("Frame", {
@@ -279,17 +266,11 @@ task.spawn(function()
 			else
 				print("[SellGui] Player keluar area sell, sembunyikan UI")
 				currentComponent = nil
-				root:render(React.createElement("ScreenGui", {
-					Name = "CombinedGui",
-					ResetOnSpawn = false,
-					ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-				}, {
-					ToastContainer = React.createElement("Frame", {
-						Size = UDim2.new(1, 0, 1, 0),
-						BackgroundTransparency = 1,
-						BorderSizePixel = 0,
-					}, buildToastList()),
-				}))
+				root:render(React.createElement("Frame", {
+					Size = UDim2.new(1, 0, 1, 0),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+				}, buildToastList()))
 			end
 		end
 	end
