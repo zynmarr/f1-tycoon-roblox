@@ -1,0 +1,119 @@
+-- !strict
+local CollectionService = game:GetService("CollectionService")
+
+local PLOT_TAG = "PlotArea"
+
+local PlotManager = {}
+
+PlotManager.billboard = {}
+
+local function plotArea(plot: Folder)
+	local billboard = plot:FindFirstChild("Billboard")
+	local part = billboard:FindFirstChild("Sign")
+	local surfaceGui = part:FindFirstChild("SurfaceGui")
+
+	for _, child in pairs(plot:GetDescendants()) do
+		if child:IsA("BasePart") then
+			child.CanCollide = true
+			child.Anchored = true
+		end
+	end
+
+	if surfaceGui then
+		local textLabel = surfaceGui:FindFirstChild("TextLabel")
+		if textLabel then
+			textLabel.Text = "Plot Kosong"
+		end
+		PlotManager.billboard[plot.Name] = {
+			plot = plot,
+			owner = nil,
+			billboard = billboard,
+			textLabel = textLabel,
+		}
+	end
+
+	if plot:GetAttribute("Owner") and plot:GetAttribute("Owner") ~= "" then
+		local ownerName = plot:GetAttribute("Owner")
+		local billboardInfo = PlotManager.billboard[plot.Name]
+		if billboardInfo then
+			billboardInfo.owner = ownerName
+		end
+	end
+
+	plot.AttributeChanged:Connect(function(attrName)
+		if attrName == "Owner" then
+			local ownerName = plot:GetAttribute("Owner")
+			local billboardInfo = PlotManager.billboard[plot.Name]
+			if billboardInfo then
+				billboardInfo.owner = ownerName
+				if billboardInfo.textLabel then
+					if ownerName and ownerName ~= "" then
+						billboardInfo.textLabel.Text = "Plot Owner: " .. ownerName
+					else
+						billboardInfo.textLabel.Text = "Plot Empty"
+					end
+				end
+			end
+		end
+	end)
+end
+
+function PlotManager.Init()
+	local function onSpawnerAdded(plot: Folder)
+		task.spawn(plotArea, plot)
+	end
+
+	-- 1. Tangani objek yang baru muncul nanti (Dynamic)
+	CollectionService:GetInstanceAddedSignal(PLOT_TAG):Connect(onSpawnerAdded)
+
+	-- 2. Tangani objek yang sudah ada sekarang (Static/Pre-loaded)
+	for _, plot in pairs(CollectionService:GetTagged(PLOT_TAG)) do
+		onSpawnerAdded(plot)
+	end
+end
+
+function PlotManager.claimPlot(player): Instance?
+	local plotsFolder = workspace:WaitForChild("Plots")
+	-- local
+
+	for _, plot in pairs(plotsFolder:GetChildren()) do
+		local currentOwner = plot:GetAttribute("Owner")
+		if not currentOwner or currentOwner == "" then
+			plot:SetAttribute("Owner", player.Name)
+			return plot
+		end
+	end
+	return nil
+end
+
+function PlotManager.releasePlot(player)
+	local plotName = player:GetAttribute("MyPlotName")
+	if plotName then
+		local plot = workspace.Plots:FindFirstChild(plotName)
+		if plot then
+			plot:SetAttribute("Owner", "")
+			local label = plot:FindFirstChild("TextLabel", true)
+			if label then
+				label.Text = "Plot Kosong"
+			end
+		end
+	end
+end
+
+function PlotManager.teleportToPlot(player, character)
+	local plotName = player:GetAttribute("MyPlotName")
+	if not plotName then
+		return
+	end
+
+	local plot = workspace.Plots:FindFirstChild(plotName)
+	if plot then
+		local spawnPos = plot:FindFirstChild("SpawnLocation")
+		if spawnPos then
+			character:PivotTo(spawnPos.CFrame * CFrame.new(0, 3, 0))
+			print("++++ TELEPORTED TO PLOT: " .. plotName)
+		end
+	end
+end
+
+return PlotManager

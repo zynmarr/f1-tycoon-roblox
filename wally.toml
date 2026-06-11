@@ -1,0 +1,15 @@
+[package]
+name = "mukhl/f1-tycoon"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+React = "jsdotlua/react@17.0.2"
+ReactRoblox = "jsdotlua/react-roblox@17.0.2"
+Promise = "evaera/promise@4.0.0"
+Networker = "leifstout/networker@0.3.1"
+
+
+[server-dependencies]
+ProfileService = "firebird702/profileservice@1.1.0"
