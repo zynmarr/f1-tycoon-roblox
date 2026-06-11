@@ -66,7 +66,7 @@ local function setupCarViewport(viewport, carTool)
 
 		local carClone = originalModel:Clone()
 		carClone:PivotTo(CFrame.new(0, 0, 0))
-
+		task.wait(0.3)
 		local minX, minY, minZ = math.huge, math.huge, math.huge
 		local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
 		local hasVisuals = false

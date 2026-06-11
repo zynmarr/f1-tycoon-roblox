@@ -1,11 +1,19 @@
 local Players = game:GetService("Players")
 local ServerStorage = game:GetService("ServerStorage")
 
-local PlotManager = require(script.Parent.PlotManager.PlotManager)
-local DataManager = require(script.Parent.DataManager.DataManager)
-local CarManager = require(game.ServerScriptService.CarManager.CarManager)
-local SpawnerBoxManager = require(game.ServerScriptService.SpawnerBoxManager.SpawnerBoxManager)
-local BoxManager = require(game.ServerScriptService.BoxManager.BoxManager)
+local function safeRequire(modulePath, moduleName)
+	local success, result = pcall(require, modulePath)
+	if not success then
+		error("[MainServer] Gagal load module " .. moduleName .. ": " .. tostring(result))
+	end
+	return result
+end
+
+local PlotManager = safeRequire(script.Parent.PlotManager.PlotManager, "PlotManager")
+local DataManager = safeRequire(script.Parent.DataManager.DataManager, "DataManager")
+local CarManager = safeRequire(game.ServerScriptService.CarManager.CarManager, "CarManager")
+local SpawnerBoxManager = safeRequire(game.ServerScriptService.SpawnerBoxManager.SpawnerBoxManager, "SpawnerBoxManager")
+local BoxManager = safeRequire(game.ServerScriptService.BoxManager.BoxManager, "BoxManager")
 -- local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
 
 -- ==========================================================

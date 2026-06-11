@@ -1,8 +1,13 @@
 local repStorage = game:GetService("ReplicatedStorage")
-local prosesJualEvent = repStorage:WaitForChild("SellCarEvent")
+local prosesJualEvent = repStorage:WaitForChild("SellCarEvent", 10)
 
 -- Radius aman (Beri toleransi lag: Kalau client 12, di server kita kasih 16)
 local MAX_DISTANCE = 16
+
+if not prosesJualEvent then
+	error("[SellManager] SellCarEvent tidak ditemukan dalam 10 detik!")
+	return
+end
 
 prosesJualEvent.OnServerEvent:Connect(function(player)
 	local char = player.Character
@@ -54,6 +59,12 @@ prosesJualEvent.OnServerEvent:Connect(function(player)
 	-- =======================================
 	if mobilDiPegang then
 		local harga = mobilDiPegang:GetAttribute("Price") or 0
+		-- ✅ Validasi harga
+		if harga <= 0 or harga > 999999999 then
+			warn("[ANTI-CHEAT] " .. player.Name .. " mencoba jual dengan harga invalid: " .. harga)
+			return
+		end
+
 		local nama = mobilDiPegang:GetAttribute("Name") or mobilDiPegang.Name
 		local leaderstats = player:FindFirstChild("leaderstats")
 

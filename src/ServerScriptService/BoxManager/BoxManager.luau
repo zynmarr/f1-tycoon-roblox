@@ -1,4 +1,3 @@
---!strict
 local BoxManager = {}
 
 local CollectionService = game:GetService("CollectionService")
@@ -16,6 +15,7 @@ local CARS_STORAGE = ServerStorage:WaitForChild("F1 CARS")
 local BoxModels = ReplicatedStorage:WaitForChild("BoxModels")
 
 local BOX_TAG = "Box"
+local openBtn = nil
 
 -- type Networker = Networker.Server
 -- type
@@ -152,17 +152,37 @@ end
 -- ==========================================
 -- 2. LOGIKA GA_CHA BOX VIA NETWORKER
 -- ==========================================
-function BoxManager.openBox(player: Player, boxName: string)
+function BoxManager:openBox(player: Player, boxName: string)
+	-- Ambil lokasi karakter untuk mengecek barang yang sedang dipegang
+	local character = player.Character
 	local backpack = player:FindFirstChild("Backpack")
-	local boxInBackpack = backpack and backpack:FindFirstChild(boxName)
 
-	if not boxInBackpack or boxInBackpack:GetAttribute("IsDestroying") then
-		return { Success = false, Error = "Kotak tidak valid atau tidak ditemukan di dalam tas!" }
+	-- 1. Cari box yang sedang dipegang (di dalam Character) atau di dalam Backpack
+	local boxInHand = character and character:FindFirstChild(boxName) :: Tool?
+	local boxInBackpack = backpack and backpack:FindFirstChild(boxName) :: Tool?
+
+	-- Tentukan box mana yang valid digunakan (utamakan yang di tangan)
+	local targetBox = boxInHand or boxInBackpack
+
+	-- Validasi keberadaan box
+	if not targetBox or targetBox:GetAttribute("IsDestroying") then
+		return {
+			Success = false,
+			Error = "Kotak tidak sedang dipegang atau tidak ditemukan di dalam tas!",
+		}
 	end
 
-	local currentAmount: number = boxInBackpack:GetAttribute("Amount") :: number or 1
-	local boxBaseLuck = boxInBackpack:GetAttribute("LuckyChance") or 1
-	local variants: string = boxInBackpack:GetAttribute("Variants") :: string or "Normal"
+	-- Pastikan backpack tetap ada untuk menaruh mobil reward nanti
+	if not backpack then
+		return {
+			Success = false,
+			Error = "Gagal memproses, data tas (Backpack) tidak ditemukan!",
+		}
+	end
+
+	local currentAmount: number = targetBox:GetAttribute("Amount") :: number or 1
+	local boxBaseLuck = targetBox:GetAttribute("LuckyChance") or 1
+	local variants: string = targetBox:GetAttribute("Variants") :: string or "Normal"
 
 	local eventLuckBoost = GameConfig.CheckLuckyChanceBoost() or 0
 	local playerLuckUpgrade = player:GetAttribute("Upg_LuckyChance") or 0
@@ -177,7 +197,7 @@ function BoxManager.openBox(player: Player, boxName: string)
 		tierData = GameConfig.Rarities[tier]
 	end
 
-	-- Ambal folder penyimpanan aset mobil dari ServerStorage
+	-- Ambil folder penyimpanan aset mobil dari ServerStorage
 	local rarityFolder = CARS_STORAGE:FindFirstChild(tier)
 	if not rarityFolder or #rarityFolder:GetChildren() == 0 then
 		rarityFolder = CARS_STORAGE:WaitForChild("Common")
@@ -203,7 +223,7 @@ function BoxManager.openBox(player: Player, boxName: string)
 	GameConfig.ApplyVisuals(car, tier, variants)
 
 	-- Serahkan mobil ke inventory backpack/garasi pemain
-	local existingCar = backpack and backpack:FindFirstChild(car.Name)
+	local existingCar = backpack:FindFirstChild(car.Name)
 	if existingCar then
 		local stackFolder: Folder = existingCar:FindFirstChild("Stacks") :: Folder
 			or Instance.new("Folder", existingCar)
@@ -225,22 +245,22 @@ function BoxManager.openBox(player: Player, boxName: string)
 	end
 
 	-- 🟥 KONSUMSI ITEM: Update stack box atau hapus kotak jika habis
-	local stackFolder = boxInBackpack:FindFirstChild("Stacks")
+	local stackFolder = targetBox:FindFirstChild("Stacks")
 	if stackFolder and #stackFolder:GetChildren() > 0 then
 		local allStacks = stackFolder:GetChildren()
 		local nextBoxData = allStacks[1]
 
 		-- Ambil data dari box cadangan berikutnya di bawahnya
-		boxInBackpack:SetAttribute("Level", nextBoxData:GetAttribute("Level"))
-		boxInBackpack:SetAttribute("Exp", nextBoxData:GetAttribute("Exp"))
-		boxInBackpack:SetAttribute("Variants", nextBoxData:GetAttribute("Variants"))
-		boxInBackpack:SetAttribute("Amount", currentAmount - 1)
+		targetBox:SetAttribute("Level", nextBoxData:GetAttribute("Level"))
+		targetBox:SetAttribute("Exp", nextBoxData:GetAttribute("Exp"))
+		targetBox:SetAttribute("Variants", nextBoxData:GetAttribute("Variants"))
+		targetBox:SetAttribute("Amount", currentAmount - 1)
 
 		nextBoxData:Destroy()
 	else
-		boxInBackpack:SetAttribute("IsDestroying", true)
-		boxInBackpack.Parent = nil
-		Debris:AddItem(boxInBackpack, 0.1)
+		targetBox:SetAttribute("IsDestroying", true)
+		targetBox.Parent = nil
+		Debris:AddItem(targetBox, 0.1)
 	end
 
 	return {
@@ -264,7 +284,38 @@ local function setupBox(box: Tool)
 	updateBoxVisual(box)
 
 	box.Equipped:Connect(function()
+		local character = box.Parent
+		local player = Players:GetPlayerFromCharacter(character)
+		if not player then
+			return
+		end
+
+		--if not box:GetAttribute("HasPicked") then
+		--	processPickup(player)
+		--end
+
+		local playerGui = player:FindFirstChild("PlayerGui")
+		if not playerGui then
+			return
+		end
+
+		local ui = playerGui:FindFirstChild("OpenBoxGui")
+		openBtn = ui and ui:FindFirstChild("OpenBtn")
+
+		if openBtn then
+			openBtn.Visible = true
+		end
 		box.Grip = CFrame.new(0, 0, 2)
+	end)
+
+	box.Unequipped:Connect(function()
+		if openBtn then
+			openBtn.Visible = false
+		end
+		--if buttonConnection then
+		--	buttonConnection:Disconnect()
+		--	buttonConnection = nil
+		--end
 	end)
 
 	box:GetAttributeChangedSignal("Level"):Connect(function()
@@ -326,8 +377,8 @@ local function setupBox(box: Tool)
 	end
 end
 
-function BoxManager.printTest(player: Player)
-	print(`{player.Name} called the print test`)
+function BoxManager:printTest(player: Player, text: string)
+	print(`[Server Test] {tostring(text)} is called in event by {player.Name}`)
 end
 
 -- ==========================================
@@ -336,13 +387,25 @@ end
 function BoxManager.Init()
 	print("[BoxManager] Mengaktifkan kernel sistem Box modern terpusat.")
 
-	-- Jalankan server listener Networker untuk OpenBox UI Client
-	-- local player = nil
-	-- local boxName = nil
-	-- local function tst(player: Player)
+	-- Setup Networker server listener untuk OpenBox event dari client
+	-- Terima parameter: boxName (string) dari client
+	-- Return: result table dengan Success, Message, Error, RewardName
+	-- Networker.server.new("OpenBox", function(player: Player, boxName: string)
 	-- 	return BoxManager.openBox(player, boxName)
-	-- end
-	-- Networker.server.new("OpenBox", BoxManager, { string, string })
+	-- end)
+	-- Networker.server.new("openBox", self.openBox, { "" })
+	Networker.server.new("OpenBox", BoxManager, {
+		BoxManager.printTest,
+		BoxManager.openBox,
+	})
+	-- Networker.server.new("OpenBox", function(player: Player, boxName: string)
+	-- 	-- Tes cetak untuk memastikan string masuk, bukan tabel lagi
+	-- 	print(`[Server] Menerima request OpenBox dari {player.Name} untuk Box: {tostring(boxName)}`)
+
+	-- 	-- Jalankan fungsi gacha utama dan kembalikan hasilnya ke Client
+	-- 	return BoxManager:openBox(player, boxName)
+	-- end)
+	print("[BoxManager] ✅ Networker 'OpenBox' endpoint siap mendengarkan dari client")
 
 	-- Dengarkan aset lama yang sudah ada di Workspace
 	for _, tool in pairs(CollectionService:GetTagged(BOX_TAG)) do

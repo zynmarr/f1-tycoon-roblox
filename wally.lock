@@ -8,6 +8,11 @@ version = "4.0.0"
 dependencies = []
 
 [[package]]
+name = "ffrostflame/bridgenet"
+version = "1.9.9"
+dependencies = [["GoodSignal", "stravant/goodsignal@0.2.1"], ["Promise", "evaera/promise@4.0.0"]]
+
+[[package]]
 name = "firebird702/profileservice"
 version = "1.1.0"
 dependencies = []
@@ -105,9 +110,14 @@ dependencies = [["Signal", "sleitnick/signal@2.0.3"]]
 [[package]]
 name = "mukhl/f1-tycoon"
 version = "0.1.0"
-dependencies = [["Networker", "leifstout/networker@0.3.1"], ["Promise", "evaera/promise@4.0.0"], ["React", "jsdotlua/react@17.2.1"], ["ReactRoblox", "jsdotlua/react-roblox@17.2.1"], ["ProfileService", "firebird702/profileservice@1.1.0"]]
+dependencies = [["Bridgenet", "ffrostflame/bridgenet@1.9.9"], ["Networker", "leifstout/networker@0.3.1"], ["Promise", "evaera/promise@4.0.0"], ["React", "jsdotlua/react@17.2.1"], ["ReactRoblox", "jsdotlua/react-roblox@17.2.1"], ["ProfileService", "firebird702/profileservice@1.1.0"]]
 
 [[package]]
 name = "sleitnick/signal"
 version = "2.0.3"
+dependencies = []
+
+[[package]]
+name = "stravant/goodsignal"
+version = "0.2.1"
 dependencies = []
