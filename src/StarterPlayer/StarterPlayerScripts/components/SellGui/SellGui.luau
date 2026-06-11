@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local React = require(ReplicatedStorage.Packages.React)
-local ViewportManager = require(script.Parent.Parent.ViewportManager)
+local ViewportManager = require(script.Parent.ViewportManager)
 
 local e = React.createElement
 local useState = React.useState
