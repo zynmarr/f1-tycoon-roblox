@@ -299,11 +299,7 @@ local function monitorAmount(tool)
 		if not parent then
 			task.delay(3, function()
 				if not tool.Parent then
-					if renderCache[tool] then
-						renderCache[tool].Model:Destroy()
-						renderCache[tool].Camera:Destroy()
-						renderCache[tool] = nil
-					end
+					ViewportManager.clearCache(viewportCache, tool)
 					knownTools[tool] = nil -- Hapus dari memori pengingat inventaris
 				end
 			end)
