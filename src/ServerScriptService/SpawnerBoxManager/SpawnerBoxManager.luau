@@ -10,13 +10,7 @@ local SPAWNER_TAG = "SpawnerMachine"
 
 local SpawnerBoxManager = {}
 
--- ===== CACHE FOR VARIANT CALCULATIONS =====
-local variantCache = {}
-local CACHE_TTL = 60 -- Cache for 60 seconds
 
-local function invalidateVariantCache()
-	variantCache = {}
-end
 
 local function getMachineComponents(machineArea: Instance)
 	local machinePart = nil
@@ -88,31 +82,18 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 	local activeVariants = {}
 	print("ACTIVE VARIANTS: ", playerUpgrade)
 
-	-- [OPTIMIZATION] Cache variant calculations
-	local cacheKey = playerUpgrade .. "_" .. globalVariantBoost
-	if variantCache[cacheKey] then
-		activeVariants = variantCache[cacheKey]
-	else
-		-- [DEBUGGING] Matikan ini nanti kalau sudah jalan
-		--print(string.format(">>> Cek Boost | Global: %s | PlayerUpg: %s", tostring(globalVariantBoost), tostring(playerUpgrade)))
+	-- Roll variants dynamically each time to ensure correct gacha randomness
+	for vName, vData in pairs(GameConfig.Variants) do
+		if vName ~= "Normal" then
+			local totalChance = vData.Chance + playerUpgrade + globalVariantBoost
 
-		for vName, vData in pairs(GameConfig.Variants) do
-			if vName ~= "Normal" then
-				local totalChance = vData.Chance + playerUpgrade + globalVariantBoost
+			-- MENGGUNAKAN LOGIKA RANDOM YANG LEBIH PRESISI UNTUK DESIMAL
+			local rng = math.random() * 100
 
-				-- [DEBUGGING]
-				--print(string.format(">>> Cek Variant: %s | Total Chance: %s%%", vName, tostring(totalChance)))
-
-				-- MENGGUNAKAN LOGIKA RANDOM YANG LEBIH PRESISI UNTUK DESIMAL
-				-- math.random() * 100 menghasilkan angka 0.000 sampai 99.999
-				local rng = math.random() * 100
-
-				if rng <= totalChance then
-					table.insert(activeVariants, vName)
-				end
+			if rng <= totalChance then
+				table.insert(activeVariants, vName)
 			end
 		end
-		variantCache[cacheKey] = activeVariants
 	end
 
 	if #activeVariants == 0 then
@@ -167,7 +148,7 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 			local finalExp = math.floor(baseExp + (baseExp * totalMultiplier))
 			--print("EXP FINAL: " .. finalExp .. " | Event: " .. eventBoostPercent .. "% | Upg: " .. expBoost .. "%")
 
-			task.wait(2 / (1 + (speed * 0.15)))
+			task.wait(math.max(0.1, 2 / (1 + (speed * 0.15))))
 
 			if not newBox:FindFirstChild("Handle") then
 				break

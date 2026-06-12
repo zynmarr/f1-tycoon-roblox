@@ -199,7 +199,7 @@ function BoxManager:openBox(player: Player, boxName: string)
 
 	-- ===== INVENTORY CAPACITY CHECK =====
 	local inventoryCount = #backpack:GetChildren()
-	local maxInventorySlots = 50 -- Adjust as needed
+	local maxInventorySlots = GameConfig.MaxInventorySlots or 50
 	if inventoryCount >= maxInventorySlots then
 		return {
 			Success = false,

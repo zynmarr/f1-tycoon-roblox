@@ -89,10 +89,26 @@ function DataManager.extractMachineData(player, machineArea: Instance)
 		machinePart = machineArea:FindFirstChildOfClass("BasePart")
 	end
 
+	-- Scan for any active box currently growing on this machine part
+	local activeBoxData = nil
+	if machinePart then
+		for _, child in pairs(machinePart:GetChildren()) do
+			if child:IsA("Tool") and child:GetAttribute("Level") ~= nil then
+				activeBoxData = {
+					Level = child:GetAttribute("Level") or 1,
+					Exp = child:GetAttribute("Exp") or 0,
+					Variants = child:GetAttribute("Variants") or "Normal",
+				}
+				break
+			end
+		end
+	end
+
 	local mData = {
 		Name = machineArea.Name,
 		Attributes = extractAttributes(machineArea),
 		PartAttributes = extractAttributes(machinePart),
+		ActiveBox = activeBoxData,
 	}
 	return mData
 end

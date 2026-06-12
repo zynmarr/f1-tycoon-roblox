@@ -6,14 +6,14 @@ local Networker = require(ReplicatedStorage.Packages.Networker)
 -- SELLGUI SERVER HANDLER (NETWORKER VERSION)
 -- ===============================================
 
-local MAX_DISTANCE = 8
+local MAX_DISTANCE = 200
 
 local SellGuiManager = {}
 
 -- ===============================================
 -- SELL SINGLE CAR
 -- ===============================================
-function SellGuiManager:sellCar(player, car)
+function SellGuiManager:sellCar(player, car, stackChildName)
 	if not player or not player.Parent then
 		return {
 			Success = false,
@@ -66,14 +66,68 @@ function SellGuiManager:sellCar(player, car)
 	end
 
 	-- ===== VALIDASI MOBIL =====
-	if not car or not car:IsDescendantOf(player) then
+	local inBackpack = car and car:IsDescendantOf(player) or false
+	local inCharacter = car and player.Character and car:IsDescendantOf(player.Character) or false
+	
+	print("[SellGuiServer] sellCar -> Player:", player.Name, "| Car:", tostring(car), "| Parent:", car and tostring(car.Parent) or "nil", "| inBackpack:", inBackpack, "| inCharacter:", inCharacter, "| Stack:", tostring(stackChildName))
+
+	if not car or (not inBackpack and not inCharacter) then
 		return {
 			Success = false,
 			Error = "Mobil tidak valid atau tidak milik Anda",
 		}
 	end
 
-	local harga = car:GetAttribute("Price") or 0
+	-- ===== PROSES HARGA BERDASARKAN TUMPUKAN (STACK) =====
+	local harga = 0
+	local nama = car:GetAttribute("Name") or car.Name
+	local amount = car:GetAttribute("Amount") or 1
+	local stacksFolder = car:FindFirstChild("Stacks")
+
+	if stackChildName and stackChildName ~= "" and amount > 1 then
+		if stackChildName == "Base" then
+			-- Jual mobil basis utama, promosikan stack berikutnya menjadi basis baru
+			harga = car:GetAttribute("Price") or 0
+			if stacksFolder then
+				local allStacks = stacksFolder:GetChildren()
+				if #allStacks > 0 then
+					local nextConfig = allStacks[1]
+					-- Salin atribut dari stack cadangan ke Tool utama
+					for attrName, value in pairs(nextConfig:GetAttributes()) do
+						car:SetAttribute(attrName, value)
+					end
+					nextConfig:Destroy()
+				end
+			end
+			car:SetAttribute("Amount", amount - 1)
+		else
+			-- Jual salah satu mobil di dalam folder Stacks
+			if stacksFolder then
+				local configNode = stacksFolder:FindFirstChild(stackChildName)
+				if configNode then
+					harga = configNode:GetAttribute("Price") or 0
+					configNode:Destroy()
+					car:SetAttribute("Amount", amount - 1)
+				else
+					return {
+						Success = false,
+						Error = "Data tumpukan mobil tidak ditemukan",
+					}
+				end
+			else
+				return {
+					Success = false,
+					Error = "Folder tumpukan tidak ditemukan",
+				}
+			end
+		end
+	else
+		-- Jual mobil tunggal (normal)
+		harga = car:GetAttribute("Price") or 0
+		car:Destroy()
+	end
+
+	-- Validasi harga hasil akhir
 	if harga <= 0 or harga > 999999999 then
 		warn("[ANTI-CHEAT] " .. player.Name .. " mencoba jual dengan harga invalid: " .. harga)
 		return {
@@ -83,9 +137,7 @@ function SellGuiManager:sellCar(player, car)
 	end
 
 	-- ===== EKSEKUSI TRANSAKSI =====
-	local nama = car:GetAttribute("Name") or car.Name
 	local leaderstats = player:FindFirstChild("leaderstats")
-
 	if not leaderstats or not leaderstats:FindFirstChild("Cash") then
 		return {
 			Success = false,
@@ -96,10 +148,7 @@ function SellGuiManager:sellCar(player, car)
 	-- Tambah uang
 	leaderstats.Cash.Value = leaderstats.Cash.Value + harga
 
-	-- Hapus mobil
-	car:Destroy()
-
-	print("[SellGui] " .. player.Name .. " cuan $" .. harga .. " dari " .. nama)
+	print("[SellGui] " .. player.Name .. " cuan $" .. harga .. " dari " .. nama .. (stackChildName and " (Stack)" or ""))
 
 	return {
 		Success = true,
@@ -162,12 +211,33 @@ function SellGuiManager:sellAllCars(player, cars)
 	local carsCount = 0
 
 	for _, car in ipairs(cars) do
-		if car and car:IsDescendantOf(player) then
-			local harga = car:GetAttribute("Price") or 0
-			if harga > 0 and harga <= 999999999 then
-				leaderstats.Cash.Value = leaderstats.Cash.Value + harga
-				totalEarned = totalEarned + harga
-				carsCount = carsCount + 1
+		if car then
+			local inBackpack = car:IsDescendantOf(player)
+			local inCharacter = player.Character and car:IsDescendantOf(player.Character) or false
+			if inBackpack or inCharacter then
+				-- Tambahkan harga mobil utama
+				local basePrice = car:GetAttribute("Price") or 0
+				if basePrice > 0 and basePrice <= 999999999 then
+					leaderstats.Cash.Value = leaderstats.Cash.Value + basePrice
+					totalEarned = totalEarned + basePrice
+					carsCount = carsCount + 1
+				end
+
+				-- Tambahkan harga dari seluruh mobil di dalam tumpukan Stacks
+				local stacksFolder = car:FindFirstChild("Stacks")
+				if stacksFolder then
+					for _, configNode in ipairs(stacksFolder:GetChildren()) do
+						if configNode:IsA("Configuration") then
+							local stackPrice = configNode:GetAttribute("Price") or 0
+							if stackPrice > 0 and stackPrice <= 999999999 then
+								leaderstats.Cash.Value = leaderstats.Cash.Value + stackPrice
+								totalEarned = totalEarned + stackPrice
+								carsCount = carsCount + 1
+							end
+						end
+					end
+				end
+
 				car:Destroy()
 			end
 		end

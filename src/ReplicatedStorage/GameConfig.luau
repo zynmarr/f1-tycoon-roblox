@@ -1,6 +1,8 @@
 local GameConfig = {}
 local scp = script.Parent
 
+GameConfig.MaxInventorySlots = 50
+
 -- =============================================================================
 -- GAME CONFIG: RE-BALANCED RARITIES CONFIGURATION
 -- (Angka Weight disesuaikan untuk kombinasi rumus math.pow)

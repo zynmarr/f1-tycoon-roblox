@@ -18,6 +18,7 @@ local SELL_RADIUS = 8
 local toasts = {}
 
 -- Tunggu Player Setup
+local handleSellCar, handleSellAll
 task.wait(0.5)
 
 -- ===== CREATE DEDICATED SCREENGUI (tidak timpa UI lain) =====
@@ -104,6 +105,44 @@ local function buildToastList()
 	return toastList
 end
 
+local uiIsOpen = false
+
+local function updateUIRender()
+	if not root then return end
+
+	if uiIsOpen then
+		local currentComponent = React.createElement(SellGui, {
+			onSellCar = handleSellCar,
+			onSellAll = handleSellAll,
+			onClose = function()
+				print("[SellGui CLIENT] Player menutup UI secara manual")
+				uiIsOpen = false
+				updateUIRender()
+			end,
+		})
+
+		root:render(React.createElement("Frame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+		}, {
+			SellGuiContent = currentComponent,
+			ToastContainer = React.createElement("Frame", {
+				Size = UDim2.new(1, 0, 1, 0),
+				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				Name = "ToastContainer",
+			}, buildToastList()),
+		}))
+	else
+		root:render(React.createElement("Frame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+		}, buildToastList()))
+	end
+end
+
 local function showToast(message, isSuccess, duration)
 	duration = duration or 3
 	local toastId = tostring(os.clock()) .. tostring(math.random())
@@ -114,13 +153,14 @@ local function showToast(message, isSuccess, duration)
 		duration = duration,
 	}
 
-	if root then
-		root:render(React.createElement("Frame", {
-			Size = UDim2.new(1, 0, 1, 0),
-			BackgroundTransparency = 1,
-			BorderSizePixel = 0,
-		}, buildToastList()))
-	end
+	-- Rerender UI to show new toast
+	updateUIRender()
+
+	-- Schedule clean up of toast
+	task.delay(duration, function()
+		toasts[toastId] = nil
+		updateUIRender()
+	end)
 end
 
 local function detectSellArea()
@@ -152,7 +192,7 @@ local networker = Networker.client.new("SellGui", serviceClient)
 -- ===============================================
 -- HANDLERS
 -- ===============================================
-local function handleSellCar(car)
+function handleSellCar(car, stackChildName)
 	if not car then
 		return
 	end
@@ -164,9 +204,9 @@ local function handleSellCar(car)
 		carName = car.Name or "Unknown"
 	end
 
-	print("[SellGui CLIENT] Selling car: " .. tostring(carName))
+	print("[SellGui CLIENT] Selling car: " .. tostring(carName) .. (stackChildName and (" (" .. stackChildName .. ")") or ""))
 
-	local result = networker:fetch("sellCar", car)
+	local result = networker:fetch("sellCar", car, stackChildName)
 
 	if result and result.Success then
 		print("[SellGui CLIENT] ✅ " .. result.Message)
@@ -178,7 +218,7 @@ local function handleSellCar(car)
 	end
 end
 
-local function handleSellAll(cars)
+function handleSellAll(cars)
 	if not cars or #cars == 0 then
 		print("[SellGui CLIENT] No cars to sell")
 		showToast("❌ Tidak ada mobil untuk dijual", false, 2)
@@ -203,8 +243,14 @@ end
 -- PROXIMITY DETECTION LOOP
 -- ===============================================
 task.spawn(function()
-	local lastNearState = false
-	local currentComponent = nil
+	local wasInsideArea = false
+
+	local function openUI()
+		if uiIsOpen then return end
+		print("[SellGui CLIENT] Player masuk area sell, tampilkan UI")
+		uiIsOpen = true
+		updateUIRender()
+	end
 
 	while true do
 		task.wait(0.5)
@@ -212,67 +258,25 @@ task.spawn(function()
 		local char = player.Character
 		local humanoidRoot = char and char:FindFirstChild("HumanoidRootPart")
 		if not humanoidRoot then
-			if lastNearState then
-				lastNearState = false
-				currentComponent = nil
-				root:render(React.createElement("Frame", {
-					Size = UDim2.new(1, 0, 1, 0),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-				}, buildToastList()))
-			end
+			wasInsideArea = false
 			continue
 		end
 
 		local sellArea = detectSellArea()
 		if not sellArea then
-			if lastNearState then
-				lastNearState = false
-				currentComponent = nil
-				root:render(React.createElement("Frame", {
-					Size = UDim2.new(1, 0, 1, 0),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-				}, buildToastList()))
-			end
+			wasInsideArea = false
 			continue
 		end
 
 		local distance = (humanoidRoot.Position - sellArea:GetPivot().Position).Magnitude
 		local isNear = distance <= SELL_RADIUS
 
-		if isNear ~= lastNearState then
-			lastNearState = isNear
-			if isNear then
-				print("[SellGui CLIENT] Player masuk area sell, tampilkan UI")
-				currentComponent = React.createElement(SellGui, {
-					onSellCar = handleSellCar,
-					onSellAll = handleSellAll,
-				})
-
-				root:render(React.createElement("Frame", {
-					Size = UDim2.new(1, 0, 1, 0),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-				}, {
-					SellGuiContent = currentComponent,
-					ToastContainer = React.createElement("Frame", {
-						Size = UDim2.new(1, 0, 1, 0),
-						BackgroundTransparency = 1,
-						BorderSizePixel = 0,
-						Name = "ToastContainer",
-					}, buildToastList()),
-				}))
-			else
-				print("[SellGui CLIENT] Player keluar area sell, sembunyikan UI")
-				currentComponent = nil
-				root:render(React.createElement("Frame", {
-					Size = UDim2.new(1, 0, 1, 0),
-					BackgroundTransparency = 1,
-					BorderSizePixel = 0,
-				}, buildToastList()))
-			end
+		-- Terbuka HANYA saat transisi masuk area (dari luar ke dalam)
+		if isNear and not wasInsideArea then
+			openUI()
 		end
+
+		wasInsideArea = isNear
 	end
 end)
 
