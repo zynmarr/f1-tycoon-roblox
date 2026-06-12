@@ -52,6 +52,15 @@
         "RespectFilteringEnabled": true
       }
     },
+    "StarterGui": {
+      "$properties": {
+        "ClipsDescendantsSupportsRotation": {
+          "Enum": 0
+        },
+        "ScreenOrientation": "Sensor"
+      },
+      "$path": "src/StarterGui"
+    },
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "$path": "src/StarterPlayer/StarterPlayerScripts"

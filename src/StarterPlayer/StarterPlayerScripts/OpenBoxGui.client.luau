@@ -35,13 +35,28 @@ button.Activated:Connect(function()
 		return
 	end
 
+	-- ===== OWNERSHIP VALIDATION =====
+	local boxToOpen = if toolInHand and toolInHand:GetAttribute("OnHand")
+		then toolInHand
+		else player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild(selectedBox)
+	if not boxToOpen then
+		warn("❌ Box tidak ditemukan!")
+		return
+	end
+
+	-- Verify ownership: owner harus sama dengan nama player saat ini
+	local boxOwner = boxToOpen:GetAttribute("Owner") or player.Name
+	if boxOwner ~= player.Name then
+		warn("❌ Anda tidak memiliki kotak ini!")
+		return
+	end
+
 	print(`🎁 Mengirim event OpenBox untuk kotak: {selectedBox}`)
 
 	-- Inisialisasi networker client menuju kanal "OpenBox"
 	local networker = Networker.client.new("OpenBox", serviceClient)
 
-	-- Panggil server (Gunakan :invoke() jika mengharapkan return/kembalian data, atau :fire() jika hanya satu arah)
-	-- Asumsi: Networker Anda menggunakan :invoke() untuk mendapatkan return nilai table gacha
+	-- Panggil server dengan :invoke() untuk mendapatkan return nilai
 	local result = networker:fetch("openBox", selectedBox)
 
 	if result and result.Success then

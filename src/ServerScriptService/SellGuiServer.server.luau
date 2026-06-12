@@ -1,12 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
+-- local Players = game:GetService("Players")
 local Networker = require(ReplicatedStorage.Packages.Networker)
 
 -- ===============================================
 -- SELLGUI SERVER HANDLER (NETWORKER VERSION)
 -- ===============================================
 
-local MAX_DISTANCE = 16
+local MAX_DISTANCE = 8
 
 local SellGuiManager = {}
 
@@ -196,4 +196,3 @@ Networker.server.new("SellGui", SellGuiManager, {
 })
 
 print("[SellGui Server] Initialized and ready!")
-

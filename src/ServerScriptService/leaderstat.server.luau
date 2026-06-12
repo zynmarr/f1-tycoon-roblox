@@ -1,5 +1,9 @@
 -- LeaderstatSetup | ServerScriptService > Script
+-- NOTE: Main.server.luau already creates leaderstats via ProfileService
+-- This script is DISABLED to prevent duplication
+-- Uncomment if you want additional DataStore tracking (separate from Main.server.luau)
 
+--[[
 local Players             = game:GetService("Players")
 local DataStoreService    = game:GetService("DataStoreService")
 
@@ -55,3 +59,6 @@ game:BindToClose(function()
 		saveData(plr)
 	end
 end)
+--]]
+
+print("[LeaderstatSetup] Disabled - Main.server.luau handles leaderstats via ProfileService")

@@ -14,7 +14,7 @@ local SellGui = require(script.Parent.components.SellGui.SellGui)
 
 local serviceClient = {}
 local root = nil
-local SELL_RADIUS = 16
+local SELL_RADIUS = 8
 local toasts = {}
 
 -- Tunggu Player Setup
@@ -164,37 +164,37 @@ local function handleSellCar(car)
 		carName = car.Name or "Unknown"
 	end
 
-	print("[SellGui] Selling car: " .. tostring(carName))
+	print("[SellGui CLIENT] Selling car: " .. tostring(carName))
 
-	local result = networker:invoke("sellCar", car)
+	local result = networker:fetch("sellCar", car)
 
 	if result and result.Success then
-		print("[SellGui] ✅ " .. result.Message)
+		print("[SellGui CLIENT] ✅ " .. result.Message)
 		showToast("✅ " .. result.Message, true, 2.5)
 	else
 		local errorMsg = result and result.Error or "Unknown error"
-		warn("[SellGui] ❌ " .. errorMsg)
+		warn("[SellGui CLIENT] ❌ " .. errorMsg)
 		showToast("❌ " .. errorMsg, false, 3)
 	end
 end
 
 local function handleSellAll(cars)
 	if not cars or #cars == 0 then
-		print("[SellGui] No cars to sell")
+		print("[SellGui CLIENT] No cars to sell")
 		showToast("❌ Tidak ada mobil untuk dijual", false, 2)
 		return
 	end
 
-	print("[SellGui] Selling all " .. #cars .. " cars")
+	print("[SellGui CLIENT] Selling all " .. #cars .. " cars")
 
-	local result = networker:invoke("sellAllCars", cars)
+	local result = networker:fetch("sellAllCars", cars)
 
 	if result and result.Success then
-		print("[SellGui] ✅ " .. result.Message)
+		print("[SellGui CLIENT] ✅ " .. result.Message)
 		showToast("✅ " .. result.Message, true, 2.5)
 	else
 		local errorMsg = result and result.Error or "Unknown error"
-		warn("[SellGui] ❌ " .. errorMsg)
+		warn("[SellGui CLIENT] ❌ " .. errorMsg)
 		showToast("❌ " .. errorMsg, false, 3)
 	end
 end
@@ -244,7 +244,7 @@ task.spawn(function()
 		if isNear ~= lastNearState then
 			lastNearState = isNear
 			if isNear then
-				print("[SellGui] Player masuk area sell, tampilkan UI")
+				print("[SellGui CLIENT] Player masuk area sell, tampilkan UI")
 				currentComponent = React.createElement(SellGui, {
 					onSellCar = handleSellCar,
 					onSellAll = handleSellAll,
@@ -264,7 +264,7 @@ task.spawn(function()
 					}, buildToastList()),
 				}))
 			else
-				print("[SellGui] Player keluar area sell, sembunyikan UI")
+				print("[SellGui CLIENT] Player keluar area sell, sembunyikan UI")
 				currentComponent = nil
 				root:render(React.createElement("Frame", {
 					Size = UDim2.new(1, 0, 1, 0),

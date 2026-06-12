@@ -1,14 +1,30 @@
+-- ===============================================
+-- DEVELOPER BOOST SYSTEM (Whitelist-Based)
+-- ===============================================
+-- Ubah DEVELOPER_USER_IDS ke Roblox User ID bukan username (lebih aman & unique)
+local DEVELOPER_USER_IDS = {
+	[8361115924] = true, -- Replace dengan User ID Anda (bukan username)
+	-- Contoh: [123456789] = true,
+}
+
+local DEVELOPER_WALK_SPEED = 50 -- Kecepatan Developer (default: 16)
+
 game.Players.PlayerAdded:Connect(function(player)
+	-- Cek apakah user ID termasuk dalam whitelist developer
+	if not DEVELOPER_USER_IDS[player.UserId] then
+		return
+	end
+
 	player.CharacterAdded:Connect(function(char)
-		-- Script ini akan mengecek apakah yang masuk adalah akun milikmu
-		if player.Name == "aceu9922" then 
-			local humanoid = char:WaitForChild("Humanoid")
-
-			-- Ubah angka ini sesuka hatimu (Default orang biasa adalah 16)
-			-- Angka 50 sudah cukup untuk lari seperti The Flash!
-			humanoid.WalkSpeed = 50 
-
-			print("Developer " .. player.Name .. " masuk! Kecepatan ditingkatkan.")
-		end
+		local humanoid = char:WaitForChild("Humanoid")
+		humanoid.WalkSpeed = DEVELOPER_WALK_SPEED
+		print(
+			"[DeveloperBoost] Developer "
+				.. player.Name
+				.. " ("
+				.. player.UserId
+				.. ") joined. Speed boosted to "
+				.. DEVELOPER_WALK_SPEED
+		)
 	end)
 end)

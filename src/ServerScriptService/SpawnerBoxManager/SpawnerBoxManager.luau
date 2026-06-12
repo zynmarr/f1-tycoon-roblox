@@ -10,6 +10,14 @@ local SPAWNER_TAG = "SpawnerMachine"
 
 local SpawnerBoxManager = {}
 
+-- ===== CACHE FOR VARIANT CALCULATIONS =====
+local variantCache = {}
+local CACHE_TTL = 60 -- Cache for 60 seconds
+
+local function invalidateVariantCache()
+	variantCache = {}
+end
+
 local function getMachineComponents(machineArea: Instance)
 	local machinePart = nil
 	local billboardGui = nil
@@ -80,24 +88,31 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 	local activeVariants = {}
 	print("ACTIVE VARIANTS: ", playerUpgrade)
 
-	-- [DEBUGGING] Matikan ini nanti kalau sudah jalan
-	--print(string.format(">>> Cek Boost | Global: %s | PlayerUpg: %s", tostring(globalVariantBoost), tostring(playerUpgrade)))
+	-- [OPTIMIZATION] Cache variant calculations
+	local cacheKey = playerUpgrade .. "_" .. globalVariantBoost
+	if variantCache[cacheKey] then
+		activeVariants = variantCache[cacheKey]
+	else
+		-- [DEBUGGING] Matikan ini nanti kalau sudah jalan
+		--print(string.format(">>> Cek Boost | Global: %s | PlayerUpg: %s", tostring(globalVariantBoost), tostring(playerUpgrade)))
 
-	for vName, vData in pairs(GameConfig.Variants) do
-		if vName ~= "Normal" then
-			local totalChance = vData.Chance + playerUpgrade + globalVariantBoost
+		for vName, vData in pairs(GameConfig.Variants) do
+			if vName ~= "Normal" then
+				local totalChance = vData.Chance + playerUpgrade + globalVariantBoost
 
-			-- [DEBUGGING]
-			--print(string.format(">>> Cek Variant: %s | Total Chance: %s%%", vName, tostring(totalChance)))
+				-- [DEBUGGING]
+				--print(string.format(">>> Cek Variant: %s | Total Chance: %s%%", vName, tostring(totalChance)))
 
-			-- MENGGUNAKAN LOGIKA RANDOM YANG LEBIH PRESISI UNTUK DESIMAL
-			-- math.random() * 100 menghasilkan angka 0.000 sampai 99.999
-			local rng = math.random() * 100
+				-- MENGGUNAKAN LOGIKA RANDOM YANG LEBIH PRESISI UNTUK DESIMAL
+				-- math.random() * 100 menghasilkan angka 0.000 sampai 99.999
+				local rng = math.random() * 100
 
-			if rng <= totalChance then
-				table.insert(activeVariants, vName)
+				if rng <= totalChance then
+					table.insert(activeVariants, vName)
+				end
 			end
 		end
+		variantCache[cacheKey] = activeVariants
 	end
 
 	if #activeVariants == 0 then

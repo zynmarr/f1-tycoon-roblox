@@ -13,6 +13,35 @@ local DEFAULT_DATA = {
 	},
 }
 
+-- ===== ATTRIBUTE SCHEMA VALIDATION =====
+local VALID_ATTRIBUTES = {
+	Level = "number",
+	Exp = "number",
+	MaxExp = "number",
+	LuckyChance = "number",
+	Variants = "string",
+	Income = "number",
+	Price = "number",
+	Rarity = "string",
+	Owner = "string",
+	Amount = "number",
+	OnHand = "boolean",
+	HasPicked = "boolean",
+	IsDestroying = "boolean",
+}
+
+local function validateAttribute(name, value)
+	if not VALID_ATTRIBUTES[name] then
+		return true
+	end
+	local expectedType = VALID_ATTRIBUTES[name]
+	if typeof(value) == expectedType then
+		return true
+	end
+	warn(string.format("[DataManager] Invalid attribute %s: expected %s, got %s", name, expectedType, typeof(value)))
+	return false
+end
+
 local Players = game:GetService("Players")
 local ProfileService = require(game.ServerScriptService.ServerPackages.ProfileService)
 local GameProfileStore = ProfileService.GetProfileStore("TycoonSave_V3", DEFAULT_DATA)
@@ -34,7 +63,10 @@ local function extractAttributes(instance)
 	local attributes = {}
 	if instance then
 		for name, value in pairs(instance:GetAttributes()) do
-			attributes[name] = value
+			-- Validate attribute before saving
+			if validateAttribute(name, value) then
+				attributes[name] = value
+			end
 		end
 	end
 	return attributes
@@ -75,19 +107,23 @@ function DataManager.loadData(player)
 		profile:AddUserId(player.UserId)
 		profile:Reconcile()
 
-		profile:ListenToRelease(function()
-			DataManager.Profiles[player] = nil
-			player:Kick("Data Anda sedang dimuat di server lain. Silakan masuk kembali.")
-		end)
-
-		if player:IsDescendantOf(Players) then
-			DataManager.Profiles[player] = profile
-			print("[DataManager] Profil berhasil dimuat untuk: " .. player.Name)
-			return profile.Data
-		else
+		-- Check player state BEFORE setting up release listener (prevents race condition)
+		if not player:IsDescendantOf(Players) then
 			profile:Release()
 			return nil
 		end
+
+		profile:ListenToRelease(function()
+			DataManager.Profiles[player] = nil
+			-- Only kick if still in game
+			if player:IsDescendantOf(Players) then
+				player:Kick("Data Anda sedang dimuat di server lain. Silakan masuk kembali.")
+			end
+		end)
+
+		DataManager.Profiles[player] = profile
+		print("[DataManager] Profil berhasil dimuat untuk: " .. player.Name)
+		return profile.Data
 	else
 		warn("[DataManager] Gagal memuat data dari ProfileStore untuk: " .. player.Name)
 		player:Kick("Roblox DataStore sedang bermasalah. Silakan coba beberapa saat lagi.")

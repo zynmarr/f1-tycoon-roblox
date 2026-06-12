@@ -17,6 +17,10 @@ local BoxModels = ReplicatedStorage:WaitForChild("BoxModels")
 local BOX_TAG = "Box"
 local openBtn = nil
 
+-- ========== RATE LIMITING ==========
+local BOX_OPEN_COOLDOWN = 5 -- seconds
+local playerBoxOpenTimes = {} -- {player: timestamp}
+
 -- type Networker = Networker.Server
 -- type
 
@@ -153,6 +157,19 @@ end
 -- 2. LOGIKA GA_CHA BOX VIA NETWORKER
 -- ==========================================
 function BoxManager:openBox(player: Player, boxName: string)
+	-- ===== RATE LIMITING CHECK =====
+	local now = tick()
+	local lastOpenTime = playerBoxOpenTimes[player] or 0
+	if now - lastOpenTime < BOX_OPEN_COOLDOWN then
+		return {
+			Success = false,
+			Error = "Terlalu cepat membuka box! Tunggu "
+				.. math.ceil(BOX_OPEN_COOLDOWN - (now - lastOpenTime))
+				.. " detik.",
+		}
+	end
+	playerBoxOpenTimes[player] = now
+
 	-- Ambil lokasi karakter untuk mengecek barang yang sedang dipegang
 	local character = player.Character
 	local backpack = player:FindFirstChild("Backpack")
@@ -177,6 +194,16 @@ function BoxManager:openBox(player: Player, boxName: string)
 		return {
 			Success = false,
 			Error = "Gagal memproses, data tas (Backpack) tidak ditemukan!",
+		}
+	end
+
+	-- ===== INVENTORY CAPACITY CHECK =====
+	local inventoryCount = #backpack:GetChildren()
+	local maxInventorySlots = 50 -- Adjust as needed
+	if inventoryCount >= maxInventorySlots then
+		return {
+			Success = false,
+			Error = "Tas Anda sudah penuh! (" .. inventoryCount .. "/" .. maxInventorySlots .. " slot)",
 		}
 	end
 
@@ -283,6 +310,9 @@ local function setupBox(box: Tool)
 
 	updateBoxVisual(box)
 
+	-- Store connections for cleanup
+	local connections = {}
+
 	box.Equipped:Connect(function()
 		local character = box.Parent
 		local player = Players:GetPlayerFromCharacter(character)
@@ -318,63 +348,91 @@ local function setupBox(box: Tool)
 		--end
 	end)
 
-	box:GetAttributeChangedSignal("Level"):Connect(function()
-		updateBoxVisual(box)
-	end)
+	table.insert(
+		connections,
+		box:GetAttributeChangedSignal("Level"):Connect(function()
+			updateBoxVisual(box)
+		end)
+	)
 
 	if prompt then
-		prompt.Triggered:Connect(function(player)
-			processPickup(player, box)
-		end)
+		table.insert(
+			connections,
+			prompt.Triggered:Connect(function(player)
+				processPickup(player, box)
+			end)
+		)
 	end
 
 	-- Pengecekan posisi box (OnHand / In Tas)
-	box.AncestryChanged:Connect(function(_, parent)
-		if not parent then
-			return
-		end
-		if parent:IsA("Backpack") then
-			box:SetAttribute("OnHand", false)
-		elseif parent:IsA("Model") and parent:FindFirstChild("Humanoid") then
-			box:SetAttribute("OnHand", true)
-		end
-	end)
+	table.insert(
+		connections,
+		box.AncestryChanged:Connect(function(_, parent)
+			if not parent then
+				return
+			end
+			if parent:IsA("Backpack") then
+				box:SetAttribute("OnHand", false)
+			elseif parent:IsA("Model") and parent:FindFirstChild("Humanoid") then
+				box:SetAttribute("OnHand", true)
+			end
+		end)
+	)
 
 	-- Event Scaling Dinamis saat box ditaruh di conveyor/mesin jualan
 	if handle then
-		handle:GetPropertyChangedSignal("Size"):Connect(function()
-			local currentModel: Model = box:FindFirstChild("Model") :: Model
-			local primaryPart = currentModel and currentModel.PrimaryPart
-			local machine = box.Parent :: BasePart?
-			local machineArea = machine and machine.Parent :: Folder?
+		table.insert(
+			connections,
+			handle:GetPropertyChangedSignal("Size"):Connect(function()
+				local currentModel: Model = box:FindFirstChild("Model") :: Model
+				local primaryPart = currentModel and currentModel.PrimaryPart
+				local machine = box.Parent :: BasePart?
+				local machineArea = machine and machine.Parent :: Folder?
 
-			if machineArea and machineArea:GetAttribute("IsRunning") == nil then
-				return
-			end
-			if not currentModel or not primaryPart or not machine then
-				return
-			end
+				if machineArea and machineArea:GetAttribute("IsRunning") == nil then
+					return
+				end
+				if not currentModel or not primaryPart or not machine then
+					return
+				end
 
-			local mainWeld: WeldConstraint = primaryPart:FindFirstChild("MainWeld") :: WeldConstraint
-			if mainWeld then
-				mainWeld:Destroy()
-			end
+				local mainWeld: WeldConstraint = primaryPart:FindFirstChild("MainWeld") :: WeldConstraint
+				if mainWeld then
+					mainWeld:Destroy()
+				end
 
-			currentModel:ScaleTo(handle.Size.X / 3)
+				currentModel:ScaleTo(handle.Size.X / 3)
 
-			local baseOffset = 0.5
-			local dynamicY = baseOffset + (handle.Size.Y / 2)
+				local baseOffset = 0.5
+				local dynamicY = baseOffset + (handle.Size.Y / 2)
 
-			handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
-			currentModel:PivotTo(handle.CFrame * CFrame.new(0, -dynamicY + 0.5, 0))
+				handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
+				currentModel:PivotTo(handle.CFrame * CFrame.new(0, -dynamicY + 0.5, 0))
 
-			mainWeld = Instance.new("WeldConstraint")
-			mainWeld.Name = "MainWeld"
-			mainWeld.Part0 = handle
-			mainWeld.Part1 = primaryPart
-			mainWeld.Parent = primaryPart
-		end)
+				mainWeld = Instance.new("WeldConstraint")
+				mainWeld.Name = "MainWeld"
+				mainWeld.Part0 = handle
+				mainWeld.Part1 = primaryPart
+				mainWeld.Parent = primaryPart
+			end)
+		)
 	end
+
+	-- Cleanup all connections when box is destroyed
+	local cleanupConnection
+	cleanupConnection = box.AncestryChanged:Connect(function(_, parent)
+		if not parent then
+			for _, conn in ipairs(connections) do
+				pcall(function()
+					conn:Disconnect()
+				end)
+			end
+			if cleanupConnection then
+				cleanupConnection:Disconnect()
+			end
+		end
+	end)
+	table.insert(connections, cleanupConnection)
 end
 
 function BoxManager:printTest(player: Player, text: string)
@@ -386,6 +444,12 @@ end
 -- ==========================================
 function BoxManager.Init()
 	print("[BoxManager] Mengaktifkan kernel sistem Box modern terpusat.")
+
+	-- Cleanup rate limiting when player leaves
+	local Players = game:GetService("Players")
+	Players.PlayerRemoving:Connect(function(player)
+		playerBoxOpenTimes[player] = nil
+	end)
 
 	-- Setup Networker server listener untuk OpenBox event dari client
 	-- Terima parameter: boxName (string) dari client

@@ -1,5 +1,14 @@
-local repStorage = game:GetService("ReplicatedStorage")
-local prosesJualEvent = repStorage:WaitForChild("SellCarEvent", 10)
+-- ===============================================
+-- SELLMANAGER - DISABLED (LEGACY)
+-- ===============================================
+-- Replaced by SellGui React component
+-- Keeping as backup for reference
+-- To enable: remove the return statement below
+-- ===============================================
+
+return
+
+--[[
 
 -- Radius aman (Beri toleransi lag: Kalau client 12, di server kita kasih 16)
 local MAX_DISTANCE = 16
@@ -86,3 +95,5 @@ prosesJualEvent.OnServerEvent:Connect(function(player)
 		end
 	end
 end)
+
+--]]
