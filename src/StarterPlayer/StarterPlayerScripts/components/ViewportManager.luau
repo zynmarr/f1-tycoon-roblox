@@ -43,13 +43,19 @@ local function clearCacheEntry(cache, carTool)
 end
 
 local function trimCache(cache)
-	if #cache.renderCache > cache.MAX_CACHE_SIZE then
-		local count = 0
+	local count = 0
+	for _ in pairs(cache.renderCache) do
+		count = count + 1
+	end
+	if count > cache.MAX_CACHE_SIZE then
+		local excess = count - cache.MAX_CACHE_SIZE
+		local removed = 0
 		for key in pairs(cache.renderCache) do
-			if count >= cache.MAX_CACHE_SIZE then
-				clearCacheEntry(cache, key)
+			clearCacheEntry(cache, key)
+			removed = removed + 1
+			if removed >= excess then
+				break
 			end
-			count = count + 1
 		end
 	end
 end

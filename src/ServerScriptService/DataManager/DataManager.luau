@@ -150,24 +150,22 @@ function DataManager.loadData(player)
 end
 
 -- ==========================================
--- CORE: SAVE & RELEASE DATA (FIXED ROLLBACK)
+-- CORE: SYNC DATA (UPDATE PROFILE IN-PLACE)
 -- ==========================================
-function DataManager.saveData(player)
+function DataManager.syncData(player)
 	local profile = DataManager.Profiles[player]
 	if not profile then
-		warn("[DataManager] Profil tidak ditemukan di cache saat proses simpan untuk: " .. player.Name)
+		warn("[DataManager] Profil tidak ditemukan di cache saat proses sinkronisasi untuk: " .. player.Name)
 		return false
 	end
 
 	local leaderstats = player:FindFirstChild("leaderstats")
 	if not leaderstats then
-		warn("[DataManager] Leaderstats hilang, langsung melepas sesi kunci untuk keselamatan data.")
-		profile:Release()
-		DataManager.Profiles[player] = nil
+		warn("[DataManager] Leaderstats hilang saat sinkronisasi data.")
 		return false
 	end
 
-	-- Jalankan Live-Scan Workspace & Inventori Pemain sebelum save
+	-- Jalankan Live-Scan Workspace & Inventori Pemain
 	local finalSave = {
 		Stats = {},
 		Inventory = {},
@@ -245,11 +243,35 @@ function DataManager.saveData(player)
 		end
 	end
 
-	-- 4. Kirim data hasil scan ke ProfileService & Buka Kunci Sesi
+	-- 4. Kirim data hasil scan ke ProfileService
 	profile.Data.Stats = finalSave.Stats
 	profile.Data.Inventory = finalSave.Inventory
 	profile.Data.PlotData = finalSave.PlotData
+	return true
+end
 
+-- ==========================================
+-- CORE: SAVE & RELEASE DATA (FIXED ROLLBACK)
+-- ==========================================
+function DataManager.saveData(player)
+	local profile = DataManager.Profiles[player]
+	if not profile then
+		warn("[DataManager] Profil tidak ditemukan di cache saat proses simpan untuk: " .. player.Name)
+		return false
+	end
+
+	local leaderstats = player:FindFirstChild("leaderstats")
+	if not leaderstats then
+		warn("[DataManager] Leaderstats hilang, langsung melepas sesi kunci untuk keselamatan data.")
+		profile:Release()
+		DataManager.Profiles[player] = nil
+		return false
+	end
+
+	-- Jalankan sinkronisasi data aktual ke profil
+	DataManager.syncData(player)
+
+	-- Buka Kunci Sesi
 	profile:Release()
 	DataManager.Profiles[player] = nil
 	print("[DataManager] Progress berhasil di-scan, disimpan dan diamankan untuk: " .. player.Name)

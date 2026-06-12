@@ -21,7 +21,9 @@ if not machines then
 	return
 end
 
-local BuyUpgradeFunction = ReplicatedStorage:WaitForChild("BuyUpgradeFunction") :: RemoteFunction
+local Networker = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Networker"))
+local serviceClient = {}
+local networker = Networker.client.new("UpgradeMachine", serviceClient)
 
 local function getBillboard(machineArea: Folder): Model?
 	for _, child in ipairs(machineArea:GetChildren()) do
@@ -43,51 +45,59 @@ local function setupMachineArea(machineArea: Folder)
 	end
 
 	if billboard then
-		local moduleScript = billboard:WaitForChild("ModuleScript", 5)
-			or billboard:FindFirstChildOfClass("ModuleScript")
-		if moduleScript then
-			local module = require(moduleScript)
-			local area = billboard:WaitForChild("Area", 5)
-			if area then
-				local surface = area:WaitForChild("SurfaceGui", 5)
-				if surface then
-					local list = surface:WaitForChild("List", 5)
-					if list then
-						local function setupButtons()
-							for _, item in ipairs(list:GetChildren()) do
-								if item:IsA("Frame") then
-									local button = item:WaitForChild("Button", 5) :: TextButton?
-									if button and not button:GetAttribute("Connected") then
-										button:SetAttribute("Connected", true)
-										button.MouseButton1Click:Connect(function()
-											print(
-												"[UpgradeClient] Mencoba membeli upgrade: "
-													.. item.Name
-													.. " untuk "
-													.. machineArea.Name
-											)
-											local success, msg = BuyUpgradeFunction:InvokeServer(machineArea, item.Name)
-											if success then
-												print("[UpgradeClient] ✅ Upgrade sukses: " .. item.Name)
-											else
-												warn("[UpgradeClient] ❌ Upgrade gagal: " .. tostring(msg))
-											end
-										end)
-									end
+		local area = billboard:WaitForChild("Area", 5)
+		if area then
+			local surface = area:WaitForChild("SurfaceGui", 5)
+			if surface then
+				local list = surface:WaitForChild("List", 5)
+				if list then
+					local function setupButtons()
+						for _, item in ipairs(list:GetChildren()) do
+							if item:IsA("Frame") then
+								local button = item:WaitForChild("Button", 5) :: TextButton?
+								if button and not button:GetAttribute("Connected") then
+									button:SetAttribute("Connected", true)
+
+									local buying = false
+									button.MouseButton1Click:Connect(function()
+										if buying then
+											return
+										end
+										buying = true
+
+										local originalText = button.Text
+										button.Text = "..."
+
+										print(
+											"[UpgradeClient] Mencoba membeli upgrade: "
+												.. item.Name
+												.. " untuk "
+												.. machineArea.Name
+										)
+										local result = networker:fetch("buyUpgrade", machineArea, item.Name)
+										if result and result.Success then
+											print("[UpgradeClient] ✅ Upgrade sukses: " .. item.Name)
+										else
+											local errMsg = result and result.Error or "Unknown error"
+											warn("[UpgradeClient] ❌ Upgrade gagal: " .. tostring(errMsg))
+											button.Text = originalText -- restore if failed
+											buying = false
+										end
+									end)
 								end
 							end
 						end
-
-						-- Initial setup
-						setupButtons()
-
-						-- In case items are added dynamically later
-						list.ChildAdded:Connect(function(child)
-							if child:IsA("Frame") then
-								task.defer(setupButtons)
-							end
-						end)
 					end
+
+					-- Initial setup
+					setupButtons()
+
+					-- In case items are added dynamically later
+					list.ChildAdded:Connect(function(child)
+						if child:IsA("Frame") then
+							task.defer(setupButtons)
+						end
+					end)
 				end
 			end
 		end

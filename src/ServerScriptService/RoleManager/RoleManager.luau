@@ -1,0 +1,246 @@
+--!strict
+local RoleManager = {}
+local Players = game:GetService("Players")
+local DataStoreService = game:GetService("DataStoreService")
+local MarketplaceService = game:GetService("MarketplaceService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
+
+-- Cache data role player saat ini di dalam server
+local playerRoles = {} -- { [Player]: string }
+
+-- Cache daftar staff global yang dimuat dari DataStore
+local staffDatabase = {} -- { [string]: string } -- { ["UserId"]: "Moderator" }
+
+-- CONFIGS
+local VIP_GAMEPASS_ID = 1819444791 -- Ganti dengan ID Gamepass VIP Anda
+
+local OWNER_USER_IDS = {
+	[8361115924] = true, -- UserID Owner Utama
+}
+
+local DEVELOPER_USER_IDS = {
+	[8361115924] = true,
+	-- [UserID] = true (Jika ada Developer tambahan yang ingin di-hardcode)
+}
+
+-- DataStore khusus Staff Registry
+local StaffDataStore = DataStoreService:GetDataStore("StaffRegistry_V1")
+
+-- Load database staff global saat server menyala
+local function loadStaffDatabase()
+	local success, result = pcall(function()
+		return StaffDataStore:GetAsync("GlobalStaffList")
+	end)
+	if success and type(result) == "table" then
+		staffDatabase = result
+		print("[RoleManager] Berhasil memuat daftar staff global dari DataStore.")
+	else
+		staffDatabase = {}
+		warn("[RoleManager] Gagal memuat daftar staff global, membuat list kosong.")
+	end
+end
+
+-- Simpan database staff global ke DataStore
+local function saveStaffDatabase()
+	local success, err = pcall(function()
+		StaffDataStore:SetAsync("GlobalStaffList", staffDatabase)
+	end)
+	if success then
+		print("[RoleManager] Daftar staff global berhasil disimpan ke DataStore.")
+	else
+		warn("[RoleManager] Gagal menyimpan daftar staff global: " .. tostring(err))
+	end
+end
+
+-- Menentukan role pemain saat bergabung
+function RoleManager.determineRole(player: Player): string
+	local userIdStr = tostring(player.UserId)
+
+	-- Otomatis jadikan Owner jika testing di Roblox Studio (biar gak stuck saat test play)
+	if RunService:IsStudio() and (player.UserId == game.CreatorId or player.UserId < 0 or #Players:GetPlayers() <= 1) then
+		return "Owner"
+	end
+
+	-- 1. Cek Owner List (Hardcoded)
+	if OWNER_USER_IDS[player.UserId] then
+		return "Owner"
+	end
+
+	-- 2. Cek Developer List (Hardcoded)
+	if DEVELOPER_USER_IDS[player.UserId] then
+		return "Developer"
+	end
+
+	-- 3. Cek Database Staff Global (Moderator/Developer dinamis)
+	if staffDatabase[userIdStr] then
+		local dbRole = staffDatabase[userIdStr]
+		if RoleConfig.Roles[dbRole] then
+			return dbRole
+		end
+	end
+
+	-- 4. Cek Gamepass VIP
+	local hasVIP = false
+	local gpSuccess, result = pcall(function()
+		return MarketplaceService:UserOwnsGamePassAsync(player.UserId, VIP_GAMEPASS_ID)
+	end)
+	if gpSuccess then
+		hasVIP = result
+	end
+
+	if hasVIP then
+		return "VIP"
+	end
+
+	return "Player"
+end
+
+-- Ambil role pemain aktif
+function RoleManager.getPlayerRole(player: Player): string
+	return playerRoles[player] or "Player"
+end
+
+-- Validasi hak akses pemain
+function RoleManager.hasPermission(player: Player, permission: string): boolean
+	local roleName = RoleManager.getPlayerRole(player)
+	local roleData = RoleConfig.Roles[roleName]
+	if not roleData then
+		return false
+	end
+
+	-- Owner dan Developer bypass semua permission
+	if roleName == "Owner" or roleName == "Developer" then
+		return true
+	end
+
+	return table.find(roleData.Permissions, permission) ~= nil
+end
+
+-- Mengangkat / mempromosikan staff baru (Hanya bisa dipanggil oleh Owner)
+function RoleManager.promote(executor: Player, targetUserId: number, roleName: string): (boolean, string)
+	local executorRole = RoleManager.getPlayerRole(executor)
+	if executorRole ~= "Owner" then
+		return false, "Hanya Owner yang dapat mempromosikan staff!"
+	end
+
+	if not RoleConfig.Roles[roleName] then
+		return false, "Role '" .. roleName .. "' tidak terdaftar!"
+	end
+
+	if roleName == "Owner" then
+		return false, "Owner tambahan tidak bisa diangkat melalui DataStore demi alasan keamanan!"
+	end
+
+	local targetUserIdStr = tostring(targetUserId)
+	staffDatabase[targetUserIdStr] = roleName
+	saveStaffDatabase()
+
+	-- Terapkan langsung secara instan jika player target sedang online di server ini
+	local targetPlayer = Players:GetPlayerByUserId(targetUserId)
+	if targetPlayer then
+		playerRoles[targetPlayer] = roleName
+		targetPlayer:SetAttribute("Role", roleName)
+	end
+
+	return true, "Berhasil mempromosikan UserID " .. targetUserId .. " menjadi " .. roleName
+end
+
+-- Menurunkan pangkat staff (Hanya bisa dipanggil oleh Owner)
+function RoleManager.demote(executor: Player, targetUserId: number): (boolean, string)
+	local executorRole = RoleManager.getPlayerRole(executor)
+	if executorRole ~= "Owner" then
+		return false, "Hanya Owner yang dapat menurunkan pangkat staff!"
+	end
+
+	local targetUserIdStr = tostring(targetUserId)
+	if not staffDatabase[targetUserIdStr] then
+		return false, "Pemain tersebut tidak terdaftar di database staff global!"
+	end
+
+	staffDatabase[targetUserIdStr] = nil
+	saveStaffDatabase()
+
+	-- Terapkan langsung secara instan jika player target sedang online di server ini
+	local targetPlayer = Players:GetPlayerByUserId(targetUserId)
+	if targetPlayer then
+		local fallbackRole = RoleManager.determineRole(targetPlayer)
+		playerRoles[targetPlayer] = fallbackRole
+		targetPlayer:SetAttribute("Role", fallbackRole)
+	end
+
+	return true, "Berhasil menurunkan pangkat UserID " .. targetUserId
+end
+
+-- Inisialisasi Server
+function RoleManager.Init()
+	print("[RoleManager] Memulai inisialisasi...")
+	loadStaffDatabase()
+
+	local function onPlayerAdded(player: Player)
+		local role = RoleManager.determineRole(player)
+		playerRoles[player] = role
+		player:SetAttribute("Role", role)
+
+		local roleData = RoleConfig.Roles[role]
+		print(
+			string.format(
+				"[RoleManager] %s bergabung dengan role: %s (Pangkat %d)",
+				player.Name,
+				roleData.DisplayName,
+				roleData.Rank
+			)
+		)
+
+		-- Setup Chat Commands untuk Owner
+		player.Chatted:Connect(function(msg)
+			local roleName = RoleManager.getPlayerRole(player)
+			if roleName ~= "Owner" then
+				return
+			end
+
+			local args = string.split(msg, " ")
+			local command = string.lower(args[1])
+
+			if command == "/promote" then
+				local targetId = tonumber(args[2])
+				local promoteRole = args[3]
+				if targetId and promoteRole then
+					local success, response = RoleManager.promote(player, targetId, promoteRole)
+					if success then
+						print("[RoleManager] " .. response)
+					else
+						warn("[RoleManager] " .. response)
+					end
+				else
+					warn("[RoleManager] Format salah! Gunakan: /promote [targetUserId] [RoleName]")
+				end
+			elseif command == "/demote" then
+				local targetId = tonumber(args[2])
+				if targetId then
+					local success, response = RoleManager.demote(player, targetId)
+					if success then
+						print("[RoleManager] " .. response)
+					else
+						warn("[RoleManager] " .. response)
+					end
+				else
+					warn("[RoleManager] Format salah! Gunakan: /demote [targetUserId]")
+				end
+			end
+		end)
+	end
+
+	Players.PlayerAdded:Connect(onPlayerAdded)
+	for _, player in ipairs(Players:GetPlayers()) do
+		task.spawn(onPlayerAdded, player)
+	end
+
+	Players.PlayerRemoving:Connect(function(player)
+		playerRoles[player] = nil
+	end)
+end
+
+return RoleManager

@@ -6,7 +6,10 @@ local Players = game:GetService("Players")
 -- local NetworkServer = game:GetService("NetworkServer")
 -- local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
+
+local RoleManager = require(ServerScriptService.RoleManager.RoleManager)
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
@@ -18,7 +21,7 @@ local BOX_TAG = "Box"
 local openBtn = nil
 
 -- ========== RATE LIMITING ==========
-local BOX_OPEN_COOLDOWN = 5 -- seconds
+local BOX_OPEN_COOLDOWN = 3 -- seconds
 local playerBoxOpenTimes = {} -- {player: timestamp}
 
 -- type Networker = Networker.Server
@@ -55,6 +58,41 @@ local function updateBoxVisual(box: Tool)
 	local visualContainer = newVisualTemplate:Clone()
 	visualContainer.Name = "Model"
 	visualContainer.Parent = box
+
+	if box:GetAttribute("Variants") and box:GetAttribute("Variants") ~= "" then
+		local currentModel: Model = box:FindFirstChild("Model") :: Model
+		local variants = box:GetAttribute("Variants") or "Normal"
+		local EffectsFolder = ServerStorage:WaitForChild("VariantEffect")
+
+		local listOfVariants = {}
+
+		--loop string from variants" Like "Normal,Fire,Ice" to table {Normal=true, Fire=true, Ice=true}
+		for variant in string.gmatch(variants, "([^,]+)") do
+			listOfVariants[variant] = GameConfig.Variants[variant] or true
+		end
+
+		for _, part in pairs(currentModel:GetDescendants()) do
+			if part:IsA("BasePart") then
+				-- Cek apakah part memiliki efek varian yang sesuai dengan atribut Variants
+				for name, value in pairs(listOfVariants) do
+					if value.Effect then
+						local effectTemplate: ParticleEmitter =
+							EffectsFolder:FindFirstChild(value.Effect) :: ParticleEmitter
+						if effectTemplate then
+							local newEffect = effectTemplate:Clone()
+							newEffect.Parent = part
+							if newEffect:IsA("ParticleEmitter") then
+								newEffect.Size = NumberSequence.new(1.5, 1.5)
+								newEffect.ZOffset = -1.5
+								newEffect.Speed = NumberRange.new(0.5, 1)
+								newEffect.Enabled = true
+							end
+						end
+					end
+				end
+			end
+		end
+	end
 
 	if not visualContainer.PrimaryPart then
 		visualContainer.PrimaryPart = visualContainer:FindFirstChildWhichIsA("BasePart", true)
@@ -103,6 +141,28 @@ local function processPickup(player: Player, box: Tool)
 	if not box or box:GetAttribute("HasPicked") then
 		return
 	end
+
+	local backpack = player:FindFirstChild("Backpack")
+	local existingBox = (backpack and backpack:FindFirstChild(box.Name))
+		or (player.Character and player.Character:FindFirstChild(box.Name))
+
+	-- ===== INVENTORY CAPACITY CHECK FOR PICKUP =====
+	local inventoryCount = backpack and #backpack:GetChildren() or 0
+	local maxInventorySlots = GameConfig.MaxInventorySlots or 50
+
+	if not existingBox and inventoryCount >= maxInventorySlots then
+		local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+		if NotifEvent then
+			NotifEvent:FireClient(
+				player,
+				"Tas Penuh",
+				"Tas Anda sudah penuh! (" .. inventoryCount .. "/" .. maxInventorySlots .. " slot)",
+				3
+			)
+		end
+		return
+	end
+
 	box:SetAttribute("HasPicked", true)
 
 	local handle = box:FindFirstChild("Handle") :: Part?
@@ -125,9 +185,6 @@ local function processPickup(player: Player, box: Tool)
 		machineArea:SetAttribute("IsRunning", false)
 		print(`[BoxManager] Box diambil! Membuka kunci status IsRunning pada {machineArea.Name}`)
 	end
-
-	local backpack = player:FindFirstChild("Backpack")
-	local existingBox = backpack and backpack:FindFirstChild(box.Name)
 
 	if existingBox then
 		-- Tambah isi tumpukan (Stacking System)
@@ -160,13 +217,18 @@ function BoxManager:openBox(player: Player, boxName: string)
 	-- ===== RATE LIMITING CHECK =====
 	local now = tick()
 	local lastOpenTime = playerBoxOpenTimes[player] or 0
-	if now - lastOpenTime < BOX_OPEN_COOLDOWN then
-		return {
-			Success = false,
-			Error = "Terlalu cepat membuka box! Tunggu "
-				.. math.ceil(BOX_OPEN_COOLDOWN - (now - lastOpenTime))
-				.. " detik.",
-		}
+	local playerRole = RoleManager.getPlayerRole(player)
+
+	-- Bypass cooldown untuk Owner, Developer, dan Moderator (Staff)
+	if playerRole ~= "Owner" and playerRole ~= "Developer" and playerRole ~= "Moderator" then
+		if now - lastOpenTime < BOX_OPEN_COOLDOWN then
+			return {
+				Success = false,
+				Error = "Terlalu cepat membuka box! Tunggu "
+					.. math.ceil(BOX_OPEN_COOLDOWN - (now - lastOpenTime))
+					.. " detik.",
+			}
+		end
 	end
 	playerBoxOpenTimes[player] = now
 
@@ -335,7 +397,8 @@ local function setupBox(box: Tool)
 		if openBtn then
 			openBtn.Visible = true
 		end
-		box.Grip = CFrame.new(0, 0, 2)
+		local boxSize = handle.Size or Vector3.new(1, 1, 1)
+		box.Grip = CFrame.new(0, 0, boxSize.Z / 2 + 0.5)
 	end)
 
 	box.Unequipped:Connect(function()
@@ -416,6 +479,10 @@ local function setupBox(box: Tool)
 				mainWeld.Parent = primaryPart
 			end)
 		)
+
+		-- handle:GetAttributeChangedSignal("Variants"):Connect(function()
+
+		-- end)
 	end
 
 	-- Cleanup all connections when box is destroyed
@@ -451,24 +518,11 @@ function BoxManager.Init()
 		playerBoxOpenTimes[player] = nil
 	end)
 
-	-- Setup Networker server listener untuk OpenBox event dari client
-	-- Terima parameter: boxName (string) dari client
-	-- Return: result table dengan Success, Message, Error, RewardName
-	-- Networker.server.new("OpenBox", function(player: Player, boxName: string)
-	-- 	return BoxManager.openBox(player, boxName)
-	-- end)
-	-- Networker.server.new("openBox", self.openBox, { "" })
 	Networker.server.new("OpenBox", BoxManager, {
 		BoxManager.printTest,
 		BoxManager.openBox,
 	})
-	-- Networker.server.new("OpenBox", function(player: Player, boxName: string)
-	-- 	-- Tes cetak untuk memastikan string masuk, bukan tabel lagi
-	-- 	print(`[Server] Menerima request OpenBox dari {player.Name} untuk Box: {tostring(boxName)}`)
 
-	-- 	-- Jalankan fungsi gacha utama dan kembalikan hasilnya ke Client
-	-- 	return BoxManager:openBox(player, boxName)
-	-- end)
 	print("[BoxManager] ✅ Networker 'OpenBox' endpoint siap mendengarkan dari client")
 
 	-- Dengarkan aset lama yang sudah ada di Workspace

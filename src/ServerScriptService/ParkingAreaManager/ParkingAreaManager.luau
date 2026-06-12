@@ -69,7 +69,9 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 		-- 6. UPDATE ATTRIBUTE
 		tool:SetAttribute("Location", "MyCars")
 		tool:SetAttribute("IsParked", true)
-		prompt:SetAttribute("IsActive", true)
+		if prompt then
+			prompt:SetAttribute("IsActive", true)
+		end
 
 		warn("Mobil berhasil diparkir di: " .. tostring(targetCFrame.Position))
 	end

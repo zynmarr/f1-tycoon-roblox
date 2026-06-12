@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
+local RoleManager = require(game:GetService("ServerScriptService"):WaitForChild("RoleManager"):WaitForChild("RoleManager"))
 
 -- ===============================================
 -- SELLGUI SERVER HANDLER (NETWORKER VERSION)
@@ -62,6 +63,14 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 		}
 	end
 
+	-- ===== VALIDASI APAKAH INI MOBIL =====
+	if not GameUtils.isCar(car) then
+		return {
+			Success = false,
+			Error = "Item yang Anda jual bukan mobil!",
+		}
+	end
+
 	-- ===== PROSES HARGA BERDASARKAN TUMPUKAN (STACK) =====
 	local harga = 0
 	local nama = car:GetAttribute("Name") or car.Name
@@ -70,8 +79,32 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 
 	if stackChildName and stackChildName ~= "" and amount > 1 then
 		if stackChildName == "Base" then
-			-- Jual mobil basis utama, promosikan stack berikutnya menjadi basis baru
 			harga = car:GetAttribute("Price") or 0
+		else
+			if stacksFolder then
+				local configNode = stacksFolder:FindFirstChild(stackChildName)
+				if configNode then
+					harga = configNode:GetAttribute("Price") or 0
+				end
+			end
+		end
+	else
+		harga = car:GetAttribute("Price") or 0
+	end
+
+	-- Validasi harga hasil akhir SEBELUM melakukan modifikasi atau penghancuran
+	if harga <= 0 or harga > 999999999 then
+		warn("[ANTI-CHEAT] " .. player.Name .. " mencoba jual dengan harga invalid: " .. harga)
+		return {
+			Success = false,
+			Error = "Harga mobil tidak valid",
+		}
+	end
+
+	-- ===== EKSEKUSI PENGHAPUSAN / MODIFIKASI MOBIL =====
+	if stackChildName and stackChildName ~= "" and amount > 1 then
+		if stackChildName == "Base" then
+			-- Jual mobil basis utama, promosikan stack berikutnya menjadi basis baru
 			if stacksFolder then
 				local allStacks = stacksFolder:GetChildren()
 				if #allStacks > 0 then
@@ -89,7 +122,6 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 			if stacksFolder then
 				local configNode = stacksFolder:FindFirstChild(stackChildName)
 				if configNode then
-					harga = configNode:GetAttribute("Price") or 0
 					configNode:Destroy()
 					car:SetAttribute("Amount", amount - 1)
 				else
@@ -107,17 +139,7 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 		end
 	else
 		-- Jual mobil tunggal (normal)
-		harga = car:GetAttribute("Price") or 0
 		car:Destroy()
-	end
-
-	-- Validasi harga hasil akhir
-	if harga <= 0 or harga > 999999999 then
-		warn("[ANTI-CHEAT] " .. player.Name .. " mencoba jual dengan harga invalid: " .. harga)
-		return {
-			Success = false,
-			Error = "Harga mobil tidak valid",
-		}
 	end
 
 	-- ===== EKSEKUSI TRANSAKSI =====
@@ -129,14 +151,34 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 		}
 	end
 
-	-- Tambah uang
-	leaderstats.Cash.Value = leaderstats.Cash.Value + harga
+	-- Cek VIPMultiplier bonus cash
+	local multiplier = 1.0
+	if RoleManager.hasPermission(player, "VIPMultiplier") then
+		multiplier = 1.2 -- 20% bonus Cash untuk VIP/Staff
+	end
+	local finalHarga = math.floor(harga * multiplier)
 
-	print("[SellGui] " .. player.Name .. " cuan $" .. harga .. " dari " .. nama .. (stackChildName and " (Stack)" or ""))
+	-- Tambah uang
+	leaderstats.Cash.Value = leaderstats.Cash.Value + finalHarga
+
+	print(
+		"[SellGui] "
+			.. player.Name
+			.. " cuan $"
+			.. finalHarga
+			.. " dari "
+			.. nama
+			.. (stackChildName and " (Stack)" or "")
+			.. (multiplier > 1 and " (VIP 1.2x Boost!)" or "")
+	)
 
 	return {
 		Success = true,
-		Message = "Berhasil menjual " .. nama .. " seharga $" .. harga,
+		Message = "Berhasil menjual "
+			.. nama
+			.. " seharga $"
+			.. finalHarga
+			.. (multiplier > 1 and " (VIP +20%!)" or ""),
 	}
 end
 
@@ -191,16 +233,23 @@ function SellGuiManager:sellAllCars(player, cars)
 	local totalEarned = 0
 	local carsCount = 0
 
+	-- Cek VIPMultiplier bonus cash
+	local multiplier = 1.0
+	if RoleManager.hasPermission(player, "VIPMultiplier") then
+		multiplier = 1.2 -- 20% bonus Cash untuk VIP/Staff
+	end
+
 	for _, car in ipairs(cars) do
-		if car then
+		if car and GameUtils.isCar(car) then
 			local inBackpack = car:IsDescendantOf(player)
 			local inCharacter = player.Character and car:IsDescendantOf(player.Character) or false
 			if inBackpack or inCharacter then
 				-- Tambahkan harga mobil utama
 				local basePrice = car:GetAttribute("Price") or 0
 				if basePrice > 0 and basePrice <= 999999999 then
-					leaderstats.Cash.Value = leaderstats.Cash.Value + basePrice
-					totalEarned = totalEarned + basePrice
+					local finalBase = math.floor(basePrice * multiplier)
+					leaderstats.Cash.Value = leaderstats.Cash.Value + finalBase
+					totalEarned = totalEarned + finalBase
 					carsCount = carsCount + 1
 				end
 
@@ -211,8 +260,9 @@ function SellGuiManager:sellAllCars(player, cars)
 						if configNode:IsA("Configuration") then
 							local stackPrice = configNode:GetAttribute("Price") or 0
 							if stackPrice > 0 and stackPrice <= 999999999 then
-								leaderstats.Cash.Value = leaderstats.Cash.Value + stackPrice
-								totalEarned = totalEarned + stackPrice
+								local finalStack = math.floor(stackPrice * multiplier)
+								leaderstats.Cash.Value = leaderstats.Cash.Value + finalStack
+								totalEarned = totalEarned + finalStack
 								carsCount = carsCount + 1
 							end
 						end
@@ -225,10 +275,22 @@ function SellGuiManager:sellAllCars(player, cars)
 	end
 
 	if carsCount > 0 then
-		print("[SellGui] " .. player.Name .. " jual " .. carsCount .. " mobil, dapatkan $" .. totalEarned)
+		print(
+			"[SellGui] "
+				.. player.Name
+				.. " jual "
+				.. carsCount
+				.. " mobil, dapatkan $"
+				.. totalEarned
+				.. (multiplier > 1 and " (VIP 1.2x Boost!)" or "")
+		)
 		return {
 			Success = true,
-			Message = "Berhasil menjual " .. carsCount .. " mobil seharga $" .. totalEarned,
+			Message = "Berhasil menjual "
+				.. carsCount
+				.. " mobil seharga $"
+				.. totalEarned
+				.. (multiplier > 1 and " (VIP +20%!)" or ""),
 		}
 	else
 		return {

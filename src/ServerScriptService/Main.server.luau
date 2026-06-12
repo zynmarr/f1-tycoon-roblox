@@ -14,6 +14,7 @@ local DataManager = safeRequire(script.Parent.DataManager.DataManager, "DataMana
 local CarManager = safeRequire(game.ServerScriptService.CarManager.CarManager, "CarManager")
 local SpawnerBoxManager = safeRequire(game.ServerScriptService.SpawnerBoxManager.SpawnerBoxManager, "SpawnerBoxManager")
 local BoxManager = safeRequire(game.ServerScriptService.BoxManager.BoxManager, "BoxManager")
+local RoleManager = safeRequire(script.Parent.RoleManager.RoleManager, "RoleManager")
 -- local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
 
 -- ==========================================================
@@ -30,10 +31,12 @@ local function loadInventoryItem(player: Player, itemData)
 
 	if existingItem then
 		local currentAmount = existingItem:GetAttribute("Amount") :: number? or 1
-		existingItem:SetAttribute("Amount", currentAmount + 1)
+		local additionalAmount = 1 + (itemData.Stacks and #itemData.Stacks or 0)
+		existingItem:SetAttribute("Amount", currentAmount + additionalAmount)
 
 		local stackFolder = existingItem:FindFirstChild("Stacks")
 		if stackFolder then
+			-- Tambahkan item utama ke stacks
 			local boxData = Instance.new("Configuration")
 			boxData.Name = "BoxData_" .. (#stackFolder:GetChildren() + 1)
 			for name, value in pairs(itemData.Attributes) do
@@ -42,6 +45,18 @@ local function loadInventoryItem(player: Player, itemData)
 				end
 			end
 			boxData.Parent = stackFolder
+
+			-- Tambahkan semua sub-stacks ke stacks
+			if itemData.Stacks then
+				for _, stackAttr in pairs(itemData.Stacks) do
+					local subBoxData = Instance.new("Configuration")
+					subBoxData.Name = "BoxData_" .. (#stackFolder:GetChildren() + 1)
+					for name, value in pairs(stackAttr) do
+						subBoxData:SetAttribute(name, value)
+					end
+					subBoxData.Parent = stackFolder
+				end
+			end
 		end
 	else
 		local box = boxTemplate:Clone()
@@ -75,6 +90,7 @@ local function loadInventoryItem(player: Player, itemData)
 				end
 				boxData.Parent = stackFolder
 			end
+			box:SetAttribute("Amount", 1 + #itemData.Stacks)
 		end
 		local display = box.Handle.StatsDisplay
 		if display then
@@ -199,6 +215,9 @@ end
 local function InitializeServer()
 	print("[MainServer] Memulai Inisialisasi Seluruh Sistem...")
 
+	if typeof(RoleManager.Init) == "function" then
+		RoleManager.Init()
+	end
 	if typeof(PlotManager.Init) == "function" then
 		PlotManager.Init()
 	end
@@ -218,6 +237,21 @@ local function InitializeServer()
 	for _, player in pairs(Players:GetPlayers()) do
 		task.spawn(onPlayerAdded, player)
 	end
+
+	-- Periodic Autosave Loop (setiap 60 detik)
+	task.spawn(function()
+		while true do
+			task.wait(60)
+			print("[MainServer] Menjalankan autosave periodik untuk semua pemain...")
+			for _, player in pairs(Players:GetPlayers()) do
+				if player:GetAttribute("DataLoaded") then
+					pcall(function()
+						DataManager.syncData(player)
+					end)
+				end
+			end
+		end
+	end)
 
 	game:BindToClose(function()
 		print("[MainServer] Server dimatikan. Mengamankan seluruh data pemain...")

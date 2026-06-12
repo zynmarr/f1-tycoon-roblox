@@ -4,10 +4,8 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
--- 1. DAFTAR ADMIN (Mudah ditambah jika punya teman/staff)
-local ADMIN_USERIDS = {
-	[8361115924] = true,
-}
+-- 1. IMPORT ROLE MANAGER
+local RoleManager = require(script.Parent:WaitForChild("RoleManager"):WaitForChild("RoleManager"))
 
 -- 2. SETUP FOLDER & VALUES
 local liveEvents = Instance.new("Folder")
@@ -50,10 +48,10 @@ end
 -- ==========================================
 -- 3. SISTEM COMMAND PARSER (LEBIH AMAN & FLEKSIBEL)
 -- ==========================================
-Players.PlayerAdded:Connect(function(player)
+local function onPlayerAdded(player)
 	player.Chatted:Connect(function(msg)
-		-- 1. Keamanan: Berhenti jika player bukan admin
-		if not ADMIN_USERIDS[player.UserId] then
+		-- 1. Keamanan: Berhenti jika player tidak memiliki izin mengubah konfigurasi event game
+		if not RoleManager.hasPermission(player, "EditGameConfigs") then
 			return
 		end
 
@@ -140,4 +138,9 @@ Players.PlayerAdded:Connect(function(player)
 			print(string.format("[EVENT] 🛑 SEMUA EVENT TELAH DIMATIKAN! | Admin: %s", player.Name))
 		end
 	end)
-end)
+end
+
+Players.PlayerAdded:Connect(onPlayerAdded)
+for _, player in ipairs(Players:GetPlayers()) do
+	task.spawn(onPlayerAdded, player)
+end
