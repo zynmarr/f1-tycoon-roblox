@@ -6,7 +6,7 @@ local CollectionService = game:GetService("CollectionService")
 local ROTATION_SPEED = 120 -- Degrees per second for border rotation
 local SHIMMER_SPEED = 1.2  -- Speed of the shine wave
 
-RunService.Heartbeat:Connect(function(dt)
+RunService.Heartbeat:Connect(function(dt: number)
 	-- 1. Animasikan Rotasi Outline Border (RotatingGradient)
 	local rotationOffset = (dt * ROTATION_SPEED) % 360
 	for _, gradient in ipairs(CollectionService:GetTagged("RotatingGradient")) do
