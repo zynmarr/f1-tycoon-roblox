@@ -163,24 +163,10 @@ local function showToast(message, isSuccess, duration)
 	end)
 end
 
+local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
+
 local function detectSellArea()
-	local plotName = player:GetAttribute("MyPlotName")
-	if not plotName or plotName == "" then
-		return nil
-	end
-
-	local myPlot = workspace.Plots:FindFirstChild(plotName)
-	if not myPlot then
-		return nil
-	end
-
-	local sellAreaFolder = myPlot:FindFirstChild("SellArea")
-	if not sellAreaFolder then
-		return nil
-	end
-
-	local sellArea = sellAreaFolder:FindFirstChild("Area")
-	return sellArea
+	return GameUtils.getPlayerSellArea(player)
 end
 
 -- ===== SETUP REACT ROOT ON DEDICATED SCREENGUI =====

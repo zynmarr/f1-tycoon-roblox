@@ -1,0 +1,122 @@
+-- ===============================================
+-- GAME UTILITIES - Shared client/server functions
+-- ===============================================
+
+-- local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CollectionService = game:GetService("CollectionService")
+
+local GameUtils = {}
+
+-- ===== NUMBER/CURRENCY FORMATTING =====
+
+-- 1. Format price/money with commas (e.g., 30000 -> 30,000)
+function GameUtils.formatPrice(price: number | string): string
+	local str = tostring(price)
+	return str:reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+end
+
+-- 2. Format money compactly (e.g., 1200 -> 1,2K; 1500000 -> 1,5M)
+function GameUtils.formatCompact(value: number): string
+	local textMoney = tostring(value)
+	local word = ""
+
+	if value >= 1e12 then
+		textMoney = string.format("%.1f", value / 1e12)
+		word = "T"
+	elseif value >= 1e9 then
+		textMoney = string.format("%.1f", value / 1e9)
+		word = "B"
+	elseif value >= 1e6 then
+		textMoney = string.format("%.1f", value / 1e6)
+		word = "M"
+	elseif value >= 1e3 then
+		textMoney = string.format("%.1f", value / 1e3)
+		word = "K"
+	end
+
+	-- Remove decimal if it is .0
+	textMoney = textMoney:gsub("%.0$", "")
+	-- Format decimal dot to comma
+	textMoney = textMoney:gsub("%.", ",")
+
+	return textMoney .. word
+end
+
+-- ===== PLOT AND AREA DETECTION =====
+
+-- 3. Get player's plot folder
+function GameUtils.getPlayerPlot(player: Player): Folder?
+	if not player then
+		return nil
+	end
+	local plotName = player:GetAttribute("MyPlotName")
+	if not plotName or plotName == "" then
+		return nil
+	end
+	return workspace.Plots:FindFirstChild(plotName)
+end
+
+-- 4. Get plot's sell area
+function GameUtils.getPlotSellArea(plot: Folder): Part?
+	if not plot then
+		return nil
+	end
+	local sellAreaFolder = plot:FindFirstChild("SellArea")
+	if not sellAreaFolder then
+		return nil
+	end
+	return sellAreaFolder:FindFirstChild("Area")
+end
+
+-- 5. Get player's sell area (convenient helper combining 3 & 4)
+function GameUtils.getPlayerSellArea(player: Player): Part?
+	local plot = GameUtils.getPlayerPlot(player)
+	if not plot then
+		return nil
+	end
+	return GameUtils.getPlotSellArea(plot)
+end
+
+-- ===== TOOL AND VEHICLE IDENTIFICATION =====
+
+-- 6. Check if a tool is classified as a car
+function GameUtils.isCar(tool: Instance): boolean
+	if not tool or not tool:IsA("Tool") then
+		return false
+	end
+	return CollectionService:HasTag(tool, "Car") or tool:GetAttribute("Price") ~= nil
+end
+
+-- 7. Scan and retrieve all car tools owned by a player (backpack + equipped)
+function GameUtils.getPlayerCars(player: Player): { Tool }
+	local cars = {}
+	if not player then
+		return cars
+	end
+
+	-- Scan Backpack
+	local backpack = player:FindFirstChild("Backpack")
+	if backpack then
+		for _, tool in ipairs(backpack:GetChildren()) do
+			if GameUtils.isCar(tool) then
+				table.insert(cars, tool)
+			end
+		end
+	end
+
+	-- Scan Character (Equipped tools)
+	local character = player.Character
+	if character then
+		for _, tool in ipairs(character:GetChildren()) do
+			if GameUtils.isCar(tool) then
+				if not table.find(cars, tool) then
+					table.insert(cars, tool)
+				end
+			end
+		end
+	end
+
+	return cars
+end
+
+return GameUtils

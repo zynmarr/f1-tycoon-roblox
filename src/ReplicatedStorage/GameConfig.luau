@@ -757,7 +757,7 @@ function GameConfig.CalculatePrice(base, rName, vNameString)
 		for _, vName in pairs(activeVariants) do
 			local vData = GameConfig.Variants[vName]
 			if vData then
-				totalVariantMulti = totalVariantMulti * vData.Multiplier
+				totalVariantMulti = totalVariantMulti + (vData.Multiplier - 1.0)
 			end
 		end
 	end

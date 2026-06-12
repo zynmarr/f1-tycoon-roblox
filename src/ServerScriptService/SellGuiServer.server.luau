@@ -1,5 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
--- local Players = game:GetService("Players")
+local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
 
 -- ===============================================
@@ -31,23 +31,7 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 	end
 
 	-- ===== ANTI-CHEAT: Verifikasi lokasi =====
-	local plotName = player:GetAttribute("MyPlotName")
-	if not plotName or plotName == "" then
-		return {
-			Success = false,
-			Error = "Plot tidak ditemukan",
-		}
-	end
-
-	local myPlot = workspace.Plots:FindFirstChild(plotName)
-	if not myPlot then
-		return {
-			Success = false,
-			Error = "Plot tidak valid",
-		}
-	end
-
-	local sellArea = myPlot:FindFirstChild("SellArea") and myPlot.SellArea:FindFirstChild("Area")
+	local sellArea = GameUtils.getPlayerSellArea(player)
 	if not sellArea then
 		return {
 			Success = false,
@@ -184,10 +168,7 @@ function SellGuiManager:sellAllCars(player, cars)
 	end
 
 	-- ===== ANTI-CHEAT: Verifikasi lokasi =====
-	local plotName = player:GetAttribute("MyPlotName")
-	local myPlot = plotName and workspace.Plots:FindFirstChild(plotName)
-	local sellArea = myPlot and myPlot:FindFirstChild("SellArea") and myPlot.SellArea:FindFirstChild("Area")
-
+	local sellArea = GameUtils.getPlayerSellArea(player)
 	if sellArea then
 		local jarak = (root.Position - sellArea:GetPivot().Position).Magnitude
 		if jarak > MAX_DISTANCE then

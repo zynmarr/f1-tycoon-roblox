@@ -1,7 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
+local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local boxTemplate = game:GetService("ServerStorage"):WaitForChild("Box")
 
 local DataManager = require(script.Parent.Parent.DataManager.DataManager)
@@ -10,23 +11,27 @@ local SPAWNER_TAG = "SpawnerMachine"
 
 local SpawnerBoxManager = {}
 
-
-
 local function getMachineComponents(machineArea: Instance)
 	local machinePart = nil
-	local billboardGui = nil
+	local billboardModel = nil
 
 	for _, child in pairs(machineArea:GetChildren()) do
+		print(child.Name)
 		-- Cari spesifik Part yang berakhiran "Machine" (contoh: AtlantisMachine, OlympusMachine)
 		if child:IsA("BasePart") and string.find(child.Name, "Machine") then
 			machinePart = child
 		-- Cari spesifik Model/Part untuk Billboard
-		elseif string.find(child.Name, "Billboard") then
-			billboardGui = child:FindFirstChildOfClass("BillboardGui") or child:FindFirstChild("BillboardGui", true)
+		elseif child:IsA("Model") and string.find(child.Name, "Billboard") then
+			print("Billboard found: " .. child.Name)
+			if child:FindFirstChild("Area") or child:FindFirstChildOfClass("ModuleScript") then
+				billboardModel = child
+			else
+				billboardModel = child:FindFirstChildOfClass("Model") or child
+			end
 		end
 	end
 
-	return machinePart, billboardGui
+	return machinePart, billboardModel
 end
 
 -- ==========================================
@@ -275,7 +280,7 @@ local function setupMachineArea(machineArea: Folder)
 		return
 	end
 	machineArea:SetAttribute("IsInitialized", true)
-	local machinePart, billboardGui = getMachineComponents(machineArea)
+	local machinePart, billboardModel = getMachineComponents(machineArea)
 
 	-- Function to start the actual spawner logic
 	local function startLogic(player, plot)
@@ -297,26 +302,26 @@ local function setupMachineArea(machineArea: Folder)
 			machineData = loadedData.PlotData.Machines[machineArea.Name]
 
 			if machineData then
-				local scopeMachine = machineArea:FindFirstChildOfClass("Part")
+				-- local scopeMachine = machineArea:FindFirstChildOfClass("Part")
 
 				-- PERBAIKAN 2: Hapus task.wait(0.5) agar pemuatan data berjalan instan tanpa lag
 				--task.wait(0.5)
 				for name, value in pairs(machineData.Attributes) do
 					if name ~= "IsRunning" and name ~= "Active" and name ~= "IsInitialized" then
-						scopeMachine:SetAttribute(name, value)
+						machineArea:SetAttribute(name, value)
 					end
 				end
 
 				-- Handle UI Billboard
-				if billboardGui then
-					local billArea = billboardGui:FindFirstChild("Area")
+				if billboardModel then
+					local billArea = billboardModel:FindFirstChild("Area")
 					if billArea then
 						local surface = billArea:FindFirstChild("SurfaceGui")
 						if surface then
 							local list = surface:FindFirstChild("List")
 							if list then
 								-- Hapus elemen UI sesuai atribut
-								for name, _ in pairs(scopeMachine:GetAttributes()) do
+								for name, _ in pairs(machineArea:GetAttributes()) do
 									local item = list:FindFirstChild(name)
 									if item then
 										item:Destroy()
@@ -329,7 +334,7 @@ local function setupMachineArea(machineArea: Folder)
 			end
 		end
 
-		print(machineData)
+		-- print(machineData)
 
 		-- Logic Loop
 		task.spawn(function()
@@ -384,67 +389,88 @@ local function setupMachineArea(machineArea: Folder)
 
 	--print("ATTRIBUTE CHANGED: ".. attributeName)
 
-	if billboardGui then
-		local module = billboardGui:FindFirstChild("ModuleScript")
-		if module then
-			local MachineModule = require(module)
+	if billboardModel then
+		local module = require(
+			billboardModel:FindFirstChild("ModuleScript") or billboardModel:FindFirstChildOfClass("ModuleScript")
+		)
+		local area = billboardModel:FindFirstChild("Area")
+		local surface = area:FindFirstChild("SurfaceGui")
+		local list = surface:FindFirstChild("List")
+		local itemTemplate = list:FindFirstChild("Item")
+		print("MACHINE MODULE: " .. tostring(module))
+		-- Variabel untuk mencegah infinite loop
+		local isUpdating = false
 
-			-- Variabel untuk mencegah infinite loop
-			local isUpdating = false
+		for _, v in pairs(module.upgradeList) do
+			local attrName = v.ID
+			-- machineArea:SetAttribute(attrName, machineArea:GetAttribute(attrName) or false)
 
-			machinePart.AttributeChanged:Connect(function(attributeName)
-				-- Cegah update ganda & pastikan hanya bereaksi jika atribut yang berubah adalah milik upgrade
-				if isUpdating then
-					return
-				end
-
-				-- Jika atribut yang berubah bukan milik upgrade, abaikan
-				if not string.find(attributeName, "_") then
-					return
-				end
-
-				isUpdating = true
-
-				-- RESET nilai ke 0 sebelum kalkulasi ulang
-				local newSpeed = 0
-				local newExp = 0
-				local newVariant = 0
-
-				-- Loop SEMUA upgrade yang ada di ModuleScript
-				for _, v in pairs(MachineModule.upgradeList) do
-					--local currentLevel = machine:GetAttribute(v.ID) or 0
-
-					-- Jika level > 0, tambahkan nilainya ke total
-					--if currentLevel > 0 then
-					local upgradeName = string.split(v.ID, "_")[1]
-					-- local currentLevel = string.split(v.ID, "_")[2]
-
-					if upgradeName == "SpeedExpBox" and machinePart:GetAttribute(v.ID) then
-						newSpeed = newSpeed + v.Value
-					elseif upgradeName == "ExpAmountBox" and machinePart:GetAttribute(v.ID) then
-						newExp = newExp + v.Value
-					elseif upgradeName == "VariantChance" and machinePart:GetAttribute(v.ID) then
-						newVariant = newVariant + v.Value
-					end
-				end
-
-				-- Update atribut hanya jika nilainya benar-benar berubah (menghemat performa)
-				if machinePart:GetAttribute("Upg_SpeedExpBox") ~= newSpeed then
-					machinePart:SetAttribute("Upg_SpeedExpBox", newSpeed)
-					print("SPEED UPGRADE: " .. newSpeed)
-				end
-				if machinePart:GetAttribute("Upg_ExpAmountBox") ~= newExp then
-					machinePart:SetAttribute("Upg_ExpAmountBox", newExp)
-					print("EXP UPGRADE: " .. newExp)
-				end
-				if machinePart:GetAttribute("Upg_VariantChance") ~= newVariant then
-					machinePart:SetAttribute("Upg_VariantChance", newVariant)
-					print("VARIANT UPGRADE: " .. newVariant)
-				end
-
-				isUpdating = false
-			end)
+			-- Buat UI untuk setiap upgrade
+			if list and itemTemplate then
+				print("ADDING ITEM: " .. attrName)
+				local newItem = itemTemplate:Clone()
+				local title: TextLabel = newItem:FindFirstChild("Name") :: TextLabel
+				local button: TextButton = newItem:FindFirstChild("Button") :: TextButton
+				newItem.Visible = true
+				newItem.Name = attrName
+				title.Text = tostring(v.Title)
+				newItem.Parent = list
+			end
 		end
+		itemTemplate:Destroy()
+
+		machineArea.AttributeChanged:Connect(function(attributeName)
+			-- Cegah update ganda & pastikan hanya bereaksi jika atribut yang berubah adalah milik upgrade
+			if isUpdating then
+				return
+			end
+
+			-- Jika atribut yang berubah bukan milik upgrade, abaikan
+			if not string.find(attributeName, "_") then
+				return
+			end
+
+			isUpdating = true
+
+			-- RESET nilai ke 0 sebelum kalkulasi ulang
+			local newSpeed = 0
+			local newExp = 0
+			local newVariant = 0
+
+			-- Loop SEMUA upgrade yang ada di ModuleScript
+			for _, v in pairs(module.upgradeList) do
+				--local currentLevel = machine:GetAttribute(v.ID) or 0
+
+				-- Jika level > 0, tambahkan nilainya ke total
+				--if currentLevel > 0 then
+				local upgradeName = string.split(v.ID, "_")[1]
+				-- local currentLevel = string.split(v.ID, "_")[2]
+
+				if upgradeName == "SpeedExpBox" and machineArea:GetAttribute(v.ID) then
+					newSpeed = newSpeed + v.Value
+				elseif upgradeName == "ExpAmountBox" and machineArea:GetAttribute(v.ID) then
+					newExp = newExp + v.Value
+				elseif upgradeName == "VariantChance" and machineArea:GetAttribute(v.ID) then
+					newVariant = newVariant + v.Value
+				end
+			end
+
+			-- Update atribut hanya jika nilainya benar-benar berubah (menghemat performa)
+			if machineArea:GetAttribute("Upg_SpeedExpBox") ~= newSpeed then
+				machineArea:SetAttribute("Upg_SpeedExpBox", newSpeed)
+				print("SPEED UPGRADE: " .. newSpeed)
+			end
+			if machineArea:GetAttribute("Upg_ExpAmountBox") ~= newExp then
+				machineArea:SetAttribute("Upg_ExpAmountBox", newExp)
+				print("EXP UPGRADE: " .. newExp)
+			end
+			if machineArea:GetAttribute("Upg_VariantChance") ~= newVariant then
+				machineArea:SetAttribute("Upg_VariantChance", newVariant)
+				print("VARIANT UPGRADE: " .. newVariant)
+			end
+
+			isUpdating = false
+		end)
 	end
 end
 
@@ -459,6 +485,81 @@ function SpawnerBoxManager.Init()
 
 	-- Initialize new machines added later (bought from tycoon)
 	CollectionService:GetInstanceAddedSignal(SPAWNER_TAG):Connect(setupMachineArea)
+
+	-- Handle BuyUpgrade RemoteFunction
+	local BuyUpgradeFunction = ReplicatedStorage:FindFirstChild("BuyUpgradeFunction")
+	if BuyUpgradeFunction and BuyUpgradeFunction:IsA("RemoteFunction") then
+		BuyUpgradeFunction.OnServerInvoke = function(player, machineArea, upgradeName)
+			if not player or not machineArea or not upgradeName then
+				return false, "Parameter tidak lengkap"
+			end
+
+			-- 1. Validasi kepemilikan plot
+			local machinesFolder = machineArea.Parent
+			local plotModel = machinesFolder and machinesFolder.Parent
+			local owner = plotModel and plotModel:GetAttribute("Owner")
+			if owner ~= player.Name then
+				return false, "Anda bukan pemilik plot ini!"
+			end
+
+			-- 2. Cari billboard dan modul upgrade
+			local machinePart, billboardGui = getMachineComponents(machineArea)
+			if not billboardGui then
+				return false, "Billboard mesin tidak ditemukan"
+			end
+
+			local moduleScript = billboardGui:FindFirstChild("ModuleScript") or billboardGui:FindFirstChildOfClass("ModuleScript")
+			if not moduleScript then
+				return false, "Modul upgrade tidak ditemukan"
+			end
+
+			local module = require(moduleScript)
+			local upgradeItem = nil
+			for _, v in ipairs(module.upgradeList) do
+				if v.ID == upgradeName then
+					upgradeItem = v
+					break
+				end
+			end
+
+			if not upgradeItem then
+				return false, "Upgrade tidak valid untuk mesin ini"
+			end
+
+			-- 3. Cek apakah sudah dibeli sebelumnya
+			if machineArea:GetAttribute(upgradeName) then
+				return false, "Upgrade ini sudah dibeli!"
+			end
+
+			-- 4. Validasi Cash
+			local leaderstats = player:FindFirstChild("leaderstats")
+			local cash = leaderstats and leaderstats:FindFirstChild("Cash")
+			if not cash then
+				return false, "Data uang tidak ditemukan"
+			end
+
+			local cost = upgradeItem.BasePrice or 0
+			if cash.Value < cost then
+				return false, "Uang Anda tidak cukup!"
+			end
+
+			-- 5. Eksekusi Pembelian
+			cash.Value = cash.Value - cost
+			machineArea:SetAttribute(upgradeName, true)
+
+			-- 6. Hapus UI upgrade di billboard dari server agar sinkron untuk semua player
+			local billArea = billboardGui:FindFirstChild("Area")
+			local surface = billArea and billArea:FindFirstChild("SurfaceGui")
+			local list = surface and surface:FindFirstChild("List")
+			local itemUI = list and list:FindFirstChild(upgradeName)
+			if itemUI then
+				itemUI:Destroy()
+			end
+
+			print("[SpawnerBoxManager] " .. player.Name .. " membeli upgrade " .. upgradeName .. " seharga $" .. cost)
+			return true, "Upgrade berhasil!"
+		end
+	end
 end
 
 return SpawnerBoxManager

@@ -4,9 +4,11 @@
 
 local ViewportManager = {}
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
+
 local function formatPrice(price)
-	local str = tostring(price)
-	return str:reverse():gsub("%d%d%d", "%1,"):reverse():gsub("^,", "")
+	return GameUtils.formatPrice(price)
 end
 
 -- ===== CACHE MANAGEMENT =====
@@ -128,9 +130,23 @@ local function setupCarViewport(cache, viewport, carTool, options)
 			maxDim = 15
 		end
 
+		local CollectionService = game:GetService("CollectionService")
+		local isBox = CollectionService:HasTag(carTool, "Box")
+			or string.find(carTool.Name:lower(), "box") ~= nil
+			or carTool:GetAttribute("Level") ~= nil
+
+		local targetFov = 30 -- Zoomed in for cars
+		local distMultiplier = 0.95 -- Closer distance for cars
+
+		if isBox then
+			targetFov = 45 -- Zoomed out/wider perspective for boxes
+			distMultiplier = 2 -- Further distance for boxes
+		end
+
 		local cam = Instance.new("Camera")
-		cam.FieldOfView = options.fieldOfView or 40
-		local dist = (maxDim / 2) / math.tan(math.rad(20)) * 1.2
+		cam.FieldOfView = targetFov
+		local halfFov = cam.FieldOfView / 2
+		local dist = (maxDim / 2) / math.tan(math.rad(halfFov)) * distMultiplier
 		local camPos = center + Vector3.new(-dist * 0.5, dist * 0.4, -dist * 0.7)
 		cam.CFrame = CFrame.new(camPos, center + Vector3.new(0, maxDim * 0.1, 0))
 

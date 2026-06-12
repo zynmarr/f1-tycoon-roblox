@@ -1,5 +1,7 @@
 -- !strict
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 
 local PLOT_TAG = "PlotArea"
 
@@ -87,85 +89,83 @@ function PlotManager.claimPlot(player): Instance?
 end
 
 function PlotManager.releasePlot(player)
-	local plotName = player:GetAttribute("MyPlotName")
-	if plotName then
-		local plot = workspace.Plots:FindFirstChild(plotName)
-		if plot then
-			-- 1. Reset Owner Plot
-			plot:SetAttribute("Owner", "")
-			local label = plot:FindFirstChild("TextLabel", true)
-			if label then
-				label.Text = "Plot Kosong"
-			end
+	local plot = GameUtils.getPlayerPlot(player)
+	if plot then
+		-- 1. Reset Owner Plot
+		plot:SetAttribute("Owner", "")
+		local label = plot:FindFirstChild("TextLabel", true)
+		if label then
+			label.Text = "Plot Kosong"
+		end
 
-			-- 2. Bersihkan Mobil di Lahan Parkir (AllParkingLots)
-			local parkingLots = plot:FindFirstChild("AllParkingLots")
-			if parkingLots then
-				for _, parking in pairs(parkingLots:GetChildren()) do
-					local carsFolder = parking:FindFirstChild("MyCars", true)
-					if carsFolder then
-						for _, car in pairs(carsFolder:GetChildren()) do
-							pcall(function()
-								car:Destroy()
-							end)
-						end
-					end
-
-					-- Reset ProximityPrompt status di area parkir
-					local prompt = parking:FindFirstChildOfClass("ProximityPrompt") or parking:FindFirstChild("ProximityPrompt", true)
-					if prompt then
-						prompt:SetAttribute("IsActive", false)
+		-- 2. Bersihkan Mobil di Lahan Parkir (AllParkingLots)
+		local parkingLots = plot:FindFirstChild("AllParkingLots")
+		if parkingLots then
+			for _, parking in pairs(parkingLots:GetChildren()) do
+				local carsFolder = parking:FindFirstChild("MyCars", true)
+				if carsFolder then
+					for _, car in pairs(carsFolder:GetChildren()) do
+						pcall(function()
+							car:Destroy()
+						end)
 					end
 				end
+
+				-- Reset ProximityPrompt status di area parkir
+				local prompt = parking:FindFirstChildOfClass("ProximityPrompt")
+					or parking:FindFirstChild("ProximityPrompt", true)
+				if prompt then
+					prompt:SetAttribute("IsActive", false)
+				end
 			end
+		end
 
-			-- 3. Bersihkan Box & Reset Atribut Mesin (Machines)
-			local plotMachines = plot:FindFirstChild("Machines")
-			if plotMachines then
-				for _, machineArea in pairs(plotMachines:GetChildren()) do
-					-- Nonaktifkan mesin spawner
-					machineArea:SetAttribute("Active", false)
-					machineArea:SetAttribute("IsRunning", false)
+		-- 3. Bersihkan Box & Reset Atribut Mesin (Machines)
+		local plotMachines = plot:FindFirstChild("Machines")
+		if plotMachines then
+			for _, machineArea in pairs(plotMachines:GetChildren()) do
+				-- Nonaktifkan mesin spawner
+				machineArea:SetAttribute("Active", false)
+				machineArea:SetAttribute("IsRunning", false)
 
-					-- Cari part fisik mesin
-					local machinePart = nil
-					for _, child in pairs(machineArea:GetChildren()) do
-						if child:IsA("BasePart") and string.find(child.Name, "Machine") then
-							machinePart = child
-							break
-						end
+				-- Cari part fisik mesin
+				local machinePart = nil
+				for _, child in pairs(machineArea:GetChildren()) do
+					if child:IsA("BasePart") and string.find(child.Name, "Machine") then
+						machinePart = child
+						break
 					end
+				end
 
-					if not machinePart then
-						machinePart = machineArea:FindFirstChildOfClass("BasePart")
-					end
+				if not machinePart then
+					machinePart = machineArea:FindFirstChildOfClass("BasePart")
+				end
 
-					if machinePart then
-						-- Hancurkan box-box yang tersisa di dalam mesin
-						for _, child in pairs(machinePart:GetChildren()) do
-							-- Hancurkan objek bertag Box atau Tool/Model
-							if child:IsA("Tool") or child:IsA("Model") or CollectionService:HasTag(child, "Box") then
-								pcall(function()
-									child:Destroy()
-								end)
-							end
-						end
-
-						-- Reset semua upgrade atribut pada part mesin kembali ke nil
-						for name, _ in pairs(machinePart:GetAttributes()) do
+				if machinePart then
+					-- Hancurkan box-box yang tersisa di dalam mesin
+					for _, child in pairs(machinePart:GetChildren()) do
+						-- Hancurkan objek bertag Box atau Tool/Model
+						if child:IsA("Tool") or child:IsA("Model") or CollectionService:HasTag(child, "Box") then
 							pcall(function()
-								machinePart:SetAttribute(name, nil)
+								child:Destroy()
 							end)
 						end
 					end
 
-					-- Reset semua atribut kustom pada folder machineArea sendiri
-					for name, _ in pairs(machineArea:GetAttributes()) do
-						if name ~= "IsInitialized" then -- Pertahankan inisialisasi awal
-							pcall(function()
-								machineArea:SetAttribute(name, nil)
-							end)
-						end
+					-- Reset semua upgrade atribut pada part mesin kembali ke nil
+					for name, _ in pairs(machinePart:GetAttributes()) do
+						pcall(function()
+							machinePart:SetAttribute(name, nil)
+						end)
+					end
+				end
+
+				-- Reset semua atribut kustom pada folder machineArea sendiri
+				for name, _ in pairs(machineArea:GetAttributes()) do
+					if name ~= "IsInitialized" then -- Pertahankan inisialisasi awal
+						pcall(function()
+							machineArea:SetAttribute(name, nil)
+						end)
 					end
 				end
 			end
@@ -174,17 +174,12 @@ function PlotManager.releasePlot(player)
 end
 
 function PlotManager.teleportToPlot(player, character)
-	local plotName = player:GetAttribute("MyPlotName")
-	if not plotName then
-		return
-	end
-
-	local plot = workspace.Plots:FindFirstChild(plotName)
+	local plot = GameUtils.getPlayerPlot(player)
 	if plot then
 		local spawnPos = plot:FindFirstChild("SpawnLocation")
 		if spawnPos then
 			character:PivotTo(spawnPos.CFrame * CFrame.new(0, 3, 0))
-			print("++++ TELEPORTED TO PLOT: " .. plotName)
+			print("++++ TELEPORTED TO PLOT: " .. plot.Name)
 		end
 	end
 end

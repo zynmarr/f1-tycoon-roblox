@@ -1,4 +1,6 @@
 local DataManager = {}
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 
 local DEFAULT_DATA = {
 	Stats = {
@@ -214,8 +216,7 @@ function DataManager.saveData(player)
 	end
 
 	-- 3. Scan Seluruh Mobil di Lahan Parkir & Mesin secara Dinamis
-	local plotName = player:GetAttribute("MyPlotName")
-	local myPlot = plotName and workspace.Plots:FindFirstChild(plotName)
+	local myPlot = GameUtils.getPlayerPlot(player)
 
 	if myPlot then
 		local parkingLots = myPlot:FindFirstChild("AllParkingLots")

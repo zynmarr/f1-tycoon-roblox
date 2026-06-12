@@ -10,11 +10,13 @@ local useEffect = React.useEffect
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
+
 -- ===== UTILITIES =====
 local viewportCache = ViewportManager.new()
 
 local function formatPrice(price)
-	return ViewportManager.formatPrice(price)
+	return GameUtils.formatPrice(price)
 end
 
 -- ===== NESTED SUB-CAR ITEM COMPONENT (FOR STACK MEMBERS) =====
@@ -289,8 +291,8 @@ local function CarItem(props)
 			}, {
 				NameLabel = e("TextLabel", {
 					Text = string.sub(carName, 1, 24),
-					Size = UDim2.new(1, -10, 0, 25),
-					Position = UDim2.new(0, 10, 0, 12),
+					Size = UDim2.new(1, -10, 0, 22),
+					Position = UDim2.new(0, 10, 0, 10),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
 					TextScaled = true,
@@ -298,10 +300,22 @@ local function CarItem(props)
 					TextXAlignment = Enum.TextXAlignment.Left,
 				}),
 
+				VariantLabel = e("TextLabel", {
+					Text = GameConfig.GetColoredVariantList(carVariant),
+					Size = UDim2.new(1, -10, 0, 18),
+					Position = UDim2.new(0, 10, 0, 36),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					TextScaled = true,
+					RichText = true,
+					Font = Enum.Font.GothamMedium,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}),
+
 				RarityBadge = e("TextLabel", {
 					Text = carRarity:upper(),
 					Size = UDim2.new(0, 75, 0, 18),
-					Position = UDim2.new(0, 10, 0, 40),
+					Position = UDim2.new(0, 10, 0, 58),
 					BackgroundColor3 = rarityColor,
 					BorderSizePixel = 0,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -311,21 +325,10 @@ local function CarItem(props)
 					UICorner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
 				}),
 
-				VariantLabel = e("TextLabel", {
-					Text = carVariant,
-					Size = UDim2.new(1, -95, 0, 18),
-					Position = UDim2.new(0, 95, 0, 40),
-					BackgroundTransparency = 1,
-					TextColor3 = Color3.fromRGB(190, 190, 190),
-					TextScaled = true,
-					Font = Enum.Font.GothamMedium,
-					TextXAlignment = Enum.TextXAlignment.Left,
-				}),
-
 				PriceLabel = e("TextLabel", {
 					Text = isStack and "MULTIPLE CARS STACKED" or ("$" .. formatPrice(carPrice)),
-					Size = UDim2.new(1, -10, 0, 22),
-					Position = UDim2.new(0, 10, 1, -30),
+					Size = UDim2.new(1, -10, 0, 20),
+					Position = UDim2.new(0, 10, 1, -26),
 					BackgroundTransparency = 1,
 					TextColor3 = isStack and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(90, 240, 90),
 					TextScaled = true,
@@ -404,36 +407,7 @@ local function SellGui(props)
 		end
 
 		local function updateCars()
-			local backpackCars = {}
-			local CollectionService = game:GetService("CollectionService")
-
-			-- 1. Pindai item di Backpack
-			for _, tool in pairs(activeBackpack:GetChildren()) do
-				if tool:IsA("Tool") then
-					local isCar = CollectionService:HasTag(tool, "Car") or tool:GetAttribute("Price") ~= nil
-					if isCar then
-						table.insert(backpackCars, tool)
-						print("[SellGui] Menemukan mobil di Backpack: " .. tool.Name .. " - Price: " .. tostring(tool:GetAttribute("Price")))
-					end
-				end
-			end
-
-			-- 2. Pindai item di Karakter (Mobil yang sedang di-equip)
-			local character = player.Character
-			if character then
-				for _, tool in pairs(character:GetChildren()) do
-					if tool:IsA("Tool") then
-						local isCar = CollectionService:HasTag(tool, "Car") or tool:GetAttribute("Price") ~= nil
-						if isCar then
-							if not table.find(backpackCars, tool) then
-								table.insert(backpackCars, tool)
-								print("[SellGui] Menemukan mobil di Karakter (Equipped): " .. tool.Name .. " - Price: " .. tostring(tool:GetAttribute("Price")))
-							end
-						end
-					end
-				end
-			end
-
+			local backpackCars = GameUtils.getPlayerCars(player)
 			print("[SellGui] Total mobil berhasil dimuat ke UI: " .. tostring(#backpackCars))
 			setCars(backpackCars)
 		end
