@@ -22,7 +22,6 @@ local OWNER_USER_IDS = {
 }
 
 local DEVELOPER_USER_IDS = {
-	[8361115924] = true,
 	-- [UserID] = true (Jika ada Developer tambahan yang ingin di-hardcode)
 }
 
@@ -60,7 +59,9 @@ function RoleManager.determineRole(player: Player): string
 	local userIdStr = tostring(player.UserId)
 
 	-- Otomatis jadikan Owner jika testing di Roblox Studio (biar gak stuck saat test play)
-	if RunService:IsStudio() and (player.UserId == game.CreatorId or player.UserId < 0 or #Players:GetPlayers() <= 1) then
+	if
+		RunService:IsStudio() and (player.UserId == game.CreatorId or player.UserId < 0 or #Players:GetPlayers() <= 1)
+	then
 		return "Owner"
 	end
 
