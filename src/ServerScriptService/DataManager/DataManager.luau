@@ -17,11 +17,13 @@ local DEFAULT_DATA = {
 
 -- ===== ATTRIBUTE SCHEMA VALIDATION =====
 local VALID_ATTRIBUTES = {
+	Type = "string",
 	Level = "number",
 	Exp = "number",
 	MaxExp = "number",
 	LuckyChance = "number",
 	Variants = "string",
+	Variant = "string",
 	Income = "number",
 	Price = "number",
 	Rarity = "string",
@@ -30,6 +32,11 @@ local VALID_ATTRIBUTES = {
 	OnHand = "boolean",
 	HasPicked = "boolean",
 	IsDestroying = "boolean",
+	Name = "string",
+	Location = "string",
+	IsParked = "boolean",
+	ScaleFixed = "boolean",
+	IsInitialized = "boolean",
 }
 
 local function validateAttribute(name, value)
@@ -152,7 +159,7 @@ end
 -- ==========================================
 -- CORE: SYNC DATA (UPDATE PROFILE IN-PLACE)
 -- ==========================================
-function DataManager.syncData(player)
+function DataManager.syncData(player, character)
 	local profile = DataManager.Profiles[player]
 	if not profile then
 		warn("[DataManager] Profil tidak ditemukan di cache saat proses sinkronisasi untuk: " .. player.Name)
@@ -209,8 +216,9 @@ function DataManager.syncData(player)
 	end
 
 	scanTools(player:FindFirstChild("Backpack"), "Backpack")
-	if player.Character then
-		scanTools(player.Character, "Character")
+	local char = character or player.Character
+	if char then
+		scanTools(char, "Character")
 	end
 
 	-- 3. Scan Seluruh Mobil di Lahan Parkir & Mesin secara Dinamis

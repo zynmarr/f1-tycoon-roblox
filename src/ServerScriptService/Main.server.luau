@@ -75,6 +75,7 @@ local function loadInventoryItem(player: Player, itemData)
 
 		box:SetAttribute("HasPicked", false)
 		box:SetAttribute("IsInitialized", true)
+		box:SetAttribute("Type", "Box")
 		box:SetAttribute("Amount", 1)
 
 		local stackFolder = Instance.new("Folder")
@@ -128,7 +129,8 @@ local function setupPlayerSkinsAndAssets(player: Player, data: any, myPlot: Inst
 
 	if data.Inventory then
 		for _, item in pairs(data.Inventory) do
-			if item.Attributes.Type == "Box" then
+			local isBox = (item.Attributes and item.Attributes.Type == "Box") or (item.Name and string.find(item.Name, "Level") ~= nil)
+			if isBox then
 				pcall(function()
 					loadInventoryItem(player, item)
 				end)
@@ -195,6 +197,12 @@ local function onPlayerAdded(player: Player)
 		PlotManager.teleportToPlot(player, character)
 	end)
 
+	player.CharacterRemoving:Connect(function(character)
+		pcall(function()
+			DataManager.syncData(player, character)
+		end)
+	end)
+
 	if player.Character then
 		PlotManager.teleportToPlot(player, player.Character)
 	end
@@ -214,6 +222,13 @@ end
 -- ==========================================================
 local function InitializeServer()
 	print("[MainServer] Memulai Inisialisasi Seluruh Sistem...")
+
+	-- Buat RemoteEvent untuk notifikasi (harus dibuat di server untuk keamanan)
+	if not game:GetService("ReplicatedStorage"):FindFirstChild("NotifEvent") then
+		local notifEvent = Instance.new("RemoteEvent")
+		notifEvent.Name = "NotifEvent"
+		notifEvent.Parent = game:GetService("ReplicatedStorage")
+	end
 
 	if typeof(RoleManager.Init) == "function" then
 		RoleManager.Init()
