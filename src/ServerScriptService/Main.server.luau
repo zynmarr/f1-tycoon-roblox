@@ -198,9 +198,16 @@ local function onPlayerAdded(player: Player)
 	end)
 
 	player.CharacterRemoving:Connect(function(character)
-		pcall(function()
-			DataManager.syncData(player, character)
-		end)
+		local backpack = player:FindFirstChild("Backpack")
+		if backpack then
+			for _, child in pairs(character:GetChildren()) do
+				if child:IsA("Tool") then
+					pcall(function()
+						child.Parent = backpack
+					end)
+				end
+			end
+		end
 	end)
 
 	if player.Character then

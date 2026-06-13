@@ -27,16 +27,12 @@
                                  Result: Equipped item is NOT saved.
 ```
 
-### The New Flow
+### The New Flow (Reparenting on CharacterRemoving)
 ```
-[Player Leaves / Reset Character / Stop Game]
+[Player Leaves / Stop Game]
        │
        ▼
-[CharacterRemoving event fires] (Character and its equipped tools still exist in memory)
-       │
-       ▼
-[DataManager.syncData(player, character)] ──► Scans Backpack & the removing Character
-                                              Updates Profile.Data in-memory
+[CharacterRemoving event fires] ──► Move equipped tools from Character to Backpack
        │
        ▼
 [Roblox destroys Character]
@@ -45,45 +41,35 @@
 [PlayerRemoving event fires]
        │
        ▼
-[DataManager.saveData()] ──► Profile.Data is already up-to-date!
-                             Calls profile:Release() to save securely to DataStore.
+[DataManager.saveData()]        ──► Scans Backpack (which now contains the previously equipped item!)
+                                    Saves complete inventory list.
+                                    Releases profile to save to DataStore.
 ```
 
 ---
 
 ## 2. Component Design & Changes
 
-### 2.1. `src/ServerScriptService/DataManager/DataManager.luau`
+### 2.1. `src/ServerScriptService/Main.server.luau`
 
-We will modify [DataManager.syncData](file:///C:/Project/Roblox%20Studio%20Projects/Projects/F1-Tycoon/src/ServerScriptService/DataManager/DataManager.luau#L162) to accept an optional `character` argument:
-
-```lua
--- Modified syncData signature to accept character parameter
-function DataManager.syncData(player, character)
-```
-
-Within the function, the character scanning step will fall back to `player.Character` only if the `character` argument is not supplied:
+We modify the [onPlayerAdded](file:///C:/Project/Roblox%20Studio%20Projects/Projects/F1-Tycoon/src/ServerScriptService/Main.server.luau#L157) function to connect to the `CharacterRemoving` event. Whenever a player's character is being removed, we scan the character model for any equipped `Tool` instances and parent them back to the player's `Backpack`:
 
 ```lua
-	scanTools(player:FindFirstChild("Backpack"), "Backpack")
-	local char = character or player.Character
-	if char then
-		scanTools(char, "Character")
-	end
-```
-
-### 2.2. `src/ServerScriptService/Main.server.luau`
-
-We will modify the [onPlayerAdded](file:///C:/Project/Roblox%20Studio%20Projects/Projects/F1-Tycoon/src/ServerScriptService/Main.server.luau#L157) function to connect to the `CharacterRemoving` event:
-
-```lua
-	-- Sync equipped tools before character is destroyed
 	player.CharacterRemoving:Connect(function(character)
-		pcall(function()
-			DataManager.syncData(player, character)
-		end)
+		local backpack = player:FindFirstChild("Backpack")
+		if backpack then
+			for _, child in pairs(character:GetChildren()) do
+				if child:IsA("Tool") then
+					pcall(function()
+						child.Parent = backpack
+					end)
+				end
+			end
+		end
 	end)
 ```
+
+This ensures that the equipped item is safely tucked away in the `Backpack` before the Character is completely destroyed. Since `DataManager.syncData` scans the `Backpack` during normal saving/autosaving processes, this completely solves the equipped tool loss bug.
 
 ---
 
@@ -95,8 +81,3 @@ We will modify the [onPlayerAdded](file:///C:/Project/Roblox%20Studio%20Projects
    * Hold the item in hand (equip it).
    * Press **Stop** in Roblox Studio or leave the server.
    * Re-enter the game and verify that the item is still in your Backpack.
-
-2. **Reset/Respawn Test:**
-   * Hold an item.
-   * Reset character (die).
-   * Verify that the item remains in the Backpack after respawning.

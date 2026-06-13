@@ -159,7 +159,7 @@ end
 -- ==========================================
 -- CORE: SYNC DATA (UPDATE PROFILE IN-PLACE)
 -- ==========================================
-function DataManager.syncData(player, character)
+function DataManager.syncData(player)
 	local profile = DataManager.Profiles[player]
 	if not profile then
 		warn("[DataManager] Profil tidak ditemukan di cache saat proses sinkronisasi untuk: " .. player.Name)
@@ -216,9 +216,8 @@ function DataManager.syncData(player, character)
 	end
 
 	scanTools(player:FindFirstChild("Backpack"), "Backpack")
-	local char = character or player.Character
-	if char then
-		scanTools(char, "Character")
+	if player.Character then
+		scanTools(player.Character, "Character")
 	end
 
 	-- 3. Scan Seluruh Mobil di Lahan Parkir & Mesin secara Dinamis
