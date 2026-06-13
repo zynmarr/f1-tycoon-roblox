@@ -32,13 +32,13 @@ local function processPickup(player: Player, car: Tool)
 end
 
 local function storeCarToArea(player: Player, area: Part, tool: Tool)
-	local myCars = area:FindFirstChild("MyCars")
-	local prompt = area:FindFirstChild("ProximityPrompt") :: ProximityPrompt
+	local myCars = area:FindFirstChild("MyCars") or (area.Parent and area.Parent:FindFirstChild("MyCars"))
+	local prompt = area:FindFirstChild("ProximityPrompt") or (area.Parent and area.Parent:FindFirstChild("ProximityPrompt")) :: ProximityPrompt?
 
 	if not myCars then
 		myCars = Instance.new("Folder")
 		myCars.Name = "MyCars"
-		myCars.Parent = area
+		myCars.Parent = area.Parent or area
 	end
 
 	if tool:IsA("Tool") and tool:GetAttribute("Price") then
@@ -92,7 +92,8 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 end
 
 local function parkedInArea(area: Part)
-	local prompt = area:FindFirstChild("ProximityPrompt") :: ProximityPrompt
+	local prompt = area:FindFirstChild("ProximityPrompt") 
+		or (area.Parent and area.Parent:FindFirstChild("ProximityPrompt")) :: ProximityPrompt?
 	if not prompt then
 		return
 	end
@@ -139,7 +140,7 @@ local function parkedInArea(area: Part)
 			-- MODE: AMBIL (Jika area sedang Terisi)
 		else
 			warn("Pick mode: Mengambil mobil dari parkiran...")
-			local myCars = area:FindFirstChild("MyCars")
+			local myCars = area:FindFirstChild("MyCars") or (area.Parent and area.Parent:FindFirstChild("MyCars"))
 
 			if myCars then
 				local carFound = false
