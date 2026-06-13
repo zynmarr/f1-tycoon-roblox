@@ -2,36 +2,80 @@
 local RunService = game:GetService("RunService")
 local CollectionService = game:GetService("CollectionService")
 
--- CONFIGURATIONS
-local ROTATION_SPEED = 120 -- Degrees per second for border rotation
-local SHIMMER_SPEED = 1.2  -- Speed of the shine wave
-
 RunService.Heartbeat:Connect(function(dt: number)
-	-- 1. Animasikan Rotasi Outline Border (RotatingGradient)
-	local rotationOffset = (dt * ROTATION_SPEED) % 360
-	for _, gradient in ipairs(CollectionService:GetTagged("RotatingGradient")) do
-		if gradient:IsA("UIGradient") then
-			gradient.Rotation = (gradient.Rotation + rotationOffset) % 360
-		end
-	end
-
-	-- 2. Animasikan Efek Berkilau/Shimmer pada Teks Badge (ShimmeringGradient)
-	-- Menggunakan sweep transisi dari kiri (-1.5) ke kanan (1.5) lalu jeda sejenak
 	local time = tick()
-	local progress = (time * SHIMMER_SPEED) % 2.5 -- Siklus total 2.5 detik (termasuk jeda)
-	local offset = -1.5
-	
-	if progress < 1.5 then
-		-- Menyapu dari kiri ke kanan dalam durasi 1.5 detik
-		offset = -1.5 + (progress / 1.5) * 3.0
-	else
-		-- Berhenti di kanan (tidak terlihat) selama 1 detik sebagai jeda sebelum siklus berikutnya
-		offset = 1.5
-	end
 
-	for _, gradient in ipairs(CollectionService:GetTagged("ShimmeringGradient")) do
-		if gradient:IsA("UIGradient") then
+	for _, gradient in ipairs(CollectionService:GetTagged("RoleGradient")) do
+		if not gradient:IsA("UIGradient") then
+			continue
+		end
+
+		local roleName = gradient:GetAttribute("RoleName")
+
+		if roleName == "Owner" then
+			-- 1. OWNER: Rainbow/Chroma Wave (Perpindahan warna pelangi neon HSV yang sangat halus)
+			local t = time * 0.35
+			local c1 = Color3.fromHSV((t) % 1, 0.8, 1)
+			local c2 = Color3.fromHSV((t + 0.33) % 1, 0.8, 1)
+			local c3 = Color3.fromHSV((t + 0.66) % 1, 0.8, 1)
+			
+			gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.0, c1),
+				ColorSequenceKeypoint.new(0.5, c2),
+				ColorSequenceKeypoint.new(1.0, c3),
+			})
+			gradient.Offset = Vector2.new(0, 0) -- Reset offset agar tidak bergeser aneh
+			gradient.Rotation = 0
+			
+		elseif roleName == "Developer" then
+			-- 2. DEVELOPER: Fire Pulse (Pulsasi membara merah ke oranye-emas terang)
+			local t = time * 3.0
+			local pulse = math.sin(t) * 0.5 + 0.5 -- 0 ke 1
+			local c1 = Color3.fromRGB(255, 45, 45):Lerp(Color3.fromRGB(255, 140, 0), pulse)
+			local c2 = Color3.fromRGB(255, 140, 0):Lerp(Color3.fromRGB(255, 230, 0), pulse)
+			
+			gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.0, c1),
+				ColorSequenceKeypoint.new(0.5, c2),
+				ColorSequenceKeypoint.new(1.0, c1),
+			})
+			gradient.Offset = Vector2.new(0, 0)
+			gradient.Rotation = 0
+			
+		elseif roleName == "Moderator" then
+			-- 3. MODERATOR: Shield Pulse (Pulsasi biru elektrik ke cyan perisai pelindung)
+			local t = time * 2.0
+			local pulse = math.sin(t) * 0.5 + 0.5
+			local c1 = Color3.fromRGB(0, 160, 255):Lerp(Color3.fromRGB(0, 255, 220), pulse)
+			local c2 = Color3.fromRGB(0, 255, 220):Lerp(Color3.fromRGB(0, 80, 255), pulse)
+			
+			gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.0, c1),
+				ColorSequenceKeypoint.new(0.5, c2),
+				ColorSequenceKeypoint.new(1.0, c1),
+			})
+			gradient.Offset = Vector2.new(0, 0)
+			gradient.Rotation = 0
+			
+		elseif roleName == "VIP" then
+			-- 4. VIP: Gold Shimmer Sweep (Kilatan cahaya menyapu warna emas mewah)
+			local progress = (time * 1.2) % 2.5 -- siklus 2.5 detik (termasuk jeda)
+			local offset = -1.5
+			if progress < 1.2 then
+				offset = -1.5 + (progress / 1.2) * 3.0 -- Menyapu dari kiri ke kanan selama 1.2 detik
+			else
+				offset = 1.5 -- Jeda di sebelah kanan selama 1.3 detik
+			end
 			gradient.Offset = Vector2.new(offset, 0)
+			gradient.Rotation = 0
+			
+			local goldBase = Color3.fromRGB(255, 190, 0)
+			local goldShine = Color3.fromRGB(255, 255, 220)
+			gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0.0, goldBase),
+				ColorSequenceKeypoint.new(0.5, goldShine),
+				ColorSequenceKeypoint.new(1.0, goldBase),
+			})
 		end
 	end
 end)

@@ -39,7 +39,7 @@ local function createOverhead(player: Player, character: Model)
 	frame.Parent = billboard
 
 	if roleName == "Player" then
-		billboard.Size = UDim2.new(0, 160, 0, 30)
+		billboard.Size = UDim2.new(0, 300, 0, 30)
 		billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Ketinggian lebih rendah untuk text biasa
 		
 		local nameLabel = Instance.new("TextLabel")
@@ -54,114 +54,60 @@ local function createOverhead(player: Player, character: Model)
 		nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 		nameLabel.Parent = frame
 	else
-		billboard.Size = UDim2.new(0, 190, 0, 62)
-		billboard.StudsOffset = Vector3.new(0, 3.3, 0) -- Lebih tinggi untuk menampung card premium
+		billboard.Size = UDim2.new(0, 300, 0, 30)
+		billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Ketinggian sama dengan player biasa karena sebaris
 		
-		-- Background Card Frame (Premium Glassmorphism Effect)
-		local card = Instance.new("Frame")
-		card.Name = "Card"
-		card.Size = UDim2.new(1, 0, 1, 0)
-		card.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
-		card.BackgroundTransparency = 0.25 -- Transparan bergaya kaca gelap
-		card.Parent = frame
-		
-		-- Rounded Corners
-		local uiCorner = Instance.new("UICorner")
-		uiCorner.CornerRadius = UDim.new(0, 10)
-		uiCorner.Parent = card
-		
-		-- Glowing Gradient Outline
-		local uiStroke = Instance.new("UIStroke")
-		uiStroke.Thickness = 1.8
-		uiStroke.Color = roleData.Color
-		uiStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		uiStroke.Parent = card
-		
-		-- Gradient berkilau pada border outline
-		local strokeGradient = Instance.new("UIGradient")
-		local baseColor = roleData.Color
-		strokeGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0.0, baseColor),
-			ColorSequenceKeypoint.new(0.3, Color3.fromRGB(255, 255, 255)), -- titik berkilau
-			ColorSequenceKeypoint.new(0.6, baseColor),
-			ColorSequenceKeypoint.new(1.0, baseColor),
-		})
-		strokeGradient.Parent = uiStroke
-		
-		-- Tag agar client-side script dapat mendeteksi dan menganimasikan rotasi gradasi ini
-		local CollectionService = game:GetService("CollectionService")
-		CollectionService:AddTag(strokeGradient, "RotatingGradient")
-		
-		-- UIListLayout untuk penataan item di dalam card
+		-- UI List Layout untuk susunan horizontal sebaris tanpa bingkai
 		local listLayout = Instance.new("UIListLayout")
+		listLayout.FillDirection = Enum.FillDirection.Horizontal
 		listLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 		listLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 		listLayout.SortOrder = Enum.SortOrder.LayoutOrder
-		listLayout.Padding = UDim.new(0, 3)
-		listLayout.Parent = card
+		listLayout.Padding = UDim.new(0, 6)
+		listLayout.Parent = frame
 		
-		-- Pill Frame untuk Role Tag
-		local pill = Instance.new("Frame")
-		pill.Name = "RolePill"
-		pill.AutomaticSize = Enum.AutomaticSize.XY
-		pill.Size = UDim2.new(0, 0, 0, 18)
-		pill.BackgroundColor3 = roleData.Color
-		pill.BackgroundTransparency = 0.85 -- Transparan tipis sewarna role
-		pill.LayoutOrder = 1
-		pill.Parent = card
-		
-		local pillCorner = Instance.new("UICorner")
-		pillCorner.CornerRadius = UDim.new(0, 9)
-		pillCorner.Parent = pill
-		
-		local pillStroke = Instance.new("UIStroke")
-		pillStroke.Thickness = 1
-		pillStroke.Color = roleData.Color
-		pillStroke.Transparency = 0.4
-		pillStroke.Parent = pill
-		
-		local pillPadding = Instance.new("UIPadding")
-		pillPadding.PaddingLeft = UDim.new(0, 8)
-		pillPadding.PaddingRight = UDim.new(0, 8)
-		pillPadding.PaddingTop = UDim.new(0, 1)
-		pillPadding.PaddingBottom = UDim.new(0, 1)
-		pillPadding.Parent = pill
-		
-		-- Role Text Label di dalam Pill
-		local roleLabel = Instance.new("TextLabel")
-		roleLabel.Name = "RoleLabel"
-		roleLabel.BackgroundTransparency = 1
-		roleLabel.Text = (roleData.Emoji ~= "" and roleData.Emoji .. " " or "") .. string.upper(roleData.DisplayName)
-		roleLabel.TextColor3 = roleData.Color
-		roleLabel.Font = Enum.Font.GothamBold
-		roleLabel.TextSize = 10
-		roleLabel.Size = UDim2.new(0, 0, 1, 0)
-		roleLabel.AutomaticSize = Enum.AutomaticSize.X
-		roleLabel.Parent = pill
-		
-		-- Gradasi teks agar role berkilau
-		local textGradient = Instance.new("UIGradient")
-		textGradient.Color = ColorSequence.new({
-			ColorSequenceKeypoint.new(0.0, roleData.Color),
-			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-			ColorSequenceKeypoint.new(1.0, roleData.Color),
-		})
-		textGradient.Parent = roleLabel
-		CollectionService:AddTag(textGradient, "ShimmeringGradient")
-		
-		-- Player Name Label di dalam Card
+		-- Label Nama Player
 		local nameLabel = Instance.new("TextLabel")
 		nameLabel.Name = "PlayerName"
-		nameLabel.Size = UDim2.new(0.9, 0, 0, 18)
+		nameLabel.AutomaticSize = Enum.AutomaticSize.XY
+		nameLabel.Size = UDim2.new(0, 0, 1, 0)
 		nameLabel.BackgroundTransparency = 1
 		nameLabel.Text = player.DisplayName
 		nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		nameLabel.Font = Enum.Font.GothamBold
-		nameLabel.TextSize = 13
-		nameLabel.TextStrokeTransparency = 0.5
+		nameLabel.TextSize = 15
+		nameLabel.TextStrokeTransparency = 0.35
 		nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-		nameLabel.LayoutOrder = 2
-		nameLabel.Parent = card
+		nameLabel.LayoutOrder = 1
+		nameLabel.Parent = frame
+		
+		-- Label Tag Role di samping nama (Contoh: [⚡ OWNER])
+		local roleLabel = Instance.new("TextLabel")
+		roleLabel.Name = "RoleLabel"
+		roleLabel.AutomaticSize = Enum.AutomaticSize.XY
+		roleLabel.Size = UDim2.new(0, 0, 1, 0)
+		roleLabel.BackgroundTransparency = 1
+		local roleText = string.format("[%s%s]", roleData.Emoji ~= "" and roleData.Emoji .. " " or "", string.upper(roleData.DisplayName))
+		roleLabel.Text = roleText
+		roleLabel.TextColor3 = roleData.Color
+		roleLabel.Font = Enum.Font.GothamBold
+		roleLabel.TextSize = 15
+		roleLabel.TextStrokeTransparency = 0.35
+		roleLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+		roleLabel.LayoutOrder = 2
+		roleLabel.Parent = frame
+		
+		-- UIGradient untuk menganimasikan efek role masing-masing di client
+		local roleGradient = Instance.new("UIGradient")
+		roleGradient.Name = "RoleGradient"
+		local baseColor = roleData.Color
+		roleGradient.Color = ColorSequence.new(baseColor)
+		roleGradient.Parent = roleLabel
+		
+		-- Tandai dengan CollectionService agar client-side mendeteksi dan memberi animasi custom
+		local CollectionService = game:GetService("CollectionService")
+		CollectionService:AddTag(roleGradient, "RoleGradient")
+		roleGradient:SetAttribute("RoleName", roleName)
 	end
 end
 
