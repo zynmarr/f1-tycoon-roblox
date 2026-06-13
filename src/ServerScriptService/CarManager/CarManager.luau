@@ -212,6 +212,7 @@ function CarManager.spawnLoadedCar(player: Player, carData: any, plot: Instance)
 	end
 
 	local carModel = carTemplate:Clone()
+	CollectionService:AddTag(carModel, "Car")
 	carModel.Name = carData.Name
 
 	for attr, val in pairs(carData.Attributes) do

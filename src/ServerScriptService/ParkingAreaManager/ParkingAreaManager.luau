@@ -4,7 +4,11 @@
 
 local ParkingAreaManager = {}
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
+local RoleManager = require(game.ServerScriptService.RoleManager.RoleManager)
+
 local SPAWNER_TAG = "ParkingArea"
+local playerPassiveIncome = {} -- [Player] = number (total passive income/sec)
 
 local function processPickup(player: Player, car: Tool)
 	local character = player.Character
@@ -21,6 +25,10 @@ local function processPickup(player: Player, car: Tool)
 
 	car:ScaleTo(0.2)
 	car.Parent = character
+
+	-- Hook: Subtract income from player passive income cache
+	local carIncome = car:GetAttribute("Income") or 0
+	playerPassiveIncome[player] = math.max(0, (playerPassiveIncome[player] or 0) - carIncome)
 end
 
 local function storeCarToArea(player: Player, area: Part, tool: Tool)
@@ -28,7 +36,9 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 	local prompt = area:FindFirstChild("ProximityPrompt") :: ProximityPrompt
 
 	if not myCars then
-		return warn("MyCars folder not found in parking area: " .. area.Name)
+		myCars = Instance.new("Folder")
+		myCars.Name = "MyCars"
+		myCars.Parent = area
 	end
 
 	if tool:IsA("Tool") and tool:GetAttribute("Price") then
@@ -73,6 +83,10 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 			prompt:SetAttribute("IsActive", true)
 		end
 
+		-- Hook: Add income to player passive income cache
+		local carIncome = tool:GetAttribute("Income") or 0
+		playerPassiveIncome[player] = (playerPassiveIncome[player] or 0) + carIncome
+
 		warn("Mobil berhasil diparkir di: " .. tostring(targetCFrame.Position))
 	end
 end
@@ -112,10 +126,9 @@ local function parkedInArea(area: Part)
 		end
 
 		-- MODE: PARKIR (Jika area sedang Kosong)
-
-		-- MODE: PARKIR (Jika area sedang Kosong)
 		if not isActive then
-			if toolOnCharacter and CollectionService:HasTag(toolOnCharacter, "Car") then
+			local isCarTool = toolOnCharacter and (CollectionService:HasTag(toolOnCharacter, "Car") or toolOnCharacter:GetAttribute("Price") ~= nil)
+			if toolOnCharacter and isCarTool then
 				warn("Parking mode: Menyimpan mobil...")
 				storeCarToArea(player, area, toolOnCharacter)
 				prompt:SetAttribute("IsActive", true) -- Tandai area sudah terisi
@@ -161,6 +174,35 @@ function ParkingAreaManager:Init()
 	for _, area in pairs(CollectionService:GetTagged(SPAWNER_TAG)) do
 		onSpawnerAdded(area)
 	end
+
+	-- Cleanup on leave
+	Players.PlayerRemoving:Connect(function(player)
+		playerPassiveIncome[player] = nil
+	end)
+
+	-- Passive Income Loop
+	task.spawn(function()
+		while true do
+			task.wait(1)
+			for player, totalIncome in pairs(playerPassiveIncome) do
+				if player and player.Parent and totalIncome > 0 then
+					local leaderstats = player:FindFirstChild("leaderstats")
+					local cash = leaderstats and leaderstats:FindFirstChild("Cash")
+					if cash then
+						-- Calculate VIP/Staff Multiplier
+						local multiplier = 1.0
+						local roleInfo = RoleManager.getRole(player)
+						if roleInfo and (roleInfo.Name == "VIP" or roleInfo.Name == "Staff" or roleInfo.Name == "Moderator" or roleInfo.Name == "Developer" or roleInfo.Name == "Owner") then
+							multiplier = 1.2
+						end
+						
+						local addedCash = math.floor(totalIncome * multiplier)
+						cash.Value = cash.Value + addedCash
+					end
+				end
+			end
+		end
+	end)
 end
 
 function ParkingAreaManager.storeCar(player: Player, area: Part, tool: Tool): ()

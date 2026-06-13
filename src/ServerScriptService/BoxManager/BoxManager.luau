@@ -40,12 +40,19 @@ local function updateBoxVisual(box: Tool)
 	end
 
 	local currentLevel = box:GetAttribute("Level") or 1
+	if currentLevel <= 0 then
+		warn(
+			`[BoxManager] Level tidak valid (${currentLevel}) pada box ${box.Name}. Pastikan atribut "Level" sudah benar.`
+		)
+		return
+	end
+
 	local targetModelName = "Level" .. tostring(currentLevel)
 	local newVisualTemplate = BoxModels:FindFirstChild(targetModelName)
 
 	if not newVisualTemplate then
 		warn(`[BoxManager] Model {targetModelName} tidak ditemukan di ReplicatedStorage.BoxModels!`)
-		return
+		newVisualTemplate = BoxModels:FindFirstChild("Level14")
 	end
 
 	-- 1. Hapus visual lama jika ada
@@ -232,6 +239,11 @@ function BoxManager:openBox(player: Player, boxName: string)
 	end
 	playerBoxOpenTimes[player] = now
 
+	-- ===== ANTI-CHEAT: Type Validation =====
+	if not boxName or type(boxName) ~= "string" then
+		return { Success = false, Error = "Parameter tidak valid" }
+	end
+
 	-- Ambil lokasi karakter untuk mengecek barang yang sedang dipegang
 	local character = player.Character
 	local backpack = player:FindFirstChild("Backpack")
@@ -242,6 +254,14 @@ function BoxManager:openBox(player: Player, boxName: string)
 
 	-- Tentukan box mana yang valid digunakan (utamakan yang di tangan)
 	local targetBox = boxInHand or boxInBackpack
+
+	-- ===== ANTI-CHEAT: Validasi Type Box =====
+	if targetBox and targetBox:GetAttribute("Type") ~= "Box" then
+		return {
+			Success = false,
+			Error = "Item ini bukan kotak yang bisa dibuka!",
+		}
+	end
 
 	-- Validasi keberadaan box
 	if not targetBox or targetBox:GetAttribute("IsDestroying") then
@@ -297,6 +317,7 @@ function BoxManager:openBox(player: Player, boxName: string)
 	local carTemplates = rarityFolder:GetChildren()
 	local chosenCarTemplate = carTemplates[math.random(1, #carTemplates)]
 	local car = chosenCarTemplate:Clone()
+	CollectionService:AddTag(car, "Car")
 
 	-- Pasang atribut finansial dan visual ke mobil baru
 	local baseIncome = GameConfig.CalculatePrice(tierData.BasePrice, tier, variants)
@@ -307,6 +328,7 @@ function BoxManager:openBox(player: Player, boxName: string)
 	car:SetAttribute("Variant", variants)
 	car:SetAttribute("Rarity", tier)
 	car:SetAttribute("Name", car.Name)
+	car:SetAttribute("Type", "Car")
 	car.Name = car.Name .. "_" .. tier .. "_" .. variants
 
 	GameConfig.ApplyVisuals(car, tier, variants)
@@ -519,7 +541,6 @@ function BoxManager.Init()
 	end)
 
 	Networker.server.new("OpenBox", BoxManager, {
-		BoxManager.printTest,
 		BoxManager.openBox,
 	})
 
