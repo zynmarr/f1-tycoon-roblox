@@ -1,6 +1,6 @@
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
-local sideMenuGui = playerGui:WaitForChild("SideMenuGui") :: ScreenGui
+local sideMenuGui = playerGui:WaitForChild("SideMenuGui", math.huge) :: ScreenGui
 local container = sideMenuGui:WaitForChild("MainContainer")
 local tweenService = game:GetService("TweenService")
 

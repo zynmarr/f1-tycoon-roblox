@@ -224,7 +224,9 @@ local function onPlayerAdded(player: Player)
 		local syncPending = false
 
 		local function sync()
-			if syncPending then return end
+			if syncPending then
+				return
+			end
 			syncPending = true
 			task.defer(function()
 				syncPending = false

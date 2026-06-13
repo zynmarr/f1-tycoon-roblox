@@ -1,13 +1,12 @@
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
--- Sambungkan ke TextLabel
-local screenGui = playerGui:WaitForChild("CustomStatsGui") :: ScreenGui
-local frame = screenGui:WaitForChild("Frame")
-local cashDisplay = frame:WaitForChild("CashDisplay")
+local screenGui = playerGui:WaitForChild("CustomStatsGui", math.huge) :: ScreenGui
+local frame = screenGui:WaitForChild("Frame", math.huge)
+local cashDisplay = frame:WaitForChild("CashDisplay", math.huge)
 
 -- Tunggu sampai folder leaderstats dimuat
-local leaderstats = player:WaitForChild("leaderstats")
-local cash = leaderstats:WaitForChild("Cash")
+local leaderstats = player:WaitForChild("leaderstats", math.huge)
+local cash = leaderstats:WaitForChild("Cash", math.huge)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))

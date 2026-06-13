@@ -63,37 +63,12 @@ local function loadlHandle(car: Tool): BasePart
 	return handle
 end
 
-local function updateTextLabel(car)
-	local billboard = car:FindFirstChild("BillboardGui") :: BillboardGui?
-	if not billboard then
-		return
-	end
-	local nameText = billboard:FindFirstChild("Name") :: TextLabel?
-	local variantText = billboard:FindFirstChild("Variants") :: TextLabel?
-	local PriceText = billboard:FindFirstChild("Price") :: TextLabel?
-
-	local carName = car:GetAttribute("Name")
-	local carVariant = car:GetAttribute("Variant")
-	local carPrice = car:GetAttribute("Price")
-	local rarity = car:GetAttribute("Rarity")
-
-	if nameText then
-		nameText.Text = carName .. " [" .. rarity .. "]"
-	end
-	if variantText then
-		variantText.Text = GameConfig.GetColoredVariantList(carVariant)
-	end
-	if PriceText then
-		PriceText.Text = "$ " .. GameUtils.formatCompact(carPrice)
-	end
-end
-
 local function processPickup(player, car)
 	local rotationOffset = car:GetAttribute("RotationOffset") or 0
 	local finalRot = math.rad(0 + rotationOffset)
 
 	car.Grip = CFrame.new(0, -0.8, 2) * CFrame.Angles(0, finalRot, 0)
-	updateTextLabel(car)
+	GameUtils.updateTextLabel(car)
 end
 
 local function setupCar(car)
@@ -216,6 +191,7 @@ function CarManager.spawnLoadedCar(player: Player, carData: any, plot: Instance)
 	local carModel = carTemplate:Clone()
 	CollectionService:AddTag(carModel, "Car")
 	carModel.Name = carData.Name
+	GameUtils.updateTextLabel(carTemplate)
 
 	for attr, val in pairs(carData.Attributes) do
 		if attr ~= "IsInitialized" and attr ~= "OnHand" and attr ~= "ScaleFixed" then

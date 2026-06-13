@@ -4,13 +4,13 @@ local CollectionService = game:GetService("CollectionService")
 
 local gradients = {}
 
-local function addGradient(gradient: Instance)
+local function addGradient(gradient: UIGradient)
 	if gradient:IsA("UIGradient") and not table.find(gradients, gradient) then
 		table.insert(gradients, gradient)
 	end
 end
 
-local function removeGradient(gradient: Instance)
+local function removeGradient(gradient: UIGradient)
 	local index = table.find(gradients, gradient)
 	if index then
 		table.remove(gradients, index)
@@ -37,10 +37,10 @@ RunService.Heartbeat:Connect(function(dt: number)
 		if roleName == "Owner" then
 			-- 1. OWNER: Rainbow/Chroma Wave
 			local t = time * 0.35
-			local c1 = Color3.fromHSV((t) % 1, 0.8, 1)
+			local c1 = Color3.fromHSV(t % 1, 0.8, 1)
 			local c2 = Color3.fromHSV((t + 0.33) % 1, 0.8, 1)
 			local c3 = Color3.fromHSV((t + 0.66) % 1, 0.8, 1)
-			
+
 			gradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.0, c1),
 				ColorSequenceKeypoint.new(0.5, c2),
@@ -48,14 +48,13 @@ RunService.Heartbeat:Connect(function(dt: number)
 			})
 			gradient.Offset = Vector2.new(0, 0)
 			gradient.Rotation = 0
-			
 		elseif roleName == "Developer" then
 			-- 2. DEVELOPER: Fire Pulse
 			local t = time * 3.0
 			local pulse = math.sin(t) * 0.5 + 0.5
 			local c1 = Color3.fromRGB(255, 45, 45):Lerp(Color3.fromRGB(255, 140, 0), pulse)
 			local c2 = Color3.fromRGB(255, 140, 0):Lerp(Color3.fromRGB(255, 230, 0), pulse)
-			
+
 			gradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.0, c1),
 				ColorSequenceKeypoint.new(0.5, c2),
@@ -63,14 +62,13 @@ RunService.Heartbeat:Connect(function(dt: number)
 			})
 			gradient.Offset = Vector2.new(0, 0)
 			gradient.Rotation = 0
-			
 		elseif roleName == "Moderator" then
 			-- 3. MODERATOR: Shield Pulse
 			local t = time * 2.0
 			local pulse = math.sin(t) * 0.5 + 0.5
 			local c1 = Color3.fromRGB(0, 160, 255):Lerp(Color3.fromRGB(0, 255, 220), pulse)
 			local c2 = Color3.fromRGB(0, 255, 220):Lerp(Color3.fromRGB(0, 80, 255), pulse)
-			
+
 			gradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.0, c1),
 				ColorSequenceKeypoint.new(0.5, c2),
@@ -78,7 +76,6 @@ RunService.Heartbeat:Connect(function(dt: number)
 			})
 			gradient.Offset = Vector2.new(0, 0)
 			gradient.Rotation = 0
-			
 		elseif roleName == "VIP" then
 			-- 4. VIP: Gold Shimmer Sweep
 			local progress = (time * 1.2) % 2.5
@@ -90,7 +87,7 @@ RunService.Heartbeat:Connect(function(dt: number)
 			end
 			gradient.Offset = Vector2.new(offset, 0)
 			gradient.Rotation = 0
-			
+
 			local goldBase = Color3.fromRGB(255, 190, 0)
 			local goldShine = Color3.fromRGB(255, 255, 220)
 			gradient.Color = ColorSequence.new({

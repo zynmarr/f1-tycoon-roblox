@@ -5,6 +5,8 @@
 local ParkingAreaManager = {}
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GameUtils = require(ReplicatedStorage.GameUtils)
 local RoleManager = require(game.ServerScriptService.RoleManager.RoleManager)
 
 local SPAWNER_TAG = "ParkingArea"
@@ -222,6 +224,7 @@ end
 
 function ParkingAreaManager.storeCar(player: Player, area: Part, tool: Tool): ()
 	assert(player and area and tool, "Missing arguments for storeCar")
+	GameUtils.updateTextLabel(tool)
 	storeCarToArea(player, area, tool)
 end
 

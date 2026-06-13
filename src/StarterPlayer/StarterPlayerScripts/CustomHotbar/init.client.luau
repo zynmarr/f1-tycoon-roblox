@@ -10,15 +10,15 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local backpack = player:WaitForChild("Backpack")
 local screenGui = HotbarModule.screenGui() :: ScreenGui
-local hotbarContainer = screenGui:WaitForChild("Container", 5)
-local invPanel = screenGui:WaitForChild("InventoryPanel", 5)
-local searchBox = invPanel:WaitForChild("SearchBox", 5)
-local scrollArea = invPanel:WaitForChild("ScrollArea", 5)
-local template = script:WaitForChild("SlotTemplate", 5)
+local hotbarContainer = screenGui:WaitForChild("Container", math.huge)
+local invPanel = screenGui:WaitForChild("InventoryPanel", math.huge)
+local searchBox = invPanel:WaitForChild("SearchBox", math.huge)
+local scrollArea = invPanel:WaitForChild("ScrollArea", math.huge)
+local template = script:WaitForChild("SlotTemplate", math.huge)
 
-local sideMenuGui = playerGui:WaitForChild("SideMenuGui", 5)
-local mainMenuGui = sideMenuGui:WaitForChild("MainContainer", 5)
-local backpackBtn = mainMenuGui:WaitForChild("BackpackBtn", 5)
+local sideMenuGui = playerGui:WaitForChild("SideMenuGui", math.huge)
+local mainMenuGui = sideMenuGui:WaitForChild("MainContainer", math.huge)
+local backpackBtn = mainMenuGui:WaitForChild("BackpackBtn", math.huge)
 
 -- SETTINGS & MEMORY
 local MAX_HOTBAR_SLOTS = UserInputService.TouchEnabled and 5 or 9

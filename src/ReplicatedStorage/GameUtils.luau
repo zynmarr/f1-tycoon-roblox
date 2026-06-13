@@ -4,6 +4,7 @@
 
 -- local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
+local GameConfig = require(script.Parent.GameConfig)
 
 local GameUtils = {}
 
@@ -85,6 +86,31 @@ function GameUtils.isCar(tool: Instance): boolean
 		return false
 	end
 	return CollectionService:HasTag(tool, "Car") or tool:GetAttribute("Price") ~= nil
+end
+
+function GameUtils.updateTextLabel(car: Tool)
+	local billboard = car:FindFirstChild("BillboardGui") :: BillboardGui?
+	if not billboard then
+		return
+	end
+	local nameText = billboard:FindFirstChild("Name") :: TextLabel?
+	local variantText = billboard:FindFirstChild("Variants") :: TextLabel?
+	local PriceText = billboard:FindFirstChild("Price") :: TextLabel?
+
+	local carName = car:GetAttribute("Name")
+	local carVariant = car:GetAttribute("Variant")
+	local carPrice = car:GetAttribute("Price")
+	local rarity = car:GetAttribute("Rarity")
+
+	if nameText then
+		nameText.Text = carName .. " [" .. rarity .. "]"
+	end
+	if variantText then
+		variantText.Text = GameConfig.GetColoredVariantList(carVariant)
+	end
+	if PriceText then
+		PriceText.Text = "$ " .. GameUtils.formatCompact(carPrice)
+	end
 end
 
 -- 7. Scan and retrieve all car tools owned by a player (backpack + equipped)

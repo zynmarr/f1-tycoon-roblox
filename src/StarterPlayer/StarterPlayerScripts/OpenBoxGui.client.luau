@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
-local screenGui = playerGui:WaitForChild("OpenBoxGui") :: ScreenGui
+local screenGui = playerGui:WaitForChild("OpenBoxGui", math.huge) :: ScreenGui
 local button = screenGui:WaitForChild("OpenBtn")
 local Networker = require(ReplicatedStorage.Packages.Networker)
 

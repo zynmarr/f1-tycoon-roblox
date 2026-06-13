@@ -4,7 +4,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 local backpack = player:WaitForChild("Backpack")
-local screenGui = playerGui:WaitForChild("CustomHotbar") :: ScreenGui
+local screenGui = playerGui:WaitForChild("CustomHotbar", math.huge) :: ScreenGui
 
 HotbarModule.slotMapping = {} :: { [number]: Tool? }
 
