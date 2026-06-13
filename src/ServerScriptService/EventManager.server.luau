@@ -134,6 +134,7 @@ local function onPlayerAdded(player)
 			-- Reset Semua
 			variantBoost.Value = 0
 			luckBoost.Value = 0
+			expBoost.Value = 0
 			ReplicatedStorage:SetAttribute("SpeedBoost", 0)
 			print(string.format("[EVENT] 🛑 SEMUA EVENT TELAH DIMATIKAN! | Admin: %s", player.Name))
 		end

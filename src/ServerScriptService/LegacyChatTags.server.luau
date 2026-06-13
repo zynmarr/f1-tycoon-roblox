@@ -9,7 +9,10 @@ local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
 -- Custom chat tags untuk Legacy ChatService
 local ChatService = nil
 local success = pcall(function()
-	ChatService = require(ServerScriptService:WaitForChild("ChatServiceRunner"):WaitForChild("ChatService"))
+	local chatServiceRunner = ServerScriptService:WaitForChild("ChatServiceRunner", 5)
+	if chatServiceRunner then
+		ChatService = require(chatServiceRunner:WaitForChild("ChatService"))
+	end
 end)
 
 if success and ChatService then

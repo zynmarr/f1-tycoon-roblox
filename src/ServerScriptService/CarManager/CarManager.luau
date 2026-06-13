@@ -1,6 +1,8 @@
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
 local ServerStorage = game:GetService("ServerStorage")
+local GameUtils = require(ReplicatedStorage.GameUtils)
 local ParkingAreaManager = require(game.ServerScriptService.ParkingAreaManager.ParkingAreaManager)
 
 local CarManager = {}
@@ -82,7 +84,7 @@ local function updateTextLabel(car)
 		variantText.Text = GameConfig.GetColoredVariantList(carVariant)
 	end
 	if PriceText then
-		PriceText.Text = "$ " .. carPrice
+		PriceText.Text = "$ " .. GameUtils.formatCompact(carPrice)
 	end
 end
 

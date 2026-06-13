@@ -21,13 +21,22 @@ export type boardManagement = {
 	itemTemplate: Frame,
 }
 
-local listOfBoards: { [string]: boardManagement } = {}
+local listOfBoards: { [Instance]: boardManagement } = {}
+setmetatable(listOfBoards, { __mode = "k" })
+
+local machineComponentsCache = {} -- Cache untuk menyimpan machinePart dan billboardModel agar tidak dicari terus-menerus
+setmetatable(machineComponentsCache, { __mode = "k" })
 
 local function getMachineComponents(machineArea: Instance)
+	local cached = machineComponentsCache[machineArea]
+	if cached then
+		return cached.machinePart, cached.billboardModel
+	end
+
 	local machinePart = nil
 	local billboardModel = nil
 
-	for _, child in pairs(machineArea:GetChildren()) do
+	for _, child in ipairs(machineArea:GetChildren()) do
 		-- Cari spesifik Part yang berakhiran "Machine" (contoh: AtlantisMachine, OlympusMachine)
 		if child:IsA("BasePart") and string.find(child.Name, "Machine") then
 			machinePart = child
@@ -41,26 +50,23 @@ local function getMachineComponents(machineArea: Instance)
 		end
 	end
 
+	machineComponentsCache[machineArea] = {
+		machinePart = machinePart,
+		billboardModel = billboardModel,
+	}
+	warn(
+		`[SpawnerBoxManager] getMachineComponents: Caching components for {machineArea.Name} | MachinePart: {tostring(
+			machinePart
+		)} | BillboardModel: {tostring(billboardModel)}`
+	)
+
 	return machinePart, billboardModel
 end
 
 -- ==========================================
--- 1. UTILITY: FIND PLOT OWNER
+-- 1. UTILITY: FIND PLOT OWNER (OPTIMIZED - DIRECT LOOKUP)
 -- ==========================================
-local function getPlotOwner(instance)
-	-- Mencari ke atas sampai ketemu model yang punya atribut "Owner"
-	local current = instance
-	while current and current ~= workspace do
-		if current:GetAttribute("Owner") ~= nil then
-			local ownerName = current:GetAttribute("Owner")
-			if ownerName ~= "" then
-				return Players:FindFirstChild(ownerName), current
-			end
-		end
-		current = current.Parent
-	end
-	return nil, nil
-end
+-- ( getPlotOwner dihapus karena kita sekarang mendeteksi langsung lewat plotModel )
 
 local function spawnBox(player: Player, machineArea: Folder, boxData)
 	if not player or not player.Parent then
@@ -74,9 +80,14 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 
 	-- 1. Bedah folder area mesinnya
 	local machinePart, _ = getMachineComponents(machineArea)
-
-	-- 2. Validasi (Jika mesin fisik tidak ketemu, hentikan agar tidak crash)
 	assert(machinePart, "[SpawnerBoxManager] ERROR: Mesin fisik (Part) tidak ditemukan di dalam " .. machineArea.Name)
+
+	local machinesFolder = machineArea.Parent
+	local plotModel = machinesFolder and machinesFolder.Parent
+	if not plotModel then
+		machineArea:SetAttribute("IsRunning", false)
+		return
+	end
 
 	local newBox = boxTemplate:Clone()
 	local BoxModule = require(newBox.BoxModule) -- Ambil dari hasil clone agar lebih aman
@@ -122,6 +133,7 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 	newBox:SetAttribute("Level", bLvl)
 	newBox:SetAttribute("Exp", bExp)
 	newBox:SetAttribute("Variants", bVariants)
+	newBox:SetAttribute("Type", "Box")
 
 	-- 2. INITIAL METADATA (Penting agar Level 1 langsung muncul)
 	local initialLvlData = GameConfig.BoxLevels[bLvl]
@@ -133,7 +145,6 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 
 	local baseOffset = 0.5
 	local dynamicY = baseOffset + (newBox.Handle.Size.Y / 2)
-	-- newBox:PivotTo(machinePart.CFrame * CFrame.new(0, 1, 0))
 	newBox:PivotTo(machinePart.CFrame * CFrame.new(0, -dynamicY + 2, 0))
 	newBox.Parent = workspace
 
@@ -149,7 +160,6 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 	newBox.Handle.Size = Vector3.new(2, 2, 2)
 	local display = newBox.Handle:FindFirstChild("StatsDisplay")
 	if not display then
-		-- Ambil template display dari BoxModule atau folder yang benar
 		display = newBox:FindFirstChild("BoxModule"):FindFirstChild("StatsDisplay"):Clone()
 		display.Parent = newBox.Handle
 	end
@@ -161,18 +171,18 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 
 	newBox.Parent = machinePart
 
-	-- 4. GROWTH LOOP
+	-- 4. GROWTH LOOP (OPTIMIZED)
 	task.spawn(function()
+		local lastSteppedRatio = -1 -- Cache untuk menghindari update fisik (Size & CFrame) berulang-ulang
+
 		while newBox and newBox.Parent == machinePart and not newBox:GetAttribute("HasPicked") do
 			local speed = machineArea:GetAttribute("Upg_SpeedExpBox") or 0
 			local expBoost = machineArea:GetAttribute("Upg_ExpAmountBox") or 0
 			local eventBoostPercent = GameConfig.CheckExpBoost()
 
 			local baseExp = 20 + expBoost
-
 			local totalMultiplier = eventBoostPercent / 100
 			local finalExp = math.floor(baseExp + (baseExp * totalMultiplier))
-			--print("EXP FINAL: " .. finalExp .. " | Event: " .. eventBoostPercent .. "% | Upg: " .. expBoost .. "%")
 
 			task.wait(math.max(0.1, 2 / (1 + (speed * 0.15))))
 
@@ -192,6 +202,7 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 			-- ==========================================
 			-- LOGIKA MELOMPAT LEVEL (LOOPING EXP)
 			-- ==========================================
+			local levelChanged = false
 			while true do
 				local lvlData = GameConfig.BoxLevels[curLvl]
 				if not lvlData then
@@ -202,16 +213,19 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 				if totalExpPool >= lvlData.MaxExp and curLvl < maxLevel then
 					totalExpPool -= lvlData.MaxExp
 					curLvl += 1
-
-					local newLvlData = GameConfig.BoxLevels[curLvl]
-					newBox:SetAttribute("Level", curLvl)
-					newBox:SetAttribute("MaxExp", newLvlData.MaxExp)
-					newBox:SetAttribute("Name", newLvlData.Name)
-					newBox.Name = newLvlData.Name .. "_Variant_" .. bVariants
+					levelChanged = true
 				else
-					-- BERHENTI LOOPING: Entah Exp habis atau sudah Level Max
 					break
 				end
+			end
+
+			-- Terapkan perubahan level jika ada
+			if levelChanged then
+				local newLvlData = GameConfig.BoxLevels[curLvl]
+				newBox:SetAttribute("Level", curLvl)
+				newBox:SetAttribute("MaxExp", newLvlData.MaxExp)
+				newBox:SetAttribute("Name", newLvlData.Name)
+				newBox.Name = newLvlData.Name .. "_Variant_" .. bVariants
 			end
 
 			-- ==========================================
@@ -220,78 +234,54 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 			local currentLvlData = GameConfig.BoxLevels[curLvl]
 			local newExp = totalExpPool
 
-			-- Jika sudah level max, kita batasi Exp-nya agar tidak melebihi MaxExp level tersebut
-			-- (Atau biarkan saja bertambah jika kamu ingin angka Exp-nya terus naik)
 			if curLvl >= maxLevel then
-				-- Jika ingin visual bar/box penuh terus:
-				--newExp = math.max(newExp, currentLvlData.MaxExp)
 				newExp = currentLvlData.MaxExp
 			end
 
 			newBox:SetAttribute("Exp", newExp)
 
 			-- ==========================================
-			-- UPDATE VISUAL (SIZE & POSITION)
+			-- UPDATE VISUAL (SIZE & POSITION) - OPTIMIZED
 			-- ==========================================
-			-- GrowthRatio 1.0 berarti box ukuran maksimal (targetSize)
-			-- 1. Hitung rasio asli (dari 0.0 sampai 1.0)
 			local rawGrowthRatio = math.clamp(newExp / currentLvlData.MaxExp, 0, 1)
-
-			-- 2. Ubah rasio menjadi 4 tahap perubahan (0%, 25%, 50%, 75%, 100%)
 			local totalSteps = 4
 			local steppedGrowthRatio = math.floor(rawGrowthRatio * totalSteps) / totalSteps
 
-			-- 3. Kalkulasi ukuran menggunakan rasio yang sudah bertahap
-			local startSize = Vector3.new(2, 2, 2)
-			local targetSize = Vector3.new(5, 5, 5)
-			local newSize = startSize:Lerp(targetSize, steppedGrowthRatio)
+			-- Hanya perbarui properti Part (Size & CFrame) jika step pertumbuhan berubah (hanya 5 kali per lifetime)
+			if steppedGrowthRatio ~= lastSteppedRatio then
+				lastSteppedRatio = steppedGrowthRatio
+				local startSize = Vector3.new(2, 2, 2)
+				local targetSize = Vector3.new(5, 5, 5)
+				local newSize = startSize:Lerp(targetSize, steppedGrowthRatio)
 
-			-- 4. Terapkan ukuran dan posisi
-			newBox.Handle.Size = newSize
+				newBox.Handle.Size = newSize
+				local offsetInput = (machinePart.Size.Y / 2) + (newSize.Y / 2)
+				newBox.Handle.CFrame = machinePart.CFrame * CFrame.new(0, offsetInput, 0)
+			end
 
-			local offsetInput = (machinePart.Size.Y / 2) + (newSize.Y / 2)
-			newBox.Handle.CFrame = machinePart.CFrame * CFrame.new(0, offsetInput, 0)
+			-- ==========================================
+			-- UPDATE VISUAL TEXT (OPTIMIZED - DIRECT CALL PER TICK)
+			-- ==========================================
+			-- Menghilangkan listener AttributeChanged dan meng-update langsung agar menghemat CPU & replikasi
+			BoxModule.UpdateBoxText(newBox.Handle, curLvl, newExp, currentLvlData.MaxExp, bVariants)
 		end
 
-		-- Reset State for Respawn only if there isn't already another box on the machine
+		-- Reset State untuk Respawn jika tidak ada box aktif lain
 		local activeBox = machinePart:FindFirstChildOfClass("Tool")
 		if not activeBox or activeBox == newBox then
 			machineArea:SetAttribute("IsRunning", false)
-
-			-- Tunggu sebentar sebelum membolehkan spawn baru
 			task.wait(0.2)
-			-- Trigger spawn baru hanya jika pemain masih pemilik plot
-			local owner, _ = getPlotOwner(machinePart)
-			if owner == player then
+
+			local ownerName = plotModel:GetAttribute("Owner")
+			if ownerName and ownerName == player.Name then
 				pcall(function()
 					spawnBox(player, machineArea, nil)
 				end)
 			else
-				print("PLAYER NO LONGER OWNER, SKIPPING RESPAWN")
+				warn("PLAYER NO LONGER OWNER, SKIPPING RESPAWN")
 			end
 		else
-			print("ANOTHER ACTIVE BOX ALREADY SPAWNED, SKIPPING RESPAWN")
-		end
-	end)
-
-	-- 5. LISTENER UNTUK UPDATE UI SAAT ATRIBUT BERUBAH
-	newBox.AttributeChanged:Connect(function(attr)
-		if attr == "Exp" or attr == "Level" or attr == "Name" or attr == "MaxExp" or attr == "Variants" then
-			if not newBox or not newBox.Parent then
-				return
-			end
-
-			local handle = newBox:FindFirstChild("Handle")
-			if not handle then
-				return
-			end -- Mencegah error jika Handle sudah hilang
-
-			local curLvl = newBox:GetAttribute("Level")
-			local curExp = newBox:GetAttribute("Exp")
-			local maxExp = newBox:GetAttribute("MaxExp")
-			local varnt = newBox:GetAttribute("Variants")
-
-			BoxModule.UpdateBoxText(newBox.Handle, curLvl, curExp, maxExp, varnt)
+			warn("ANOTHER ACTIVE BOX ALREADY SPAWNED, SKIPPING RESPAWN")
 		end
 	end)
 end
@@ -304,20 +294,19 @@ local function setupMachineArea(machineArea: Folder)
 		return
 	end
 	machineArea:SetAttribute("IsInitialized", true)
-	local machinePart, billboardModel = getMachineComponents(machineArea)
+	local _, billboardModel = getMachineComponents(machineArea)
 
-	listOfBoards[machineArea.Name] = {
+	listOfBoards[machineArea] = {
 		area = billboardModel:FindFirstChild("Area"),
 		surface = billboardModel.Area:FindFirstChild("SurfaceGui"),
 		list = billboardModel.Area.SurfaceGui:FindFirstChild("List"),
 		itemTemplate = billboardModel.Area.SurfaceGui.List:FindFirstChild("Item"),
 	}
 
-	local board = listOfBoards[machineArea.Name]
+	local board = listOfBoards[machineArea]
 
 	-- Function to start the actual spawner logic
 	local function startLogic(player, plot)
-		-- Asumsi 'machine' sudah dideklarasikan di luar fungsi ini
 		if machineArea:GetAttribute("Active") then
 			return
 		end
@@ -328,17 +317,12 @@ local function setupMachineArea(machineArea: Folder)
 		end
 
 		local machineData = nil
-
 		local loadedData = DataManager.getPlayerData(player)
 
 		if loadedData and loadedData.PlotData and loadedData.PlotData.Machines then
 			machineData = loadedData.PlotData.Machines[machineArea.Name]
 
 			if machineData then
-				-- local scopeMachine = machineArea:FindFirstChildOfClass("Part")
-
-				-- PERBAIKAN 2: Hapus task.wait(0.5) agar pemuatan data berjalan instan tanpa lag
-				--task.wait(0.5)
 				for name, value in pairs(machineData.Attributes) do
 					if name ~= "IsRunning" and name ~= "Active" and name ~= "IsInitialized" then
 						machineArea:SetAttribute(name, value)
@@ -357,19 +341,15 @@ local function setupMachineArea(machineArea: Folder)
 			end
 		end
 
-		-- print(machineData)
-
 		-- Logic Loop
 		task.spawn(function()
 			while machineArea:GetAttribute("Active") do
-				-- Stop if player leaves or plot owner changes
 				local currentOwner = plot:GetAttribute("Owner")
 				if not player or not player.Parent or currentOwner ~= player.Name then
 					machineArea:SetAttribute("Active", false)
 					break
 				end
 
-				-- PERBAIKAN 3: Jangan gunakan 'return', gunakan 'if not'
 				if not machineArea:GetAttribute("IsRunning") then
 					if machineData and machineData.ActiveBox then
 						spawnBox(player, machineArea, machineData.ActiveBox)
@@ -392,28 +372,26 @@ local function setupMachineArea(machineArea: Folder)
 	local plotModel: Folder = machinesFolder.Parent :: Folder
 	if plotModel then
 		plotModel:GetAttributeChangedSignal("Owner"):Connect(function()
-			local player, plot = getPlotOwner(machinePart)
+			local ownerName = plotModel:GetAttribute("Owner")
+			local player = ownerName and ownerName ~= "" and Players:FindFirstChild(ownerName)
 			if player then
-				--print("ON GET OWNER PLOT CHANGE")
-				startLogic(player, plot)
+				startLogic(player, plotModel)
 			end
 		end)
 
 		-- Immediate check in case owner is already set
-		local player, plot = getPlotOwner(machinePart)
+		local ownerName = plotModel:GetAttribute("Owner")
+		local player = ownerName and ownerName ~= "" and Players:FindFirstChild(ownerName)
 		if player then
-			--print("ON GET OWNER PLOT IMMEDIATE")
-			startLogic(player, plot)
+			startLogic(player, plotModel)
 		end
 	end
 
 	if billboardModel then
 		local upgradeList = UpgradeConfig.getUpgradesForArea(machineArea.Name)
-		-- Variabel untuk mencegah infinite loop
 
 		for _, v in pairs(upgradeList) do
 			local attrName = v.ID
-			-- machineArea:SetAttribute(attrName, machineArea:GetAttribute(attrName) or false)
 
 			-- Buat UI untuk setiap upgrade
 			if board.list and board.itemTemplate then
@@ -427,18 +405,26 @@ local function setupMachineArea(machineArea: Folder)
 				newItem.Parent = board.list
 			end
 		end
-		board.itemTemplate:Destroy()
+		if board.itemTemplate then
+			board.itemTemplate:Destroy()
+		end
 
 		local upgradeLookup = {}
 		for _, v in pairs(upgradeList) do
 			upgradeLookup[v.ID] = true
 		end
 
+		local isUpdatingAttributes = false -- Flag untuk memblokir event cascade loop
 		machineArea.AttributeChanged:Connect(function(attributeName)
+			if isUpdatingAttributes then
+				return
+			end
 			-- Hanya bereaksi jika atribut yang berubah adalah salah satu upgrade yang dibeli player
 			if not upgradeLookup[attributeName] then
 				return
 			end
+
+			isUpdatingAttributes = true
 
 			-- RESET nilai ke 0 sebelum kalkulasi ulang
 			local newSpeed = 0
@@ -462,7 +448,7 @@ local function setupMachineArea(machineArea: Folder)
 				end
 			end
 
-			-- Update atribut hanya jika nilainya benar-benar berubah (menghemat performa)
+			-- Update atribut hanya jika nilainya berubah
 			if machineArea:GetAttribute("Upg_SpeedExpBox") ~= newSpeed then
 				machineArea:SetAttribute("Upg_SpeedExpBox", newSpeed)
 			end
@@ -470,18 +456,20 @@ local function setupMachineArea(machineArea: Folder)
 				machineArea:SetAttribute("Upg_ExpAmountBox", newExp)
 			end
 
-			-- Bersihkan/reset variant chance yang sudah tidak aktif di machineArea
+			-- Bersihkan/reset variant chance lama
 			for name, _ in pairs(machineArea:GetAttributes()) do
 				if string.find(name, "^Upg_VariantChance_") then
 					machineArea:SetAttribute(name, nil)
 				end
 			end
 
-			-- Terapkan nilai upgrade yang aktif ke machineArea
+			-- Terapkan nilai upgrade baru yang aktif
 			for variantType, val in pairs(variantUpgrades) do
 				local attrName = "Upg_VariantChance_" .. variantType
 				machineArea:SetAttribute(attrName, val)
 			end
+
+			isUpdatingAttributes = false
 		end)
 	end
 end

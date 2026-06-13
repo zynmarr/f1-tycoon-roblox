@@ -27,18 +27,22 @@ local function processPickup(player: Player, car: Tool)
 	car.Parent = character
 
 	-- Hook: Subtract income from player passive income cache
-	local carIncome = car:GetAttribute("Income") or 0
+	local carIncome: number = car:GetAttribute("Income") :: number or 0
 	playerPassiveIncome[player] = math.max(0, (playerPassiveIncome[player] or 0) - carIncome)
 end
 
 local function storeCarToArea(player: Player, area: Part, tool: Tool)
-	local myCars = area:FindFirstChild("MyCars") or (area.Parent and area.Parent:FindFirstChild("MyCars"))
-	local prompt = area:FindFirstChild("ProximityPrompt") or (area.Parent and area.Parent:FindFirstChild("ProximityPrompt")) :: ProximityPrompt?
+	local myCars: Folder? = area:FindFirstChild("MyCars") :: Folder?
+		or (area.Parent and area.Parent:FindFirstChild("MyCars")) :: Folder?
+	local prompt: ProximityPrompt? = area:FindFirstChild("ProximityPrompt") :: ProximityPrompt?
+		or (area.Parent and area.Parent:FindFirstChild("ProximityPrompt")) :: ProximityPrompt?
 
-	if not myCars then
-		myCars = Instance.new("Folder")
-		myCars.Name = "MyCars"
-		myCars.Parent = area.Parent or area
+	if myCars then
+	else
+		local newFolder = Instance.new("Folder") :: Folder
+		newFolder.Name = "MyCars"
+		newFolder.Parent = area.Parent or area
+		myCars = newFolder
 	end
 
 	if tool:IsA("Tool") and tool:GetAttribute("Price") then
@@ -84,7 +88,7 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 		end
 
 		-- Hook: Add income to player passive income cache
-		local carIncome = tool:GetAttribute("Income") or 0
+		local carIncome: number = tool:GetAttribute("Income") :: number or 0
 		playerPassiveIncome[player] = (playerPassiveIncome[player] or 0) + carIncome
 
 		warn("Mobil berhasil diparkir di: " .. tostring(targetCFrame.Position))
@@ -92,7 +96,7 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 end
 
 local function parkedInArea(area: Part)
-	local prompt = area:FindFirstChild("ProximityPrompt") 
+	local prompt: ProximityPrompt? = area:FindFirstChild("ProximityPrompt") :: ProximityPrompt?
 		or (area.Parent and area.Parent:FindFirstChild("ProximityPrompt")) :: ProximityPrompt?
 	if not prompt then
 		return
@@ -128,7 +132,8 @@ local function parkedInArea(area: Part)
 
 		-- MODE: PARKIR (Jika area sedang Kosong)
 		if not isActive then
-			local isCarTool = toolOnCharacter and (CollectionService:HasTag(toolOnCharacter, "Car") or toolOnCharacter:GetAttribute("Price") ~= nil)
+			local isCarTool = toolOnCharacter
+				and (CollectionService:HasTag(toolOnCharacter, "Car") or toolOnCharacter:GetAttribute("Price") ~= nil)
 			if toolOnCharacter and isCarTool then
 				warn("Parking mode: Menyimpan mobil...")
 				storeCarToArea(player, area, toolOnCharacter)
@@ -163,7 +168,7 @@ local function parkedInArea(area: Part)
 	end)
 end
 
-function ParkingAreaManager:Init()
+function ParkingAreaManager.Init()
 	local function onSpawnerAdded(area: Part)
 		task.spawn(parkedInArea, area)
 	end
@@ -188,15 +193,24 @@ function ParkingAreaManager:Init()
 			for player, totalIncome in pairs(playerPassiveIncome) do
 				if player and player.Parent and totalIncome > 0 then
 					local leaderstats = player:FindFirstChild("leaderstats")
-					local cash = leaderstats and leaderstats:FindFirstChild("Cash")
+					local cash: IntValue? = leaderstats and leaderstats:FindFirstChild("Cash") :: IntValue?
 					if cash then
 						-- Calculate VIP/Staff Multiplier
 						local multiplier = 1.0
-						local roleInfo = RoleManager.getRole(player)
-						if roleInfo and (roleInfo.Name == "VIP" or roleInfo.Name == "Staff" or roleInfo.Name == "Moderator" or roleInfo.Name == "Developer" or roleInfo.Name == "Owner") then
+						local roleInfo = RoleManager.getPlayerRole(player)
+						if
+							roleInfo
+							and (
+								roleInfo == "VIP"
+								or roleInfo == "Staff"
+								or roleInfo == "Moderator"
+								or roleInfo == "Developer"
+								or roleInfo == "Owner"
+							)
+						then
 							multiplier = 1.2
 						end
-						
+
 						local addedCash = math.floor(totalIncome * multiplier)
 						cash.Value = cash.Value + addedCash
 					end

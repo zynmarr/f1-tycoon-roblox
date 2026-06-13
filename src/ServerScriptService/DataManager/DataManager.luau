@@ -217,7 +217,7 @@ function DataManager.syncData(player)
 
 	scanTools(player:FindFirstChild("Backpack"), "Backpack")
 	if player.Character then
-		scanTools(player.Character, "Character")
+		scanTools(player.Character, "Backpack")
 	end
 
 	-- 3. Scan Seluruh Mobil di Lahan Parkir & Mesin secara Dinamis

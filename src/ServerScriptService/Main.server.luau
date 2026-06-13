@@ -15,6 +15,7 @@ local CarManager = safeRequire(game.ServerScriptService.CarManager.CarManager, "
 local SpawnerBoxManager = safeRequire(game.ServerScriptService.SpawnerBoxManager.SpawnerBoxManager, "SpawnerBoxManager")
 local BoxManager = safeRequire(game.ServerScriptService.BoxManager.BoxManager, "BoxManager")
 local RoleManager = safeRequire(script.Parent.RoleManager.RoleManager, "RoleManager")
+local ParkingAreaManager = safeRequire(script.Parent.ParkingAreaManager.ParkingAreaManager, "ParkingAreaManager")
 -- local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
 
 -- ==========================================================
@@ -129,7 +130,8 @@ local function setupPlayerSkinsAndAssets(player: Player, data: any, myPlot: Inst
 
 	if data.Inventory then
 		for _, item in pairs(data.Inventory) do
-			local isBox = (item.Attributes and item.Attributes.Type == "Box") or (item.Name and string.find(item.Name, "Level") ~= nil)
+			local isBox = (item.Attributes and item.Attributes.Type == "Box")
+				or (item.Name and string.find(item.Name, "Level") ~= nil)
 			if isBox then
 				pcall(function()
 					loadInventoryItem(player, item)
@@ -251,6 +253,9 @@ local function InitializeServer()
 	end
 	if typeof(BoxManager.Init) == "function" then
 		BoxManager.Init()
+	end
+	if typeof(ParkingAreaManager.Init) == "function" then
+		ParkingAreaManager.Init()
 	end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)

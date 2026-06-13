@@ -40,8 +40,9 @@ local function createOverhead(player: Player, character: Model)
 
 	if roleName == "Player" then
 		billboard.Size = UDim2.new(0, 300, 0, 30)
+		-- billboard.SizeBehavior = Enum.SizeBehavior.ScreenSize
 		billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Ketinggian lebih rendah untuk text biasa
-		
+
 		local nameLabel = Instance.new("TextLabel")
 		nameLabel.Name = "PlayerName"
 		nameLabel.Size = UDim2.new(1, 0, 1, 0)
@@ -50,13 +51,15 @@ local function createOverhead(player: Player, character: Model)
 		nameLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
 		nameLabel.Font = Enum.Font.GothamBold
 		nameLabel.TextSize = 15
+		nameLabel.TextScaled = false
 		nameLabel.TextStrokeTransparency = 0.35
 		nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 		nameLabel.Parent = frame
 	else
 		billboard.Size = UDim2.new(0, 300, 0, 30)
+		-- billboard.SizeBehavior = Enum.SizeBehavior.ScreenSize
 		billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Ketinggian sama dengan player biasa karena sebaris
-		
+
 		-- UI List Layout untuk susunan horizontal sebaris tanpa bingkai
 		local listLayout = Instance.new("UIListLayout")
 		listLayout.FillDirection = Enum.FillDirection.Horizontal
@@ -65,7 +68,7 @@ local function createOverhead(player: Player, character: Model)
 		listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 		listLayout.Padding = UDim.new(0, 6)
 		listLayout.Parent = frame
-		
+
 		-- Label Nama Player
 		local nameLabel = Instance.new("TextLabel")
 		nameLabel.Name = "PlayerName"
@@ -76,34 +79,40 @@ local function createOverhead(player: Player, character: Model)
 		nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 		nameLabel.Font = Enum.Font.GothamBold
 		nameLabel.TextSize = 15
+		nameLabel.TextScaled = false
 		nameLabel.TextStrokeTransparency = 0.35
 		nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 		nameLabel.LayoutOrder = 1
 		nameLabel.Parent = frame
-		
+
 		-- Label Tag Role di samping nama (Contoh: [⚡ OWNER])
 		local roleLabel = Instance.new("TextLabel")
 		roleLabel.Name = "RoleLabel"
 		roleLabel.AutomaticSize = Enum.AutomaticSize.XY
 		roleLabel.Size = UDim2.new(0, 0, 1, 0)
 		roleLabel.BackgroundTransparency = 1
-		local roleText = string.format("[%s%s]", roleData.Emoji ~= "" and roleData.Emoji .. " " or "", string.upper(roleData.DisplayName))
+		local roleText = string.format(
+			"[%s%s]",
+			roleData.Emoji ~= "" and roleData.Emoji .. " " or "",
+			string.upper(roleData.DisplayName)
+		)
 		roleLabel.Text = roleText
 		roleLabel.TextColor3 = roleData.Color
 		roleLabel.Font = Enum.Font.GothamBold
 		roleLabel.TextSize = 15
+		roleLabel.TextScaled = false
 		roleLabel.TextStrokeTransparency = 0.35
 		roleLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 		roleLabel.LayoutOrder = 2
 		roleLabel.Parent = frame
-		
+
 		-- UIGradient untuk menganimasikan efek role masing-masing di client
 		local roleGradient = Instance.new("UIGradient")
 		roleGradient.Name = "RoleGradient"
 		local baseColor = roleData.Color
 		roleGradient.Color = ColorSequence.new(baseColor)
 		roleGradient.Parent = roleLabel
-		
+
 		-- Tandai dengan CollectionService agar client-side mendeteksi dan memberi animasi custom
 		local CollectionService = game:GetService("CollectionService")
 		CollectionService:AddTag(roleGradient, "RoleGradient")

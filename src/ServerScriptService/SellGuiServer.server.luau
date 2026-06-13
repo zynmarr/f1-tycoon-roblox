@@ -7,7 +7,7 @@ local RoleManager = require(game:GetService("ServerScriptService"):WaitForChild(
 -- SELLGUI SERVER HANDLER (NETWORKER VERSION)
 -- ===============================================
 
-local MAX_DISTANCE = 200
+local MAX_DISTANCE = 50
 
 local SellGuiManager = {}
 
@@ -20,6 +20,14 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 			Success = false,
 			Error = "Player tidak ditemukan",
 		}
+	end
+
+	-- ===== ANTI-CHEAT: Type Validation =====
+	if not car or typeof(car) ~= "Instance" then
+		return { Success = false, Error = "Parameter mobil tidak valid" }
+	end
+	if stackChildName ~= nil and type(stackChildName) ~= "string" then
+		return { Success = false, Error = "Parameter stack tidak valid" }
 	end
 
 	local char = player.Character
@@ -200,6 +208,10 @@ function SellGuiManager:sellAllCars(player, cars)
 		}
 	end
 
+	if typeof(cars) ~= "table" then
+		return { Success = false, Error = "Parameter tidak valid" }
+	end
+
 	local char = player.Character
 	local root = char and char:FindFirstChild("HumanoidRootPart")
 	if not char or not root then
@@ -239,7 +251,14 @@ function SellGuiManager:sellAllCars(player, cars)
 		multiplier = 1.2 -- 20% bonus Cash untuk VIP/Staff
 	end
 
+	-- ANTI-CHEAT: Deduplikasi referensi mobil untuk mencegah exploit duplikasi
+	local processedCars = {}
+
 	for _, car in ipairs(cars) do
+		-- Skip jika mobil sudah diproses (anti-duplikasi)
+		if processedCars[car] then continue end
+		processedCars[car] = true
+
 		if car and GameUtils.isCar(car) then
 			local inBackpack = car:IsDescendantOf(player)
 			local inCharacter = player.Character and car:IsDescendantOf(player.Character) or false

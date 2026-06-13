@@ -1,12 +1,11 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 
--- Membuat RemoteEvent secara otomatis jika belum ada di ReplicatedStorage
-local notifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+-- Menunggu RemoteEvent dari server (TIDAK membuat dari client untuk keamanan)
+local notifEvent = ReplicatedStorage:WaitForChild("NotifEvent", 10)
 if not notifEvent then
-	notifEvent = Instance.new("RemoteEvent")
-	notifEvent.Name = "NotifEvent"
-	notifEvent.Parent = ReplicatedStorage
+	warn("[NotifHandler] NotifEvent tidak ditemukan dari server!")
+	return
 end
 
 -- Mendengarkan sinyal dari Server
