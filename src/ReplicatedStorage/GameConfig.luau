@@ -767,6 +767,12 @@ function GameConfig.CalculatePrice(base, rName, vNameString)
 end
 
 function GameConfig.cleanupAndWeldCar(model)
+	local primary = model.PrimaryPart
+	if not primary then
+		print("Model tidak memiliki PrimaryPart")
+		return
+	end
+
 	for _, p in pairs(model:GetDescendants()) do
 		if p:IsA("Script") or p:IsA("LocalScript") then
 			p.Enabled = false
@@ -789,28 +795,19 @@ function GameConfig.cleanupAndWeldCar(model)
 			pcall(function()
 				p:Destroy()
 			end)
-		end
-	end
-
-	local primary = model.PrimaryPart
-	if primary then
-		for _, p in pairs(model:GetDescendants()) do
-			if p:IsA("BasePart") then
-				p.Anchored = false
-				p.CanCollide = false
-				p.Massless = true
-				if p ~= primary then
-					local w = Instance.new("WeldConstraint")
-					w.Part0 = primary
-					w.Part1 = p
-					w.Parent = primary
-				end
+		elseif p:IsA("BasePart") then
+			p.Anchored = false
+			p.CanCollide = false
+			p.Massless = true
+			if p ~= primary then
+				local w = Instance.new("WeldConstraint")
+				w.Part0 = primary
+				w.Part1 = p
+				w.Parent = primary
 			end
 		end
-		print("CLEAN UP BERHASIL")
-	else
-		print("Model tidak memiliki PrimaryPart")
 	end
+	print("CLEAN UP BERHASIL")
 end
 
 function GameConfig.GetColoredVariantList(variantString)

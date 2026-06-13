@@ -2,18 +2,40 @@
 local RunService = game:GetService("RunService")
 local CollectionService = game:GetService("CollectionService")
 
+local gradients = {}
+
+local function addGradient(gradient: Instance)
+	if gradient:IsA("UIGradient") and not table.find(gradients, gradient) then
+		table.insert(gradients, gradient)
+	end
+end
+
+local function removeGradient(gradient: Instance)
+	local index = table.find(gradients, gradient)
+	if index then
+		table.remove(gradients, index)
+	end
+end
+
+CollectionService:GetInstanceAddedSignal("RoleGradient"):Connect(addGradient)
+CollectionService:GetInstanceRemovedSignal("RoleGradient"):Connect(removeGradient)
+
+for _, gradient in ipairs(CollectionService:GetTagged("RoleGradient")) do
+	addGradient(gradient)
+end
+
 RunService.Heartbeat:Connect(function(dt: number)
 	local time = tick()
 
-	for _, gradient in ipairs(CollectionService:GetTagged("RoleGradient")) do
-		if not gradient:IsA("UIGradient") then
+	for _, gradient in ipairs(gradients) do
+		if not gradient.Parent then
 			continue
 		end
 
 		local roleName = gradient:GetAttribute("RoleName")
 
 		if roleName == "Owner" then
-			-- 1. OWNER: Rainbow/Chroma Wave (Perpindahan warna pelangi neon HSV yang sangat halus)
+			-- 1. OWNER: Rainbow/Chroma Wave
 			local t = time * 0.35
 			local c1 = Color3.fromHSV((t) % 1, 0.8, 1)
 			local c2 = Color3.fromHSV((t + 0.33) % 1, 0.8, 1)
@@ -24,13 +46,13 @@ RunService.Heartbeat:Connect(function(dt: number)
 				ColorSequenceKeypoint.new(0.5, c2),
 				ColorSequenceKeypoint.new(1.0, c3),
 			})
-			gradient.Offset = Vector2.new(0, 0) -- Reset offset agar tidak bergeser aneh
+			gradient.Offset = Vector2.new(0, 0)
 			gradient.Rotation = 0
 			
 		elseif roleName == "Developer" then
-			-- 2. DEVELOPER: Fire Pulse (Pulsasi membara merah ke oranye-emas terang)
+			-- 2. DEVELOPER: Fire Pulse
 			local t = time * 3.0
-			local pulse = math.sin(t) * 0.5 + 0.5 -- 0 ke 1
+			local pulse = math.sin(t) * 0.5 + 0.5
 			local c1 = Color3.fromRGB(255, 45, 45):Lerp(Color3.fromRGB(255, 140, 0), pulse)
 			local c2 = Color3.fromRGB(255, 140, 0):Lerp(Color3.fromRGB(255, 230, 0), pulse)
 			
@@ -43,7 +65,7 @@ RunService.Heartbeat:Connect(function(dt: number)
 			gradient.Rotation = 0
 			
 		elseif roleName == "Moderator" then
-			-- 3. MODERATOR: Shield Pulse (Pulsasi biru elektrik ke cyan perisai pelindung)
+			-- 3. MODERATOR: Shield Pulse
 			local t = time * 2.0
 			local pulse = math.sin(t) * 0.5 + 0.5
 			local c1 = Color3.fromRGB(0, 160, 255):Lerp(Color3.fromRGB(0, 255, 220), pulse)
@@ -58,13 +80,13 @@ RunService.Heartbeat:Connect(function(dt: number)
 			gradient.Rotation = 0
 			
 		elseif roleName == "VIP" then
-			-- 4. VIP: Gold Shimmer Sweep (Kilatan cahaya menyapu warna emas mewah)
-			local progress = (time * 1.2) % 2.5 -- siklus 2.5 detik (termasuk jeda)
+			-- 4. VIP: Gold Shimmer Sweep
+			local progress = (time * 1.2) % 2.5
 			local offset = -1.5
 			if progress < 1.2 then
-				offset = -1.5 + (progress / 1.2) * 3.0 -- Menyapu dari kiri ke kanan selama 1.2 detik
+				offset = -1.5 + (progress / 1.2) * 3.0
 			else
-				offset = 1.5 -- Jeda di sebelah kanan selama 1.3 detik
+				offset = 1.5
 			end
 			gradient.Offset = Vector2.new(offset, 0)
 			gradient.Rotation = 0
