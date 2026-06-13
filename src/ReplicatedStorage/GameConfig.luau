@@ -454,16 +454,20 @@ function GameConfig.ApplyVisuals(tool: Tool, rarityName, variantString)
 				print(vData.Effect)
 				if handle then
 					for _, part in pairs(handle:GetChildren()) do
-						if part.Name == vData.Effect.Name then
+						if part.Name == vData.Effect then
 							part:Destroy()
 							print("effect dihapus")
 							break
 						end
 					end
-					local effect = variantFolder:FindFirstChild(vData.Effect)
-					local clonedEffect = effect:Clone()
-					clonedEffect.Parent = handle
-					print("effect ditemukan")
+					local effect = variantFolder and variantFolder:FindFirstChild(vData.Effect)
+					if effect then
+						local clonedEffect = effect:Clone()
+						clonedEffect.Parent = handle
+						print("effect ditemukan")
+					else
+						warn("[GameConfig] Effect template '" .. tostring(vData.Effect) .. "' tidak ditemukan di ServerStorage.VariantEffect!")
+					end
 				end
 			end
 		end

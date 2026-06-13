@@ -11,8 +11,8 @@ PlotManager.billboard = {}
 
 local function plotArea(plot: Folder)
 	local billboard = plot:FindFirstChild("Billboard")
-	local part = billboard:FindFirstChild("Sign")
-	local surfaceGui = part:FindFirstChild("SurfaceGui")
+	local part = billboard and billboard:FindFirstChild("Sign")
+	local surfaceGui = part and part:FindFirstChild("SurfaceGui")
 
 	for _, child in pairs(plot:GetDescendants()) do
 		if child:IsA("BasePart") then

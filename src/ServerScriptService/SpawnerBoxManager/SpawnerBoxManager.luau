@@ -296,11 +296,16 @@ local function setupMachineArea(machineArea: Folder)
 	machineArea:SetAttribute("IsInitialized", true)
 	local _, billboardModel = getMachineComponents(machineArea)
 
+	local boardArea = billboardModel and billboardModel:FindFirstChild("Area")
+	local boardSurface = boardArea and boardArea:FindFirstChild("SurfaceGui")
+	local boardList = boardSurface and boardSurface:FindFirstChild("List")
+	local boardItemTemplate = boardList and boardList:FindFirstChild("Item")
+
 	listOfBoards[machineArea] = {
-		area = billboardModel:FindFirstChild("Area"),
-		surface = billboardModel.Area:FindFirstChild("SurfaceGui"),
-		list = billboardModel.Area.SurfaceGui:FindFirstChild("List"),
-		itemTemplate = billboardModel.Area.SurfaceGui.List:FindFirstChild("Item"),
+		area = boardArea,
+		surface = boardSurface,
+		list = boardList,
+		itemTemplate = boardItemTemplate,
 	}
 
 	local board = listOfBoards[machineArea]

@@ -72,11 +72,11 @@ local function onPlayerAdded(player)
 		-- 3. LOGIKA COMMAND
 		if command == "/variant" then
 			if value then
-				variantBoost.Value = value
+				variantBoost.Value = math.clamp(value, 0, 100)
 				print(
 					string.format(
 						"[EVENT] 🌟 Variant Boost aktif: %d%% | Admin: %s (ID: %d)",
-						value,
+						variantBoost.Value,
 						player.Name,
 						player.UserId
 					)
@@ -86,11 +86,11 @@ local function onPlayerAdded(player)
 			end
 		elseif command == "/luck" then
 			if value then
-				luckBoost.Value = value
+				luckBoost.Value = math.clamp(value, 0, 500)
 				print(
 					string.format(
 						"[EVENT] 🍀 Lucky Chance diset: %d%% | Admin: %s (ID: %d)",
-						value,
+						luckBoost.Value,
 						player.Name,
 						player.UserId
 					)
@@ -100,11 +100,11 @@ local function onPlayerAdded(player)
 			end
 		elseif command == "/exp" then
 			if value then
-				expBoost.Value = value
+				expBoost.Value = math.clamp(value, 0, 500)
 				print(
 					string.format(
 						"[EVENT] 🆙 Exp Boost aktif: +%d%% | Admin: %s (ID: %d)",
-						value,
+						expBoost.Value,
 						player.Name,
 						player.UserId
 					)
@@ -114,11 +114,12 @@ local function onPlayerAdded(player)
 			end
 		elseif command == "/speed" then
 			if value then
-				ReplicatedStorage:SetAttribute("SpeedBoost", value)
+				local clampedSpeed = math.clamp(value, 0, 100)
+				ReplicatedStorage:SetAttribute("SpeedBoost", clampedSpeed)
 				print(
 					string.format(
 						"[EVENT] ⚡ Speed Boost aktif: %d%% | Admin: %s (ID: %d)",
-						value,
+						clampedSpeed,
 						player.Name,
 						player.UserId
 					)
@@ -145,3 +146,7 @@ Players.PlayerAdded:Connect(onPlayerAdded)
 for _, player in ipairs(Players:GetPlayers()) do
 	task.spawn(onPlayerAdded, player)
 end
+
+Players.PlayerRemoving:Connect(function(player)
+	commandCooldowns[player.UserId] = nil
+end)

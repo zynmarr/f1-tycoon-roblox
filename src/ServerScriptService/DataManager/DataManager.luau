@@ -126,7 +126,15 @@ end
 -- CORE: LOAD DATA (ProfileService)
 -- ==========================================
 function DataManager.loadData(player)
-	local profile = GameProfileStore:LoadProfileAsync("Player_" .. player.UserId)
+	local loadSuccess, profile = pcall(function()
+		return GameProfileStore:LoadProfileAsync("Player_" .. player.UserId)
+	end)
+
+	if not loadSuccess then
+		warn("[DataManager] Error saat LoadProfileAsync: " .. tostring(profile))
+		player:Kick("Roblox DataStore sedang bermasalah. Silakan coba beberapa saat lagi.")
+		return nil
+	end
 
 	if profile ~= nil then
 		profile:AddUserId(player.UserId)
@@ -218,7 +226,7 @@ function DataManager.syncData(player)
 
 		scanTools(player:FindFirstChild("Backpack"), "Backpack")
 		if player.Character then
-			scanTools(player.Character, "Character")
+			scanTools(player.Character, "Backpack")
 		end
 	else
 		-- Jika sedang keluar, pertahankan data inventori yang sudah tersinkron sebelumnya
@@ -229,29 +237,35 @@ function DataManager.syncData(player)
 	local myPlot = GameUtils.getPlayerPlot(player)
 
 	if myPlot then
-		local parkingLots = myPlot:FindFirstChild("AllParkingLots")
-		if parkingLots then
-			for _, parking in pairs(parkingLots:GetChildren()) do
-				local carsFolder = parking:FindFirstChild("MyCars", true)
-				if carsFolder then
-					for _, car in pairs(carsFolder:GetChildren()) do
-						if car:IsA("Tool") or car:IsA("Model") then
-							table.insert(finalSave.PlotData.MyCars, {
-								Name = car.Name,
-								Location = parking.Name,
-								Attributes = extractAttributes(car),
-							})
+		local scanSuccess, scanError = pcall(function()
+			local parkingLots = myPlot:FindFirstChild("AllParkingLots")
+			if parkingLots then
+				for _, parking in pairs(parkingLots:GetChildren()) do
+					local carsFolder = parking:FindFirstChild("MyCars", true)
+					if carsFolder then
+						for _, car in pairs(carsFolder:GetChildren()) do
+							if car:IsA("Tool") or car:IsA("Model") then
+								table.insert(finalSave.PlotData.MyCars, {
+									Name = car.Name,
+									Location = parking.Name,
+									Attributes = extractAttributes(car),
+								})
+							end
 						end
 					end
 				end
 			end
-		end
 
-		local plotMachines = myPlot:FindFirstChild("Machines")
-		if plotMachines then
-			for _, machineArea in pairs(plotMachines:GetChildren()) do
-				finalSave.PlotData.Machines[machineArea.Name] = DataManager.extractMachineData(player, machineArea)
+			local plotMachines = myPlot:FindFirstChild("Machines")
+			if plotMachines then
+				for _, machineArea in pairs(plotMachines:GetChildren()) do
+					finalSave.PlotData.Machines[machineArea.Name] = DataManager.extractMachineData(player, machineArea)
+				end
 			end
+		end)
+
+		if not scanSuccess then
+			warn("[DataManager] Gagal melakukan sinkronisasi plot data untuk player: " .. player.Name .. " - Error: " .. tostring(scanError))
 		end
 	end
 
