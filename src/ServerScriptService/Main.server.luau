@@ -133,13 +133,19 @@ local function setupPlayerSkinsAndAssets(player: Player, data: any, myPlot: Inst
 			local isBox = (item.Attributes and item.Attributes.Type == "Box")
 				or (item.Name and string.find(item.Name, "Level") ~= nil)
 			if isBox then
-				pcall(function()
+				local success, err = pcall(function()
 					loadInventoryItem(player, item)
 				end)
+				if not success then
+					warn("[MainServer] Gagal memuat Box: " .. tostring(err))
+				end
 			else
-				pcall(function()
+				local success, err = pcall(function()
 					CarManager.spawnLoadedCar(player, item, myPlot)
 				end)
+				if not success then
+					warn("[MainServer] Gagal memuat Mobil di Backpack: " .. tostring(err))
+				end
 			end
 
 			-- if item.Location == "Backpack" or item.Location == "Character" then
@@ -212,6 +218,37 @@ local function onPlayerAdded(player: Player)
 		end
 	end)
 
+	-- Tracker perubahan inventori real-time (dengan/debounce per frame)
+	local function connectInventoryTracker(character)
+		local backpack = player:WaitForChild("Backpack", 5)
+		local syncPending = false
+
+		local function sync()
+			if syncPending then return end
+			syncPending = true
+			task.defer(function()
+				syncPending = false
+				if player.Parent and not player:GetAttribute("IsLeaving") then
+					pcall(DataManager.syncData, player)
+				end
+			end)
+		end
+
+		if backpack then
+			backpack.ChildAdded:Connect(sync)
+			backpack.ChildRemoved:Connect(sync)
+		end
+		if character then
+			character.ChildAdded:Connect(sync)
+			character.ChildRemoved:Connect(sync)
+		end
+	end
+
+	player.CharacterAdded:Connect(connectInventoryTracker)
+	if player.Character then
+		task.spawn(connectInventoryTracker, player.Character)
+	end
+
 	if player.Character then
 		PlotManager.teleportToPlot(player, player.Character)
 	end
@@ -221,6 +258,7 @@ local function onPlayerAdded(player: Player)
 end
 
 local function onPlayerRemoving(player: Player)
+	player:SetAttribute("IsLeaving", true) -- Kunci agar tidak terjadi overwrite kosong
 	print(`[MainServer] Pemain keluar: {player.Name}. Menyimpan data...`)
 	DataManager.saveData(player)
 	PlotManager.releasePlot(player)

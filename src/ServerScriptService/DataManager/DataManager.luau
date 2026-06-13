@@ -187,37 +187,42 @@ function DataManager.syncData(player)
 	finalSave.Stats.Level = leaderstats:FindFirstChild("Level") and leaderstats.Level.Value or 1
 	finalSave.Stats.Rebirth = leaderstats:FindFirstChild("Rebirth") and leaderstats.Rebirth.Value or 0
 
-	-- 2. Scan Seluruh Item di Backpack & Karakter
-	local function scanTools(folder: Instance?, locationName: string)
-		if not folder then
-			return
-		end
-		for _, item in pairs(folder:GetChildren()) do
-			if item:IsA("Tool") then
-				pcall(function()
-					local itemRecord = {
-						Name = item.Name,
-						Location = locationName,
-						Attributes = extractAttributes(item),
-						Stacks = {},
-					}
-					local stacksFolder = item:FindFirstChild("Stacks")
-					if stacksFolder then
-						for _, stackConfig in pairs(stacksFolder:GetChildren()) do
-							if stackConfig:IsA("Configuration") then
-								table.insert(itemRecord.Stacks, extractAttributes(stackConfig))
+	-- 2. Scan Seluruh Item di Backpack & Karakter (Hanya jika pemain tidak sedang keluar)
+	if not player:GetAttribute("IsLeaving") then
+		local function scanTools(folder: Instance?, locationName: string)
+			if not folder then
+				return
+			end
+			for _, item in pairs(folder:GetChildren()) do
+				if item:IsA("Tool") then
+					pcall(function()
+						local itemRecord = {
+							Name = item.Name,
+							Location = locationName,
+							Attributes = extractAttributes(item),
+							Stacks = {},
+						}
+						local stacksFolder = item:FindFirstChild("Stacks")
+						if stacksFolder then
+							for _, stackConfig in pairs(stacksFolder:GetChildren()) do
+								if stackConfig:IsA("Configuration") then
+									table.insert(itemRecord.Stacks, extractAttributes(stackConfig))
+								end
 							end
 						end
-					end
-					table.insert(finalSave.Inventory, itemRecord)
-				end)
+						table.insert(finalSave.Inventory, itemRecord)
+					end)
+				end
 			end
 		end
-	end
 
-	scanTools(player:FindFirstChild("Backpack"), "Backpack")
-	if player.Character then
-		scanTools(player.Character, "Backpack")
+		scanTools(player:FindFirstChild("Backpack"), "Backpack")
+		if player.Character then
+			scanTools(player.Character, "Character")
+		end
+	else
+		-- Jika sedang keluar, pertahankan data inventori yang sudah tersinkron sebelumnya
+		finalSave.Inventory = profile.Data.Inventory or {}
 	end
 
 	-- 3. Scan Seluruh Mobil di Lahan Parkir & Mesin secara Dinamis
