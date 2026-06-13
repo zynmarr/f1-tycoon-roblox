@@ -54,11 +54,11 @@ local function getMachineComponents(machineArea: Instance)
 		machinePart = machinePart,
 		billboardModel = billboardModel,
 	}
-	warn(
-		`[SpawnerBoxManager] getMachineComponents: Caching components for {machineArea.Name} | MachinePart: {tostring(
-			machinePart
-		)} | BillboardModel: {tostring(billboardModel)}`
-	)
+	-- warn(
+	-- 	`[SpawnerBoxManager] getMachineComponents: Caching components for {machineArea.Name} | MachinePart: {tostring(
+	-- 		machinePart
+	-- 	)} | BillboardModel: {tostring(billboardModel)}`
+	-- )
 
 	return machinePart, billboardModel
 end
