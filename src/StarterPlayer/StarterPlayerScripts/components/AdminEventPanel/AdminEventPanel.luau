@@ -305,7 +305,7 @@ return function(props)
 				Size = UDim2.new(0.58, 0, 1, 0),
 				BackgroundTransparency = 1,
 				CanvasSize = UDim2.new(0, 0, 0, 0),
-				AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y,
+				AutomaticCanvasSize = Enum.AutomaticSize.Y,
 				ScrollBarThickness = 4,
 				ScrollBarImageColor3 = Color3.fromRGB(60, 60, 75),
 			}, {
@@ -666,7 +666,7 @@ return function(props)
 				Size = UDim2.new(1, 0, 1, targetType == "All" and -82 or -46),
 				BackgroundTransparency = 1,
 				CanvasSize = UDim2.new(0, 0, 0, 0),
-				AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y,
+				AutomaticCanvasSize = Enum.AutomaticSize.Y,
 				ScrollBarThickness = 4,
 				ScrollBarImageColor3 = Color3.fromRGB(60, 60, 75),
 			}, {
@@ -869,7 +869,7 @@ return function(props)
 						BorderSizePixel = 1,
 						BorderColor3 = Color3.fromRGB(55, 55, 65),
 						CanvasSize = UDim2.new(0, 0, 0, 0),
-						AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y,
+						AutomaticCanvasSize = Enum.AutomaticSize.Y,
 						ZIndex = 10,
 						ScrollBarThickness = 3,
 					}, {
