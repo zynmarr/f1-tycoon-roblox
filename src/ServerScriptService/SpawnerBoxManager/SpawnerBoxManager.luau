@@ -309,6 +309,7 @@ local function setupMachineArea(machineArea: Folder)
 	}
 
 	local board = listOfBoards[machineArea]
+	local upgradeList = UpgradeConfig.getUpgradesForArea(machineArea.Name)
 
 	-- Function to start the actual spawner logic
 	local function startLogic(player, plot)
@@ -335,11 +336,12 @@ local function setupMachineArea(machineArea: Folder)
 				end
 
 				-- Handle UI Billboard
-				if billboardModel then
-					for name, _ in pairs(machineArea:GetAttributes()) do
-						local item = board.list:FindFirstChild(name)
+				if billboardModel and board.list then
+					for _, v in ipairs(upgradeList) do
+						local item = board.list:FindFirstChild(v.ID)
 						if item then
-							item:Destroy()
+							local hasUpgrade = machineArea:GetAttribute(v.ID) == true
+							item.Visible = not hasUpgrade
 						end
 					end
 				end
@@ -393,8 +395,6 @@ local function setupMachineArea(machineArea: Folder)
 	end
 
 	if billboardModel then
-		local upgradeList = UpgradeConfig.getUpgradesForArea(machineArea.Name)
-
 		for _, v in pairs(upgradeList) do
 			local attrName = v.ID
 
@@ -403,7 +403,8 @@ local function setupMachineArea(machineArea: Folder)
 				local newItem = board.itemTemplate:Clone()
 				local title: TextLabel = newItem:FindFirstChild("Name") :: TextLabel
 				local button: TextButton = newItem:FindFirstChild("Button") :: TextButton
-				newItem.Visible = true
+				local hasUpgrade = machineArea:GetAttribute(attrName) == true
+				newItem.Visible = not hasUpgrade
 				newItem.Name = attrName
 				title.Text = tostring(v.Title)
 				button.Text = "$ " .. GameUtils.formatCompact(v.BasePrice)
@@ -430,6 +431,15 @@ local function setupMachineArea(machineArea: Folder)
 			end
 
 			isUpdatingAttributes = true
+
+			-- Update visibility tombol upgrade di Billboard
+			if board.list then
+				local itemUI = board.list:FindFirstChild(attributeName)
+				if itemUI then
+					local hasUpgrade = machineArea:GetAttribute(attributeName) == true
+					itemUI.Visible = not hasUpgrade
+				end
+			end
 
 			-- RESET nilai ke 0 sebelum kalkulasi ulang
 			local newSpeed = 0
@@ -555,7 +565,7 @@ function SpawnerBoxManager:buyUpgrade(player, machineArea, upgradeName)
 	local list = surface and surface:FindFirstChild("List")
 	local itemUI = list and list:FindFirstChild(upgradeName)
 	if itemUI then
-		itemUI:Destroy()
+		itemUI.Visible = false
 	end
 
 	print("[SpawnerBoxManager] " .. player.Name .. " membeli upgrade " .. upgradeName .. " seharga $" .. cost)

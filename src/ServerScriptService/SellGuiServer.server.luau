@@ -166,8 +166,10 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 	end
 	local finalHarga = math.floor(harga * multiplier)
 
-	-- Tambah uang
 	leaderstats.Cash.Value = leaderstats.Cash.Value + finalHarga
+
+	local RebirthManager = require(game.ServerScriptService.RebirthManager.RebirthManager)
+	RebirthManager.incrementQuestProgress(player, "SellCars", 1)
 
 	print(
 		"[SellGui] "

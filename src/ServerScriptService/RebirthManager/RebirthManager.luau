@@ -86,17 +86,24 @@ local function resetPlayerPlotAndAssets(player: Player)
 		local machines = myPlot:FindFirstChild("Machines")
 		if machines then
 			for _, machineArea in ipairs(machines:GetChildren()) do
-				machineArea:SetAttribute("IsRunning", false)
-				machineArea:SetAttribute("Active", nil)
 				for attr, _ in pairs(machineArea:GetAttributes()) do
-					if string.find(attr, "^Upg_") then
+					if attr ~= "IsInitialized" then
 						machineArea:SetAttribute(attr, nil)
 					end
 				end
-				local machinePart = machineArea:FindFirstChildWhichIsA("BasePart")
+				local machinePart = nil
+				for _, child in ipairs(machineArea:GetChildren()) do
+					if child:IsA("BasePart") and string.find(child.Name, "Machine") then
+						machinePart = child
+						break
+					end
+				end
+				if not machinePart then
+					machinePart = machineArea:FindFirstChildOfClass("BasePart")
+				end
 				if machinePart then
 					for _, child in ipairs(machinePart:GetChildren()) do
-						if child:IsA("Tool") then
+						if child:IsA("Tool") or child:IsA("Model") or child:GetAttribute("Level") ~= nil then
 							child:Destroy()
 						end
 					end
@@ -248,10 +255,26 @@ end
 
 function RebirthManager.incrementQuestProgress(player: Player, questType: string, amount: number)
 	local data = DataManager.getPlayerData(player)
-	if not data or not data.Quests or not data.Quests.Daily then return end
+	if not data or not data.Quests then return end
+	
+	-- 1. Pastikan data Quests lengkap
+	if not data.Quests.Daily then
+		data.Quests.Daily = {
+			LastGeneratedTime = 0,
+			ActiveQuests = {},
+		}
+	end
+	if not data.Quests.Milestones then
+		data.Quests.Milestones = {
+			TotalCarsSold = 0,
+			TotalBoxesOpened = 0,
+			ClaimedMilestones = {},
+		}
+	end
 	
 	generateDailyQuests(player, data)
 	
+	-- 2. Increment Daily Quest Progress
 	for _, q in ipairs(data.Quests.Daily.ActiveQuests) do
 		if q.Type == questType and not q.Completed then
 			q.Progress = math.clamp(q.Progress + amount, 0, q.Target)
@@ -260,6 +283,69 @@ function RebirthManager.incrementQuestProgress(player: Player, questType: string
 			end
 		end
 	end
+	
+	-- 3. Increment Lifetime Milestones Progress
+	if questType == "SellCars" then
+		data.Quests.Milestones.TotalCarsSold = (data.Quests.Milestones.TotalCarsSold or 0) + amount
+	elseif questType == "OpenBoxes" then
+		data.Quests.Milestones.TotalBoxesOpened = (data.Quests.Milestones.TotalBoxesOpened or 0) + amount
+	end
+	
+	-- 4. Replikasi instan atribut Quests ke Client agar React UI reaktif
+	local HttpService = game:GetService("HttpService")
+	player:SetAttribute("Quests", HttpService:JSONEncode(data.Quests))
+end
+
+-- ===== CLAIM LIFETIME MILESTONE =====
+local MILESTONES_CONFIG = {
+	sold_50 = { Type = "CarsSold", Target = 50, Reward = 15000 },
+	sold_150 = { Type = "CarsSold", Target = 150, Reward = 40000 },
+	sold_500 = { Type = "CarsSold", Target = 500, Reward = 15000 }, -- Sesuai dengan config client
+	open_25 = { Type = "BoxesOpened", Target = 25, Reward = 10000 },
+	open_100 = { Type = "BoxesOpened", Target = 100, Reward = 35000 },
+	open_300 = { Type = "BoxesOpened", Target = 300, Reward = 100000 },
+}
+
+function RebirthManager:claimMilestone(player: Player, milestoneId: string)
+	local data = DataManager.getPlayerData(player)
+	if not data or not data.Quests or not data.Quests.Milestones then
+		return { Success = false, Error = "Data pencapaian tidak ditemukan!" }
+	end
+
+	local config = MILESTONES_CONFIG[milestoneId]
+	if not config then
+		return { Success = false, Error = "Pencapaian tidak valid!" }
+	end
+
+	-- Cek apakah sudah diklaim
+	data.Quests.Milestones.ClaimedMilestones = data.Quests.Milestones.ClaimedMilestones or {}
+	if data.Quests.Milestones.ClaimedMilestones[milestoneId] then
+		return { Success = false, Error = "Pencapaian ini sudah diklaim!" }
+	end
+
+	-- Cek progress
+	local progress = 0
+	if config.Type == "CarsSold" then
+		progress = data.Quests.Milestones.TotalCarsSold or 0
+	elseif config.Type == "BoxesOpened" then
+		progress = data.Quests.Milestones.TotalBoxesOpened or 0
+	end
+
+	if progress < config.Target then
+		return { Success = false, Error = "Pencapaian belum terpenuhi! (" .. progress .. "/" .. config.Target .. ")" }
+	end
+
+	-- Proses Klaim
+	data.Quests.Milestones.ClaimedMilestones[milestoneId] = true
+
+	local leaderstats = player:FindFirstChild("leaderstats")
+	local cashVal = leaderstats and leaderstats:FindFirstChild("Cash")
+	if cashVal then
+		cashVal.Value = cashVal.Value + config.Reward
+	end
+
+	DataManager.syncData(player)
+	return { Success = true, Message = "Pencapaian diklaim! +$" .. GameUtils.formatCompact(config.Reward) }
 end
 
 -- ===== BOOTSTRAP INITIALIZATION =====
@@ -270,7 +356,47 @@ function RebirthManager.Init()
 		RebirthManager.purchaseRebirthUpgrade,
 		RebirthManager.claimDailyReward,
 		RebirthManager.claimDailyQuest,
+		RebirthManager.claimMilestone,
 	})
+
+	-- Listener untuk mendeteksi penambahan Cash secara reaktif untuk misi EarnCash
+	Players.PlayerAdded:Connect(function(player)
+		local function setupCashListener()
+			local leaderstats = player:WaitForChild("leaderstats", 15)
+			if not leaderstats then return end
+			local cash = leaderstats:WaitForChild("Cash", 15)
+			if not cash then return end
+
+			local lastValue = cash.Value
+			cash.Changed:Connect(function(newValue)
+				local diff = newValue - lastValue
+				lastValue = newValue
+				if diff > 0 then
+					RebirthManager.incrementQuestProgress(player, "EarnCash", diff)
+				end
+			end)
+		end
+
+		task.spawn(setupCashListener)
+	end)
+
+	-- Tangani player yang sudah ada
+	for _, player in ipairs(Players:GetPlayers()) do
+		task.spawn(function()
+			local leaderstats = player:FindFirstChild("leaderstats")
+			local cash = leaderstats and leaderstats:FindFirstChild("Cash")
+			if cash then
+				local lastValue = cash.Value
+				cash.Changed:Connect(function(newValue)
+					local diff = newValue - lastValue
+					lastValue = newValue
+					if diff > 0 then
+						RebirthManager.incrementQuestProgress(player, "EarnCash", diff)
+					end
+				end)
+			end
+		end)
+	end
 	
 	print("[RebirthManager] ✅ Rebirth, Daily Rewards, dan Quests Service siap digunakan.")
 end

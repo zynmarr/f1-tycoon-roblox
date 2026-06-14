@@ -112,8 +112,12 @@ local function updateUIRender()
 		end,
 		
 		onClaimMilestone = function(milestoneId: string)
-			-- Milestone claim endpoint if added in future, or client message
-			print("[Client] Mengeklaim milestone: " .. milestoneId)
+			local result = rebirthService:fetch("claimMilestone", milestoneId)
+			if result and result.Success then
+				print("[Client] Klaim Pencapaian Berhasil: " .. tostring(result.Message))
+			else
+				warn("[Client] Gagal Klaim Pencapaian: " .. tostring(result and result.Error or "Unknown error"))
+			end
 		end,
 	}))
 end
