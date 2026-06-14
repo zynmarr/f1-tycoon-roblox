@@ -82,7 +82,7 @@ local function updateBoxVisual(box: Tool)
 			if part:IsA("BasePart") then
 				-- Cek apakah part memiliki efek varian yang sesuai dengan atribut Variants
 				for name, value in pairs(listOfVariants) do
-					if value.Effect then
+					if typeof(value) == "table" and value.Effect then
 						local effectTemplate: ParticleEmitter =
 							EffectsFolder:FindFirstChild(value.Effect) :: ParticleEmitter
 						if effectTemplate then
