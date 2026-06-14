@@ -111,8 +111,18 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 	-- Roll variants dynamically each time to ensure correct gacha randomness
 	for vName, vData in pairs(GameConfig.Variants) do
 		if vName ~= "Normal" then
+			-- Cari boost spesifik untuk varian ini dari LiveEvents
 			local specUpgrade = machineArea:GetAttribute("Upg_VariantChance_" .. vName) or 0
-			local totalChance = vData.Chance + specUpgrade + allUpgrade + globalVariantBoost
+			local specVariantBoost = 0
+			local liveEvents = ReplicatedStorage:FindFirstChild("LiveEvents")
+			if liveEvents then
+				local specNode = liveEvents:FindFirstChild("VariantBoost_" .. vName)
+				if specNode then
+					specVariantBoost = specNode.Value
+				end
+			end
+
+			local totalChance = vData.Chance + specUpgrade + allUpgrade + globalVariantBoost + specVariantBoost
 
 			-- MENGGUNAKAN LOGIKA RANDOM YANG LEBIH PRESISI UNTUK DESIMAL
 			local rng = math.random() * 100

@@ -4,8 +4,9 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
--- 1. IMPORT ROLE MANAGER
+-- 1. IMPORT ROLE MANAGER & NETWORKER
 local RoleManager = require(script.Parent:WaitForChild("RoleManager"):WaitForChild("RoleManager"))
+local Networker = require(ReplicatedStorage.Packages.Networker)
 
 -- 2. SETUP FOLDER & VALUES
 local liveEvents = Instance.new("Folder")
@@ -26,6 +27,26 @@ local expBoost = Instance.new("IntValue")
 expBoost.Name = "ExpBoost"
 expBoost.Value = 0 -- 0 artinya tidak ada bonus, 50 artinya +50% Exp
 expBoost.Parent = liveEvents
+
+local goldenBoost = Instance.new("IntValue")
+goldenBoost.Name = "VariantBoost_Golden"
+goldenBoost.Value = 0
+goldenBoost.Parent = liveEvents
+
+local rainbowBoost = Instance.new("IntValue")
+rainbowBoost.Name = "VariantBoost_Rainbow"
+rainbowBoost.Value = 0
+rainbowBoost.Parent = liveEvents
+
+local galaxyBoost = Instance.new("IntValue")
+galaxyBoost.Name = "VariantBoost_Galaxy"
+galaxyBoost.Value = 0
+galaxyBoost.Parent = liveEvents
+
+local hellfireBoost = Instance.new("IntValue")
+hellfireBoost.Name = "VariantBoost_Hellfire"
+hellfireBoost.Value = 0
+hellfireBoost.Parent = liveEvents
 
 -- Set nilai awal Attribute agar script lain tidak error mencari nilai 'nil'
 ReplicatedStorage:SetAttribute("SpeedBoost", 0)
@@ -137,6 +158,10 @@ local function onPlayerAdded(player)
 			luckBoost.Value = 0
 			expBoost.Value = 0
 			ReplicatedStorage:SetAttribute("SpeedBoost", 0)
+			goldenBoost.Value = 0
+			rainbowBoost.Value = 0
+			galaxyBoost.Value = 0
+			hellfireBoost.Value = 0
 			print(string.format("[EVENT] 🛑 SEMUA EVENT TELAH DIMATIKAN! | Admin: %s", player.Name))
 		end
 	end)
@@ -150,3 +175,56 @@ end
 Players.PlayerRemoving:Connect(function(player)
 	commandCooldowns[player.UserId] = nil
 end)
+
+-- ==========================================
+-- 4. NETWORKER ADMIN EVENT SERVICE ENDPOINTS
+-- ==========================================
+local AdminEventService = {}
+
+function AdminEventService:setEventValues(player: Player, values: any)
+	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
+	end
+	if typeof(values) ~= "table" then
+		return { Success = false, Error = "Parameter tidak valid!" }
+	end
+
+	-- Clamping ketat di server demi keamanan anti-cheat
+	variantBoost.Value = math.clamp(values.VariantBoost or 0, 0, 100)
+	luckBoost.Value = math.clamp(values.LuckBoost or 0, 0, 500)
+	expBoost.Value = math.clamp(values.ExpBoost or 0, 0, 500)
+	ReplicatedStorage:SetAttribute("SpeedBoost", math.clamp(values.SpeedBoost or 0, 0, 100))
+
+	goldenBoost.Value = math.clamp(values.VariantBoost_Golden or 0, 0, 50)
+	rainbowBoost.Value = math.clamp(values.VariantBoost_Rainbow or 0, 0, 50)
+	galaxyBoost.Value = math.clamp(values.VariantBoost_Galaxy or 0, 0, 50)
+	hellfireBoost.Value = math.clamp(values.VariantBoost_Hellfire or 0, 0, 50)
+
+	print(string.format("[EVENT] ⚙️ Konfigurasi event diperbarui oleh Admin %s (ID: %d)", player.Name, player.UserId))
+	return { Success = true, Message = "Konfigurasi event berhasil diperbarui!" }
+end
+
+function AdminEventService:stopAllEvents(player: Player)
+	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
+	end
+
+	variantBoost.Value = 0
+	luckBoost.Value = 0
+	expBoost.Value = 0
+	ReplicatedStorage:SetAttribute("SpeedBoost", 0)
+
+	goldenBoost.Value = 0
+	rainbowBoost.Value = 0
+	galaxyBoost.Value = 0
+	hellfireBoost.Value = 0
+
+	print(string.format("[EVENT] 🛑 Semua event dimatikan oleh Admin %s (ID: %d)", player.Name, player.UserId))
+	return { Success = true, Message = "Semua event berhasil dimatikan!" }
+end
+
+Networker.server.new("AdminEventService", AdminEventService, {
+	AdminEventService.setEventValues,
+	AdminEventService.stopAllEvents,
+})
+
