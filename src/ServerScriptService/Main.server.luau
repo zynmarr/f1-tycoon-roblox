@@ -17,7 +17,7 @@ local BoxManager = safeRequire(game.ServerScriptService.BoxManager.BoxManager, "
 local RoleManager = safeRequire(script.Parent.RoleManager.RoleManager, "RoleManager")
 local ParkingAreaManager = safeRequire(script.Parent.ParkingAreaManager.ParkingAreaManager, "ParkingAreaManager")
 local RebirthManager = safeRequire(script.Parent.RebirthManager.RebirthManager, "RebirthManager")
-local RaceManager = safeRequire(script.Parent.RaceManager, "RaceManager")
+local RaceManager = safeRequire(script.Parent.RaceManager.RaceManager, "RaceManager")
 -- local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
 
 -- ==========================================================
