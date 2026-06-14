@@ -179,6 +179,7 @@ local function onPlayerAdded(player: Player)
 	end
 
 	player:SetAttribute("MyPlotName", myPlot.Name)
+	DataManager.syncData(player)
 
 	-- Setup Leaderstats fisik
 	local leaderstats = Instance.new("Folder")

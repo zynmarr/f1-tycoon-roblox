@@ -295,6 +295,14 @@ function DataManager.syncData(player)
 	profile.Data.Stats = finalSave.Stats
 	profile.Data.Inventory = finalSave.Inventory
 	profile.Data.PlotData = finalSave.PlotData
+
+	-- Replikasi data ke player attribute agar client React UI bisa membaca reaktif
+	local HttpService = game:GetService("HttpService")
+	player:SetAttribute("RebirthPoints", finalSave.Stats.RebirthPoints or 0)
+	player:SetAttribute("RebirthUpgrades", HttpService:JSONEncode(profile.Data.RebirthUpgrades or {}))
+	player:SetAttribute("DailyRewards", HttpService:JSONEncode(profile.Data.DailyRewards or {}))
+	player:SetAttribute("Quests", HttpService:JSONEncode(profile.Data.Quests or {}))
+
 	return true
 end
 
