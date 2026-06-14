@@ -238,6 +238,15 @@ local function giftBoxToPlayer(player: Player, level: number)
 	end
 	
 	local newBox = boxTemplate:Clone()
+	
+	-- Unanchor all parts to prevent player flinging
+	for _, part in ipairs(newBox:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.CanCollide = false
+		end
+	end
+	
 	local initialLvlData = GameConfig.BoxLevels[level]
 	if not initialLvlData then
 		return false
@@ -247,12 +256,12 @@ local function giftBoxToPlayer(player: Player, level: number)
 	newBox:SetAttribute("HasPicked", true)
 	newBox:SetAttribute("Level", level)
 	newBox:SetAttribute("Exp", 0)
-	newBox:SetAttribute("Variants", "Normal")
+	newBox:SetAttribute("Variants", "Admin")
 	newBox:SetAttribute("Type", "Box")
 	newBox:SetAttribute("MaxExp", initialLvlData.MaxExp)
 	newBox:SetAttribute("Name", initialLvlData.Name)
 	newBox:SetAttribute("LuckyChance", initialLvlData.LuckMulti)
-	newBox.Name = initialLvlData.Name .. "_Variant_Normal"
+	newBox.Name = initialLvlData.Name .. "_Variant_Admin"
 
 	newBox.Handle.Size = Vector3.new(2, 2, 2)
 	
@@ -272,7 +281,7 @@ local function giftBoxToPlayer(player: Player, level: number)
 	local boxModule = newBox:FindFirstChild("BoxModule")
 	if boxModule then
 		local BoxModuleRequire = require(boxModule)
-		BoxModuleRequire.UpdateBoxText(newBox.Handle, level, 0, initialLvlData.MaxExp, "Normal")
+		BoxModuleRequire.UpdateBoxText(newBox.Handle, level, 0, initialLvlData.MaxExp, "Admin")
 	end
 	
 	newBox.Parent = backpack
@@ -317,8 +326,16 @@ local function giftCarToPlayer(player: Player, carName: string, variant: string?
 	local car = foundTemplate:Clone()
 	CollectionService:AddTag(car, "Car")
 	
+	-- Unanchor all parts to prevent player flinging
+	for _, part in ipairs(car:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.CanCollide = false
+		end
+	end
+	
 	local tierData = GameConfig.Rarities[foundRarity] or { BasePrice = 1000 }
-	local variants = variant or "Normal"
+	local variants = variant or "Admin"
 	local baseIncome = GameConfig.CalculatePrice(tierData.BasePrice, foundRarity, variants)
 	local sellPrice = math.floor(baseIncome * 0.6)
 	
