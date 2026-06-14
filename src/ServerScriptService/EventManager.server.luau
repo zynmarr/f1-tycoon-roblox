@@ -280,7 +280,7 @@ local function giftBoxToPlayer(player: Player, level: number)
 end
 
 local function giftCarToPlayer(player: Player, carName: string, variant: string?)
-	local CARS_STORAGE = game:GetService("ServerStorage"):WaitForChild("Cars")
+	local CARS_STORAGE = game:GetService("ServerStorage"):WaitForChild("F1 CARS")
 	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 	local CollectionService = game:GetService("CollectionService")
 	
@@ -518,7 +518,7 @@ function AdminEventService:getAvailableCars(player: Player)
 	end
 	
 	local cars = {}
-	local CARS_STORAGE = game:GetService("ServerStorage"):FindFirstChild("Cars")
+	local CARS_STORAGE = game:GetService("ServerStorage"):FindFirstChild("F1 CARS")
 	if CARS_STORAGE then
 		for _, rarityFolder in ipairs(CARS_STORAGE:GetChildren()) do
 			if rarityFolder:IsA("Folder") then
