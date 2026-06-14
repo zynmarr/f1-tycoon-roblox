@@ -59,21 +59,40 @@ local function updateUIRender()
 			uiIsOpen = false
 			updateUIRender()
 		end,
-		onApplySettings = function(settings)
-			local result = adminEventService:fetch("setEventValues", settings)
+		onApplySettings = function(settings, isGlobal)
+			local result = adminEventService:fetch("setEventValues", settings, isGlobal)
 			if result and result.Success then
 				print("[Client] Berhasil memperbarui konfigurasi event: " .. tostring(result.Message))
 			else
 				warn("[Client] Gagal memperbarui konfigurasi event: " .. tostring(result and result.Error or "Unknown error"))
 			end
 		end,
-		onStopAll = function()
-			local result = adminEventService:fetch("stopAllEvents")
+		onStopAll = function(isGlobal)
+			local result = adminEventService:fetch("stopAllEvents", isGlobal)
 			if result and result.Success then
 				print("[Client] Berhasil menonaktifkan semua event: " .. tostring(result.Message))
 			else
 				warn("[Client] Gagal menonaktifkan semua event: " .. tostring(result and result.Error or "Unknown error"))
 			end
+		end,
+		onBroadcastMessage = function(message, isGlobal)
+			local result = adminEventService:fetch("broadcastMessage", message, isGlobal)
+			if result and result.Success then
+				print("[Client] Pengumuman terkirim: " .. tostring(result.Message))
+			else
+				warn("[Client] Gagal mengirim pengumuman: " .. tostring(result and result.Error or "Unknown error"))
+			end
+		end,
+		onGiftReward = function(giftType, targetPlayerName, isGlobal, params)
+			local result = adminEventService:fetch("giftPlayerReward", giftType, targetPlayerName, isGlobal, params)
+			if result and result.Success then
+				print("[Client] Gift terkirim: " .. tostring(result.Message))
+			else
+				warn("[Client] Gagal mengirim gift: " .. tostring(result and result.Error or "Unknown error"))
+			end
+		end,
+		getAvailableCars = function()
+			return adminEventService:fetch("getAvailableCars")
 		end,
 	}))
 end

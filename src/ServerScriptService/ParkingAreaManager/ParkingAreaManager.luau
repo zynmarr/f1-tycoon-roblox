@@ -232,4 +232,8 @@ function ParkingAreaManager.resetPassiveIncome(player: Player)
 	playerPassiveIncome[player] = 0
 end
 
+function ParkingAreaManager.getPlayerPassiveIncome(player: Player): number
+	return playerPassiveIncome[player] or 0
+end
+
 return ParkingAreaManager

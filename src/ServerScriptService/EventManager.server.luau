@@ -3,10 +3,21 @@
 -- ==========================================
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
+local MessagingService = game:GetService("MessagingService")
+local HttpService = game:GetService("HttpService")
 
--- 1. IMPORT ROLE MANAGER & NETWORKER
+-- 1. IMPORT ROLE MANAGER, NETWORKER & PARKING AREA
 local RoleManager = require(script.Parent:WaitForChild("RoleManager"):WaitForChild("RoleManager"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
+local ParkingAreaManager = require(script.Parent:WaitForChild("ParkingAreaManager"):WaitForChild("ParkingAreaManager"))
+
+-- Buat RemoteEvent untuk pengumuman
+local announcementEvent = ReplicatedStorage:FindFirstChild("AnnouncementEvent")
+if not announcementEvent then
+	announcementEvent = Instance.new("RemoteEvent")
+	announcementEvent.Name = "AnnouncementEvent"
+	announcementEvent.Parent = ReplicatedStorage
+end
 
 -- 2. SETUP FOLDER & VALUES
 local liveEvents = Instance.new("Folder")
@@ -180,16 +191,9 @@ end)
 -- 4. NETWORKER ADMIN EVENT SERVICE ENDPOINTS
 -- ==========================================
 local AdminEventService = {}
+local TOPIC_NAME = "GlobalAdminEvents_V1"
 
-function AdminEventService:setEventValues(player: Player, values: any)
-	if not RoleManager.hasPermission(player, "EditGameConfigs") then
-		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
-	end
-	if typeof(values) ~= "table" then
-		return { Success = false, Error = "Parameter tidak valid!" }
-	end
-
-	-- Clamping ketat di server demi keamanan anti-cheat
+local function applyLocalEventValues(values)
 	variantBoost.Value = math.clamp(values.VariantBoost or 0, 0, 100)
 	luckBoost.Value = math.clamp(values.LuckBoost or 0, 0, 500)
 	expBoost.Value = math.clamp(values.ExpBoost or 0, 0, 500)
@@ -199,16 +203,9 @@ function AdminEventService:setEventValues(player: Player, values: any)
 	rainbowBoost.Value = math.clamp(values.VariantBoost_Rainbow or 0, 0, 50)
 	galaxyBoost.Value = math.clamp(values.VariantBoost_Galaxy or 0, 0, 50)
 	hellfireBoost.Value = math.clamp(values.VariantBoost_Hellfire or 0, 0, 50)
-
-	print(string.format("[EVENT] ⚙️ Konfigurasi event diperbarui oleh Admin %s (ID: %d)", player.Name, player.UserId))
-	return { Success = true, Message = "Konfigurasi event berhasil diperbarui!" }
 end
 
-function AdminEventService:stopAllEvents(player: Player)
-	if not RoleManager.hasPermission(player, "EditGameConfigs") then
-		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
-	end
-
+local function stopLocalEvents()
 	variantBoost.Value = 0
 	luckBoost.Value = 0
 	expBoost.Value = 0
@@ -218,13 +215,337 @@ function AdminEventService:stopAllEvents(player: Player)
 	rainbowBoost.Value = 0
 	galaxyBoost.Value = 0
 	hellfireBoost.Value = 0
+end
 
-	print(string.format("[EVENT] 🛑 Semua event dimatikan oleh Admin %s (ID: %d)", player.Name, player.UserId))
+local function displayLocalAnnouncement(message, duration)
+	local annEvent = ReplicatedStorage:FindFirstChild("AnnouncementEvent")
+	if annEvent then
+		annEvent:FireAllClients(message, duration or 8)
+	end
+end
+
+local function giftBoxToPlayer(player: Player, level: number)
+	local boxTemplate = game:GetService("ServerStorage"):FindFirstChild("Box")
+	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+	if not boxTemplate then
+		warn("[EventManager] Box template tidak ditemukan di ServerStorage!")
+		return false
+	end
+	
+	local backpack = player:FindFirstChild("Backpack")
+	if not backpack then
+		return false
+	end
+	
+	local newBox = boxTemplate:Clone()
+	local initialLvlData = GameConfig.BoxLevels[level]
+	if not initialLvlData then
+		return false
+	end
+	
+	newBox:SetAttribute("Owner", player.Name)
+	newBox:SetAttribute("HasPicked", true)
+	newBox:SetAttribute("Level", level)
+	newBox:SetAttribute("Exp", 0)
+	newBox:SetAttribute("Variants", "Normal")
+	newBox:SetAttribute("Type", "Box")
+	newBox:SetAttribute("MaxExp", initialLvlData.MaxExp)
+	newBox:SetAttribute("Name", initialLvlData.Name)
+	newBox:SetAttribute("LuckyChance", initialLvlData.LuckMulti)
+	newBox.Name = initialLvlData.Name .. "_Variant_Normal"
+
+	newBox.Handle.Size = Vector3.new(2, 2, 2)
+	
+	local display = newBox.Handle:FindFirstChild("StatsDisplay")
+	if not display then
+		local moduleNode = newBox:FindFirstChild("BoxModule")
+		local moduleDisplay = moduleNode and moduleNode:FindFirstChild("StatsDisplay")
+		if moduleDisplay then
+			display = moduleDisplay:Clone()
+			display.Parent = newBox.Handle
+		end
+	end
+	if display then
+		display.Enabled = true
+	end
+	
+	local boxModule = newBox:FindFirstChild("BoxModule")
+	if boxModule then
+		local BoxModuleRequire = require(boxModule)
+		BoxModuleRequire.UpdateBoxText(newBox.Handle, level, 0, initialLvlData.MaxExp, "Normal")
+	end
+	
+	newBox.Parent = backpack
+	return true
+end
+
+local function giftCarToPlayer(player: Player, carName: string, variant: string?)
+	local CARS_STORAGE = game:GetService("ServerStorage"):WaitForChild("Cars")
+	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+	local CollectionService = game:GetService("CollectionService")
+	
+	local foundTemplate = nil
+	local foundRarity = "Common"
+	for _, folder in ipairs(CARS_STORAGE:GetChildren()) do
+		if folder:IsA("Folder") then
+			local template = folder:FindFirstChild(carName)
+			if template then
+				foundTemplate = template
+				foundRarity = folder.Name
+				break
+			end
+		end
+	end
+	
+	if not foundTemplate then
+		return false
+	end
+	
+	local backpack = player:FindFirstChild("Backpack")
+	if not backpack then
+		return false
+	end
+	
+	-- Check capacity
+	local inventoryCount = #backpack:GetChildren()
+	local maxInventorySlots = GameConfig.MaxInventorySlots or 50
+	if inventoryCount >= maxInventorySlots then
+		return false
+	end
+	
+	local car = foundTemplate:Clone()
+	CollectionService:AddTag(car, "Car")
+	
+	local tierData = GameConfig.Rarities[foundRarity] or { BasePrice = 1000 }
+	local variants = variant or "Normal"
+	local baseIncome = GameConfig.CalculatePrice(tierData.BasePrice, foundRarity, variants)
+	local sellPrice = math.floor(baseIncome * 0.6)
+	
+	car:SetAttribute("Income", baseIncome)
+	car:SetAttribute("Price", sellPrice)
+	car:SetAttribute("Variant", variants)
+	car:SetAttribute("Rarity", foundRarity)
+	car:SetAttribute("Name", car.Name)
+	car:SetAttribute("Type", "Car")
+	car.Name = car.Name .. "_" .. foundRarity .. "_" .. variants
+	
+	GameConfig.ApplyVisuals(car, foundRarity, variants)
+	
+	local existingCar = backpack:FindFirstChild(car.Name)
+	if existingCar then
+		local stackFolder = existingCar:FindFirstChild("Stacks") or Instance.new("Folder", existingCar)
+		stackFolder.Name = "Stacks"
+		
+		local carData = Instance.new("Configuration")
+		carData.Name = "CarData_" .. (#stackFolder:GetChildren() + 1)
+		for name, value in pairs(car:GetAttributes()) do
+			carData:SetAttribute(name, value)
+		end
+		carData.Parent = stackFolder
+		
+		local carAmount = existingCar:GetAttribute("Amount") or 1
+		existingCar:SetAttribute("Amount", carAmount + 1)
+		car:Destroy()
+	else
+		car:SetAttribute("Amount", 1)
+		car.Parent = backpack
+	end
+	
+	return true
+end
+
+local function giftLocalPlayer(targetPlayerName, giftType, params)
+	local targetPlayers = {}
+	if targetPlayerName == "All" then
+		targetPlayers = Players:GetPlayers()
+	else
+		local target = Players:FindFirstChild(targetPlayerName)
+		if target then
+			table.insert(targetPlayers, target)
+		end
+	end
+
+	for _, p in ipairs(targetPlayers) do
+		pcall(function()
+			if giftType == "Cash" then
+				local amount = params.Amount or 0
+				local leaderstats = p:FindFirstChild("leaderstats")
+				local cash = leaderstats and leaderstats:FindFirstChild("Cash")
+				if cash then
+					cash.Value = cash.Value + amount
+				end
+			elseif giftType == "24hCash" then
+				local rate = ParkingAreaManager.getPlayerPassiveIncome(p)
+				local amount = rate * 24 * 3600
+				local leaderstats = p:FindFirstChild("leaderstats")
+				local cash = leaderstats and leaderstats:FindFirstChild("Cash")
+				if cash then
+					cash.Value = cash.Value + amount
+				end
+			elseif giftType == "Box" then
+				local level = params.Level or 12
+				giftBoxToPlayer(p, level)
+			elseif giftType == "Car" then
+				local carName = params.CarName
+				if carName then
+					giftCarToPlayer(p, carName)
+				end
+			end
+		end)
+	end
+end
+
+local function publishGlobalEvent(action: string, data: any)
+	local success, err = pcall(function()
+		local payload = {
+			Action = action,
+			Data = data,
+			SenderServerId = game.JobId,
+		}
+		MessagingService:PublishAsync(TOPIC_NAME, HttpService:JSONEncode(payload))
+	end)
+	if not success then
+		warn("[EventManager] Gagal mempublikasikan ke MessagingService: " .. tostring(err))
+	end
+end
+
+local function onGlobalMessageReceived(messageData)
+	local success, decoded = pcall(HttpService.JSONDecode, HttpService, messageData.Data)
+	if not success or not decoded then return end
+	
+	-- Lewati jika dikirim oleh server ini sendiri
+	if decoded.SenderServerId == game.JobId then
+		return
+	end
+	
+	local action = decoded.Action
+	local data = decoded.Data
+	
+	if action == "UpdateEvents" then
+		applyLocalEventValues(data)
+	elseif action == "StopEvents" then
+		stopLocalEvents()
+	elseif action == "BroadcastMessage" then
+		displayLocalAnnouncement(data.Message, data.Duration)
+	elseif action == "GiftAll" then
+		giftLocalPlayer("All", data.GiftType, data.Params)
+	end
+end
+
+local subscribeSuccess, subscribeConnection = pcall(function()
+	return MessagingService:SubscribeAsync(TOPIC_NAME, onGlobalMessageReceived)
+end)
+
+if not subscribeSuccess then
+	warn("[EventManager] Gagal berlangganan ke MessagingService: " .. tostring(subscribeConnection))
+end
+
+-- --- API ENDPOINTS ---
+
+function AdminEventService:setEventValues(player: Player, values: any, isGlobal: boolean)
+	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
+	end
+	if typeof(values) ~= "table" then
+		return { Success = false, Error = "Parameter tidak valid!" }
+	end
+
+	applyLocalEventValues(values)
+	
+	if isGlobal then
+		publishGlobalEvent("UpdateEvents", values)
+	end
+
+	print(string.format("[EVENT] ⚙️ Konfigurasi event diperbarui oleh Admin %s (Global: %s)", player.Name, tostring(isGlobal)))
+	return { Success = true, Message = "Konfigurasi event berhasil diperbarui!" }
+end
+
+function AdminEventService:stopAllEvents(player: Player, isGlobal: boolean)
+	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
+	end
+
+	stopLocalEvents()
+	
+	if isGlobal then
+		publishGlobalEvent("StopEvents", {})
+	end
+
+	print(string.format("[EVENT] 🛑 Semua event dimatikan oleh Admin %s (Global: %s)", player.Name, tostring(isGlobal)))
 	return { Success = true, Message = "Semua event berhasil dimatikan!" }
+end
+
+function AdminEventService:broadcastMessage(player: Player, message: string, isGlobal: boolean)
+	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
+	end
+	if type(message) ~= "string" or message == "" then
+		return { Success = false, Error = "Pesan tidak boleh kosong!" }
+	end
+
+	local formattedMessage = string.format("📢 <font color='#FF5533'><b>[ADMIN %s]</b></font>: %s", player.Name, message)
+	
+	displayLocalAnnouncement(formattedMessage, 8)
+	
+	if isGlobal then
+		publishGlobalEvent("BroadcastMessage", { Message = formattedMessage, Duration = 8 })
+	end
+
+	return { Success = true, Message = "Pengumuman berhasil dikirim!" }
+end
+
+function AdminEventService:giftPlayerReward(player: Player, giftType: string, targetPlayerName: string, isGlobal: boolean, params: any)
+	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
+	end
+	if type(giftType) ~= "string" or type(targetPlayerName) ~= "string" then
+		return { Success = false, Error = "Parameter tidak valid!" }
+	end
+	
+	local parsedParams = params or {}
+	giftLocalPlayer(targetPlayerName, giftType, parsedParams)
+	
+	if isGlobal and targetPlayerName == "All" then
+		publishGlobalEvent("GiftAll", { GiftType = giftType, Params = parsedParams })
+	end
+
+	return { Success = true, Message = "Hadiah berhasil dikirim!" }
+end
+
+function AdminEventService:getAvailableCars(player: Player)
+	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+		return {}
+	end
+	
+	local cars = {}
+	local CARS_STORAGE = game:GetService("ServerStorage"):FindFirstChild("Cars")
+	if CARS_STORAGE then
+		for _, rarityFolder in ipairs(CARS_STORAGE:GetChildren()) do
+			if rarityFolder:IsA("Folder") then
+				for _, carTemplate in ipairs(rarityFolder:GetChildren()) do
+					if carTemplate:IsA("Tool") or carTemplate:IsA("Model") then
+						table.insert(cars, {
+							Name = carTemplate.Name,
+							Rarity = rarityFolder.Name,
+						})
+					end
+				end
+			end
+		end
+	end
+	
+	table.sort(cars, function(a, b)
+		return a.Name < b.Name
+	end)
+	
+	return cars
 end
 
 Networker.server.new("AdminEventService", AdminEventService, {
 	AdminEventService.setEventValues,
 	AdminEventService.stopAllEvents,
+	AdminEventService.broadcastMessage,
+	AdminEventService.giftPlayerReward,
+	AdminEventService.getAvailableCars,
 })
 
