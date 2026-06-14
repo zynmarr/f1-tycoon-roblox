@@ -228,4 +228,8 @@ function ParkingAreaManager.storeCar(player: Player, area: Part, tool: Tool): ()
 	storeCarToArea(player, area, tool)
 end
 
+function ParkingAreaManager.resetPassiveIncome(player: Player)
+	playerPassiveIncome[player] = 0
+end
+
 return ParkingAreaManager

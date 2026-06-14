@@ -80,9 +80,9 @@ local function setupMachineArea(machineArea: Folder)
 										else
 											local errMsg = result and result.Error or "Unknown error"
 											warn("[UpgradeClient] ❌ Upgrade gagal: " .. tostring(errMsg))
-											button.Text = originalText -- restore if failed
-											buying = false
 										end
+										button.Text = originalText
+										buying = false
 									end)
 								end
 							end

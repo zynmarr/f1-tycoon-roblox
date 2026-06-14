@@ -81,6 +81,10 @@ local function resetPlayerPlotAndAssets(player: Player)
 				end
 			end
 		end
+
+		-- Reset passive income cache on rebirth
+		local ParkingAreaManager = require(game.ServerScriptService.ParkingAreaManager.ParkingAreaManager)
+		ParkingAreaManager.resetPassiveIncome(player)
 		
 		-- Reset Tycoon Machines purchase attributes & active boxes
 		local machines = myPlot:FindFirstChild("Machines")
