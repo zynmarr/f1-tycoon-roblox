@@ -182,7 +182,7 @@ return function(props)
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			CanvasSize = UDim2.new(0, 680, 0, 0),
-			ScrollingDirection = Enum.ScrollingDirection.Horizontal,
+			ScrollingDirection = Enum.ScrollingDirection.X,
 			ScrollBarThickness = 4,
 			ScrollBarImageColor3 = Color3.fromRGB(80, 80, 95),
 		}, rewardCards),
