@@ -11,6 +11,15 @@ local e = React.createElement
 local useState = React.useState
 local useEffect = React.useEffect
 
+-- Helper: merge a table of child elements into an existing children table
+-- Needed because React-Roblox can't render a plain table as a child node.
+local function mergeChildren(base, extra)
+	for k, v in pairs(extra) do
+		base[k] = v
+	end
+	return base
+end
+
 local player = Players.LocalPlayer
 
 -- Rarity color map
@@ -611,10 +620,10 @@ local function RacePanel(props)
 							CanvasSize = UDim2.new(0, 0, 0, math.max(1, #ownedCars) * 52),
 							ScrollBarThickness = 4,
 							BorderSizePixel = 0,
-						}, {
-							List = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 5) }),
-							Cars = buildCarList(ownedCars, selectedCar, setSelectedCar),
-						}),
+						}, mergeChildren(
+							{ List = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 5) }) },
+							buildCarList(ownedCars, selectedCar, setSelectedCar)
+						)),
 					}),
 
 					-- Right: Mode selectors
@@ -811,9 +820,33 @@ local function RacePanel(props)
 						Stroke = e("UIStroke", { Color = Color3.fromRGB(255, 255, 255), Thickness = 2 }),
 					}) or nil,
 
-					-- Animated dots (plain table, no useMemo)
-					Dots = buildDots(positions, raceData, playerUid),
-				}),
+				}, mergeChildren(
+					{
+						Corner = e("UICorner", { CornerRadius = UDim.new(0, 14) }),
+						Stroke = e("UIStroke", { Color = Color3.fromRGB(36, 36, 44), Thickness = 1 }),
+						Oval = e("Frame", {
+							Size = UDim2.new(0.88, 0, 0.72, 0),
+							Position = UDim2.new(0.06, 0, 0.14, 0),
+							BackgroundTransparency = 1,
+						}, {
+							Corner = e("UICorner", { CornerRadius = UDim.new(0.5, 0) }),
+							Stroke = e("UIStroke", { Color = Color3.fromRGB(65, 65, 80), Thickness = 14 }),
+						}),
+						LaunchBtn = (not hasLaunched) and e("TextButton", {
+							Text = "LAUNCH",
+							Size = UDim2.new(0, 100, 0, 100),
+							Position = UDim2.new(0.5, -50, 0.5, -50),
+							BackgroundColor3 = Color3.fromRGB(0, 185, 70),
+							TextColor3 = Color3.fromRGB(255, 255, 255),
+							Font = Enum.Font.GothamBlack, TextSize = 16, BorderSizePixel = 0,
+							[React.Event.Activated] = launchCar,
+						}, {
+							Corner = e("UICorner", { CornerRadius = UDim.new(0.5, 0) }),
+							Stroke = e("UIStroke", { Color = Color3.fromRGB(255, 255, 255), Thickness = 2 }),
+						}) or nil,
+					},
+					buildDots(positions, raceData, playerUid)
+					)),
 
 				-- Live leaderboard bar
 				LiveBoard = e("Frame", {
@@ -821,14 +854,15 @@ local function RacePanel(props)
 					Position = UDim2.new(0, 0, 0, 328),
 					BackgroundColor3 = Color3.fromRGB(12, 12, 16),
 					BorderSizePixel = 0,
-				}, {
-					Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-					Pad = e("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }),
-					Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12), VerticalAlignment = Enum.VerticalAlignment.Center }),
-
-					BoardLabel = e("TextLabel", { Text = "LIVE RANK:", Size = UDim2.new(0.18, 0, 1, 0), BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(100, 100, 110), Font = Enum.Font.GothamBold, TextSize = 10 }),
-					Ranks = buildLiveRanks(positions, raceData, playerUid),
-				}),
+				}, mergeChildren(
+					{
+						Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
+						Pad = e("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }),
+						Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 12), VerticalAlignment = Enum.VerticalAlignment.Center }),
+						BoardLabel = e("TextLabel", { Text = "LIVE RANK:", Size = UDim2.new(0.18, 0, 1, 0), BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(100, 100, 110), Font = Enum.Font.GothamBold, TextSize = 10 }),
+					},
+					buildLiveRanks(positions, raceData, playerUid)
+					)),
 			}) or nil,
 
 			-- ===== OUTCOME =====
@@ -850,13 +884,15 @@ local function RacePanel(props)
 					Size = UDim2.new(0.82, 0, 0, 190),
 					BackgroundColor3 = Color3.fromRGB(14, 14, 18),
 					BorderSizePixel = 0,
-				}, {
-					Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
-					Stroke = e("UIStroke", { Color = Color3.fromRGB(40, 40, 50), Thickness = 1 }),
-					Pad = e("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12), PaddingLeft = UDim.new(0, 18), PaddingRight = UDim.new(0, 18) }),
-					Rows = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 8), VerticalAlignment = Enum.VerticalAlignment.Center }),
-					OutcomeRows = buildOutcomeRows(ranks, playerUid),
-				}),
+				}, mergeChildren(
+					{
+						Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
+						Stroke = e("UIStroke", { Color = Color3.fromRGB(40, 40, 50), Thickness = 1 }),
+						Pad = e("UIPadding", { PaddingTop = UDim.new(0, 12), PaddingBottom = UDim.new(0, 12), PaddingLeft = UDim.new(0, 18), PaddingRight = UDim.new(0, 18) }),
+						Rows = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 8), VerticalAlignment = Enum.VerticalAlignment.Center }),
+					},
+					buildOutcomeRows(ranks, playerUid)
+					)),
 
 				RewardLbl = (rewardCash > 0) and e("TextLabel", {
 					Text = "HADIAH: +$" .. GameUtils.formatPrice(rewardCash),

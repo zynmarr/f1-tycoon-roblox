@@ -1,5 +1,5 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/5474a83e258b497584bed9df95de1d554bc53f89/packages/scheduler/src/forks/SchedulerHostConfig.default.js
--- NOTE: Removed --!strict for Luau version compatibility
+--!strict
 --[[*
 * Copyright (c) Facebook, Inc. and its affiliates.
 *
@@ -31,7 +31,7 @@ local setTimeout = LuauPolyfill.setTimeout
 local clearTimeout = LuauPolyfill.clearTimeout
 
 local isMessageLoopRunning = false
-local scheduledHostCallback: ((boolean, number) -> boolean)? = nil
+local scheduledHostCallback: ((boolean, number) -> boolean) | nil 
 local taskTimeoutID = Object.None
 
 -- Scheduler periodically yields in case there is other work on the main
