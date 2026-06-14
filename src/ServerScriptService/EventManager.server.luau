@@ -280,20 +280,21 @@ local function giftBoxToPlayer(player: Player, level: number)
 end
 
 local function giftCarToPlayer(player: Player, carName: string, variant: string?)
-	local CARS_STORAGE = game:GetService("ServerStorage"):WaitForChild("F1 CARS")
-	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 	local CollectionService = game:GetService("CollectionService")
+	local ServerStorage = game:GetService("ServerStorage")
+	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 	
 	local foundTemplate = nil
 	local foundRarity = "Common"
-	for _, folder in ipairs(CARS_STORAGE:GetChildren()) do
-		if folder:IsA("Folder") then
-			local template = folder:FindFirstChild(carName)
-			if template then
-				foundTemplate = template
-				foundRarity = folder.Name
-				break
+	
+	for _, carTemplate in ipairs(CollectionService:GetTagged("Car")) do
+		if carTemplate:IsDescendantOf(ServerStorage) and carTemplate.Name == carName then
+			foundTemplate = carTemplate
+			local parent = carTemplate.Parent
+			if parent and parent:IsA("Folder") then
+				foundRarity = parent.Name
 			end
+			break
 		end
 	end
 	
@@ -517,19 +518,28 @@ function AdminEventService:getAvailableCars(player: Player)
 		return {}
 	end
 	
+	local CollectionService = game:GetService("CollectionService")
+	local ServerStorage = game:GetService("ServerStorage")
+	
 	local cars = {}
-	local CARS_STORAGE = game:GetService("ServerStorage"):FindFirstChild("F1 CARS")
-	if CARS_STORAGE then
-		for _, rarityFolder in ipairs(CARS_STORAGE:GetChildren()) do
-			if rarityFolder:IsA("Folder") then
-				for _, carTemplate in ipairs(rarityFolder:GetChildren()) do
-					if carTemplate:IsA("Tool") or carTemplate:IsA("Model") then
-						table.insert(cars, {
-							Name = carTemplate.Name,
-							Rarity = rarityFolder.Name,
-						})
-					end
+	local added = {}
+	
+	for _, carTemplate in ipairs(CollectionService:GetTagged("Car")) do
+		if carTemplate:IsDescendantOf(ServerStorage) and (carTemplate:IsA("Tool") or carTemplate:IsA("Model")) then
+			local carName = carTemplate.Name
+			if not added[carName] then
+				added[carName] = true
+				
+				local rarity = "Common"
+				local parent = carTemplate.Parent
+				if parent and parent:IsA("Folder") then
+					rarity = parent.Name
 				end
+				
+				table.insert(cars, {
+					Name = carName,
+					Rarity = rarity,
+				})
 			end
 		end
 	end
