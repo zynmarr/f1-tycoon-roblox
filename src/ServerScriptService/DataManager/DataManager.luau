@@ -8,6 +8,11 @@ local DEFAULT_DATA = {
 		Level = 1,
 		Rebirth = 0,
 		RebirthPoints = 0,
+		RaceStats = {
+			Wins = 0,
+			Losses = 0,
+			CashEarned = 0,
+		},
 	},
 	Inventory = {},
 	PlotData = {
@@ -303,6 +308,7 @@ function DataManager.syncData(player)
 	player:SetAttribute("RebirthUpgrades", HttpService:JSONEncode(profile.Data.RebirthUpgrades or {}))
 	player:SetAttribute("DailyRewards", HttpService:JSONEncode(profile.Data.DailyRewards or {}))
 	player:SetAttribute("Quests", HttpService:JSONEncode(profile.Data.Quests or {}))
+	player:SetAttribute("RaceStats", HttpService:JSONEncode(profile.Data.Stats.RaceStats or { Wins = 0, Losses = 0, CashEarned = 0 }))
 
 	return true
 end

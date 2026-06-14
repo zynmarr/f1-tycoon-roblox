@@ -74,14 +74,65 @@ function PlotManager.Init()
 	end
 end
 
+local function spawnRaceStation(plot: Folder)
+	local spawnLocation = plot:FindFirstChild("SpawnLocation") :: BasePart?
+	if not spawnLocation then
+		warn("[PlotManager] SpawnLocation tidak ditemukan untuk spawn RaceStation di plot: " .. plot.Name)
+		return
+	end
+
+	local raceStation = plot:FindFirstChild("RaceStation")
+	if not raceStation then
+		local model = Instance.new("Model")
+		model.Name = "RaceStation"
+
+		-- DeskPart
+		local desk = Instance.new("Part")
+		desk.Name = "DeskPart"
+		desk.Size = Vector3.new(5, 3.5, 2.5)
+		desk.Color = Color3.fromRGB(50, 50, 50)
+		desk.Material = Enum.Material.Metal
+		desk.Anchored = true
+		desk.CanCollide = true
+		desk.CFrame = spawnLocation.CFrame * CFrame.new(7, 1.25, 0)
+		desk.Parent = model
+
+		-- ScreenPart
+		local screen = Instance.new("Part")
+		screen.Name = "ScreenPart"
+		screen.Size = Vector3.new(3.5, 2.5, 0.2)
+		screen.Color = Color3.fromRGB(0, 170, 255)
+		screen.Material = Enum.Material.Neon
+		screen.Anchored = true
+		screen.CanCollide = true
+		screen.CFrame = desk.CFrame * CFrame.new(0, 2.5, 0)
+		screen.Parent = model
+
+		-- ProximityPrompt
+		local prompt = Instance.new("ProximityPrompt")
+		prompt.Name = "RacePrompt"
+		prompt.ActionText = "Kelola Balapan"
+		prompt.ObjectText = "Stasiun Balap F1"
+		prompt.MaxActivationDistance = 8
+		prompt.HoldDuration = 0.5
+		prompt.RequiresLineOfSight = false
+		prompt.Parent = screen
+
+		model.PrimaryPart = desk
+		model.Parent = plot
+	end
+end
+
 function PlotManager.claimPlot(player): Instance?
 	local plotsFolder = workspace:WaitForChild("Plots")
-	-- local
 
 	for _, plot in pairs(plotsFolder:GetChildren()) do
 		local currentOwner = plot:GetAttribute("Owner")
 		if not currentOwner or currentOwner == "" then
 			plot:SetAttribute("Owner", player.Name)
+			pcall(function()
+				spawnRaceStation(plot)
+			end)
 			return plot
 		end
 	end
@@ -91,6 +142,14 @@ end
 function PlotManager.releasePlot(player)
 	local plot = GameUtils.getPlayerPlot(player)
 	if plot then
+		-- Hancurkan RaceStation jika ada
+		local raceStation = plot:FindFirstChild("RaceStation")
+		if raceStation then
+			pcall(function()
+				raceStation:Destroy()
+			end)
+		end
+
 		-- 1. Reset Owner Plot
 		plot:SetAttribute("Owner", "")
 		local label = plot:FindFirstChild("TextLabel", true)
