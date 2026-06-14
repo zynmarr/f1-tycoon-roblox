@@ -511,7 +511,7 @@ return function(props)
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextYAlignment = Enum.TextYAlignment.Top,
 					ClearTextOnFocus = false,
-					[React.Event.Change.Text] = function(box)
+					[React.Change.Text] = function(box)
 						setBroadcastText(box.Text)
 					end
 				})
@@ -632,7 +632,7 @@ return function(props)
 					TextSize = 10,
 					BorderSizePixel = 0,
 					ClearTextOnFocus = false,
-					[React.Event.Change.Text] = function(box) setTargetPlayerName(box.Text) end,
+					[React.Change.Text] = function(box) setTargetPlayerName(box.Text) end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", { Color = Color3.fromRGB(55, 55, 65), Thickness = 1 }),
@@ -698,7 +698,7 @@ return function(props)
 						TextSize = 11,
 						BorderSizePixel = 0,
 						ClearTextOnFocus = false,
-						[React.Event.Change.Text] = function(box) setGiftCashAmount(tonumber(box.Text) or 0) end,
+						[React.Change.Text] = function(box) setGiftCashAmount(tonumber(box.Text) or 0) end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 
 					SendBtn = e("TextButton", {
@@ -765,7 +765,7 @@ return function(props)
 						TextSize = 11,
 						BorderSizePixel = 0,
 						ClearTextOnFocus = false,
-						[React.Event.Change.Text] = function(box)
+						[React.Change.Text] = function(box)
 							local val = tonumber(box.Text) or 12
 							setGiftBoxLevel(math.clamp(val, 1, 30))
 						end,
@@ -833,7 +833,7 @@ return function(props)
 						TextSize = 10,
 						BorderSizePixel = 0,
 						ClearTextOnFocus = false,
-						[React.Event.Change.Text] = function(box)
+						[React.Change.Text] = function(box)
 							setCarSearchText(box.Text)
 							setIsCarDropdownOpen(true)
 						end,
