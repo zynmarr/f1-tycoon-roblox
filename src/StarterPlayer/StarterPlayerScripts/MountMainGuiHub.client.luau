@@ -76,7 +76,7 @@ local function updateUIRender()
 		end,
 		
 		onRebirth = function()
-			local result = rebirthService:requestRebirth()
+			local result = rebirthService:fetch("requestRebirth")
 			if result and result.Success then
 				print("[Client] Rebirth Berhasil: " .. tostring(result.Message))
 			else
@@ -85,7 +85,7 @@ local function updateUIRender()
 		end,
 		
 		onUpgrade = function(upgradeName: string)
-			local result = rebirthService:purchaseRebirthUpgrade(upgradeName)
+			local result = rebirthService:fetch("purchaseRebirthUpgrade", upgradeName)
 			if result and result.Success then
 				print("[Client] Upgrade Berhasil: " .. tostring(result.Message))
 			else
@@ -94,7 +94,7 @@ local function updateUIRender()
 		end,
 		
 		onClaimReward = function()
-			local result = rebirthService:claimDailyReward()
+			local result = rebirthService:fetch("claimDailyReward")
 			if result and result.Success then
 				print("[Client] Klaim Hadiah Berhasil: " .. tostring(result.Message))
 			else
@@ -103,7 +103,7 @@ local function updateUIRender()
 		end,
 		
 		onClaimQuest = function(questId: string)
-			local result = rebirthService:claimDailyQuest(questId)
+			local result = rebirthService:fetch("claimDailyQuest", questId)
 			if result and result.Success then
 				print("[Client] Klaim Misi Berhasil: " .. tostring(result.Message))
 			else
