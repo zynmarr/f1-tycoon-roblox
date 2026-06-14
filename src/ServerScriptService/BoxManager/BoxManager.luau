@@ -374,6 +374,9 @@ function BoxManager:openBox(player: Player, boxName: string)
 		Debris:AddItem(targetBox, 0.1)
 	end
 
+	local RebirthManager = require(game.ServerScriptService.RebirthManager.RebirthManager)
+	RebirthManager.incrementQuestProgress(player, "OpenBoxes", 1)
+
 	return {
 		Success = true,
 		Error = "",

@@ -294,6 +294,9 @@ function SellGuiManager:sellAllCars(player, cars)
 	end
 
 	if carsCount > 0 then
+		local RebirthManager = require(game.ServerScriptService.RebirthManager.RebirthManager)
+		RebirthManager.incrementQuestProgress(player, "SellCars", carsCount)
+
 		print(
 			"[SellGui] "
 				.. player.Name
