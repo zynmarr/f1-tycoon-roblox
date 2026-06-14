@@ -16,6 +16,7 @@ local SpawnerBoxManager = safeRequire(game.ServerScriptService.SpawnerBoxManager
 local BoxManager = safeRequire(game.ServerScriptService.BoxManager.BoxManager, "BoxManager")
 local RoleManager = safeRequire(script.Parent.RoleManager.RoleManager, "RoleManager")
 local ParkingAreaManager = safeRequire(script.Parent.ParkingAreaManager.ParkingAreaManager, "ParkingAreaManager")
+local RebirthManager = safeRequire(script.Parent.RebirthManager.RebirthManager, "RebirthManager")
 -- local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
 
 -- ==========================================================
@@ -301,6 +302,9 @@ local function InitializeServer()
 	end
 	if typeof(ParkingAreaManager.Init) == "function" then
 		ParkingAreaManager.Init()
+	end
+	if typeof(RebirthManager.Init) == "function" then
+		RebirthManager.Init()
 	end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)
