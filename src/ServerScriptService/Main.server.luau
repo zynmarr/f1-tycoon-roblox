@@ -198,6 +198,11 @@ local function onPlayerAdded(player: Player)
 	rebirthVal.Value = data.Stats.Rebirth or 0
 	rebirthVal.Parent = leaderstats
 
+	local rebirthPointsVal = Instance.new("IntValue")
+	rebirthPointsVal.Name = "RebirthPoints"
+	rebirthPointsVal.Value = data.Stats.RebirthPoints or 0
+	rebirthPointsVal.Parent = leaderstats
+
 	leaderstats.Parent = player
 
 	-- Memuat Karakter dan Spawn

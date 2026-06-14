@@ -7,12 +7,34 @@ local DEFAULT_DATA = {
 		Cash = 0,
 		Level = 1,
 		Rebirth = 0,
+		RebirthPoints = 0,
 	},
 	Inventory = {},
 	PlotData = {
 		MyCars = {},
 		Machines = {},
 	},
+	RebirthUpgrades = {
+		CashMultiplier = 0,
+		LuckMultiplier = 0,
+		VariantChance_Rainbow = 0,
+		VariantChance_All = 0,
+	},
+	DailyRewards = {
+		LastClaimTime = 0,
+		Streak = 0,
+	},
+	Quests = {
+		Daily = {
+			LastGeneratedTime = 0,
+			ActiveQuests = {},
+		},
+		Milestones = {
+			TotalCarsSold = 0,
+			TotalBoxesOpened = 0,
+			ClaimedMilestones = {},
+		}
+	}
 }
 
 -- ===== ATTRIBUTE SCHEMA VALIDATION =====
