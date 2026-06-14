@@ -216,6 +216,7 @@ function DataManager.syncData(player)
 	finalSave.Stats.Cash = leaderstats:FindFirstChild("Cash") and leaderstats.Cash.Value or 0
 	finalSave.Stats.Level = leaderstats:FindFirstChild("Level") and leaderstats.Level.Value or 1
 	finalSave.Stats.Rebirth = leaderstats:FindFirstChild("Rebirth") and leaderstats.Rebirth.Value or 0
+	finalSave.Stats.RebirthPoints = leaderstats:FindFirstChild("RebirthPoints") and leaderstats.RebirthPoints.Value or 0
 
 	-- 2. Scan Seluruh Item di Backpack & Karakter (Hanya jika pemain tidak sedang keluar)
 	if not player:GetAttribute("IsLeaving") then
