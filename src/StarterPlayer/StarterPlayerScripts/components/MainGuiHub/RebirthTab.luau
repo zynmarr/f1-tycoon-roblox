@@ -48,17 +48,18 @@ return function(props)
 			
 			Icon = e("TextLabel", {
 				Text = info.Icon,
-				Size = UDim2.new(0, 45, 0, 45),
-				Position = UDim2.new(0, 15, 0.5, -22),
+				Size = UDim2.new(0.12, 0, 0, 45),
+				Position = UDim2.new(0.02, 0, 0.5, -22),
 				BackgroundTransparency = 1,
-				TextSize = 26,
+				TextSize = 24,
 				Font = Enum.Font.GothamBold,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
+				TextScaled = true,
 			}),
 
 			TextContainer = e("Frame", {
-				Size = UDim2.new(1, -210, 1, 0),
-				Position = UDim2.new(0, 75, 0, 0),
+				Size = UDim2.new(0.56, 0, 1, 0),
+				Position = UDim2.new(0.15, 0, 0, 0),
 				BackgroundTransparency = 1,
 			}, {
 				List = e("UIListLayout", {
@@ -71,32 +72,35 @@ return function(props)
 					Size = UDim2.new(1, 0, 0, 20),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(240, 240, 240),
-					TextSize = 15,
+					TextSize = 14,
 					Font = Enum.Font.GothamBold,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					RichText = true,
+					TextScaled = true,
 				}),
 				Desc = e("TextLabel", {
 					Text = info.Desc,
 					Size = UDim2.new(1, 0, 0, 16),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(180, 180, 180),
-					TextSize = 11,
+					TextSize = 10,
 					Font = Enum.Font.GothamMedium,
 					TextXAlignment = Enum.TextXAlignment.Left,
+					TextScaled = true,
 				})
 			}),
 
 			UpgradeButton = e("TextButton", {
 				Text = string.format("UPGRADE\n(%d RP)", cost),
-				Size = UDim2.new(0, 110, 0, 45),
-				Position = UDim2.new(1, -125, 0.5, -22),
+				Size = UDim2.new(0.26, 0, 0, 45),
+				Position = UDim2.new(0.72, 0, 0.5, -22),
 				BackgroundColor3 = canBuy and Color3.fromRGB(0, 170, 110) or Color3.fromRGB(80, 80, 90),
 				TextColor3 = canBuy and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 160),
 				Font = Enum.Font.GothamBold,
-				TextSize = 11,
+				TextSize = 10,
 				BorderSizePixel = 0,
 				Active = canBuy,
+				TextScaled = true,
 				[React.Event.Activated] = function()
 					if canBuy and props.onUpgrade then
 						props.onUpgrade(id)
@@ -166,6 +170,7 @@ return function(props)
 				TextSize = 13,
 				BorderSizePixel = 0,
 				Active = canRebirth,
+				TextScaled = true,
 				[React.Event.Activated] = function()
 					if canRebirth and props.onRebirth then
 						props.onRebirth()
@@ -203,7 +208,8 @@ return function(props)
 				BorderSizePixel = 0,
 				ScrollBarThickness = 4,
 				ScrollBarImageColor3 = Color3.fromRGB(100, 100, 115),
-				CanvasSize = UDim2.new(0, 0, 0, 340),
+				CanvasSize = UDim2.new(0, 0, 0, 0),
+				AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			}, upgradeElements)
 		})
 	})

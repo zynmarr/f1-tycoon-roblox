@@ -38,13 +38,19 @@ return function(props)
 	end
 
 	return e("Frame", {
-		Size = UDim2.new(0, 750, 0, 420),
-		Position = UDim2.new(0.5, -375, 0.5, -210),
+		Size = UDim2.new(0.85, 0, 0.85, 0),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Position = UDim2.new(0.5, 0, 0.5, 0),
 		BackgroundColor3 = Color3.fromRGB(18, 18, 24),
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(45, 45, 55),
 	}, {
 		Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
+
+		SizeConstraint = e("UISizeConstraint", {
+			MinSize = Vector2.new(550, 300),
+			MaxSize = Vector2.new(800, 460),
+		}),
 
 		-- HEADER STATE
 		Header = e("Frame", {
@@ -67,8 +73,8 @@ return function(props)
 
 			-- STATS DISPLAY (CASH & REBIRTH POINTS)
 			StatsContainer = e("Frame", {
-				Size = UDim2.new(0.5, 0, 1, 0),
-				Position = UDim2.new(0.5, -40, 0, 0),
+				Size = UDim2.new(0.42, 0, 1, 0),
+				Position = UDim2.new(0.52, 0, 0, 0),
 				BackgroundTransparency = 1,
 			}, {
 				List = e("UIListLayout", {
@@ -122,7 +128,7 @@ return function(props)
 
 		-- SIDEBAR NAVIGATION
 		Sidebar = e("Frame", {
-			Size = UDim2.new(0, 180, 1, -55),
+			Size = UDim2.new(0.24, 0, 1, -55),
 			Position = UDim2.new(0, 0, 0, 55),
 			BackgroundColor3 = Color3.fromRGB(22, 22, 28),
 			BorderSizePixel = 0,
@@ -188,8 +194,8 @@ return function(props)
 
 		-- VIEWPORT AREA
 		Viewport = e("Frame", {
-			Size = UDim2.new(1, -210, 1, -85),
-			Position = UDim2.new(0, 195, 0, 70),
+			Size = UDim2.new(0.73, 0, 1, -75),
+			Position = UDim2.new(0.25, 0, 0, 65),
 			BackgroundTransparency = 1,
 		}, {
 			Content = activeComponent

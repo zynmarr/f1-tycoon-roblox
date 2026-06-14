@@ -56,7 +56,7 @@ return function(props)
 		end
 
 		rewardCards["Day" .. item.Day] = e("Frame", {
-			Size = UDim2.new(0.128, 0, 0.85, 0),
+			Size = UDim2.new(0, 85, 0.85, 0),
 			BackgroundColor3 = cardBgColor,
 			BorderSizePixel = isCurrentClaimable and 2 or 1,
 			BorderColor3 = borderBgColor,
@@ -72,6 +72,7 @@ return function(props)
 				TextColor3 = isLocked and Color3.fromRGB(130, 130, 140) or Color3.fromRGB(255, 255, 255),
 				TextSize = 12,
 				Font = Enum.Font.GothamBold,
+				TextScaled = true,
 			}),
 
 			Icon = e("TextLabel", {
@@ -91,6 +92,7 @@ return function(props)
 				TextColor3 = isLocked and Color3.fromRGB(150, 150, 160) or Color3.fromRGB(0, 255, 204),
 				TextSize = 10,
 				Font = Enum.Font.GothamBold,
+				TextScaled = true,
 			}),
 
 			Overlay = isClaimed and e("TextLabel", {
@@ -101,6 +103,7 @@ return function(props)
 				TextColor3 = Color3.fromRGB(80, 255, 120),
 				TextSize = 10,
 				Font = Enum.Font.GothamBold,
+				TextScaled = true,
 			}) or nil,
 
 			ClaimButton = isCurrentClaimable and e("TextButton", {
@@ -112,6 +115,7 @@ return function(props)
 				Font = Enum.Font.GothamBold,
 				TextSize = 10,
 				BorderSizePixel = 0,
+				TextScaled = true,
 				[React.Event.Activated] = function()
 					if props.onClaimReward then
 						props.onClaimReward()
@@ -129,6 +133,7 @@ return function(props)
 				TextColor3 = Color3.fromRGB(110, 110, 120),
 				TextSize = 9,
 				Font = Enum.Font.GothamBold,
+				TextScaled = true,
 			}) or nil,
 		})
 	end
@@ -171,10 +176,15 @@ return function(props)
 			TextXAlignment = Enum.TextXAlignment.Left,
 		}),
 
-		CardContainer = e("Frame", {
+		CardContainer = e("ScrollingFrame", {
 			Size = UDim2.new(1, -30, 1, -150),
 			Position = UDim2.new(0, 15, 0, 80),
 			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			CanvasSize = UDim2.new(0, 680, 0, 0),
+			ScrollingDirection = Enum.ScrollingDirection.Horizontal,
+			ScrollBarThickness = 4,
+			ScrollBarImageColor3 = Color3.fromRGB(80, 80, 95),
 		}, rewardCards),
 
 		CooldownDisplay = e("TextLabel", {

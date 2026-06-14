@@ -47,19 +47,20 @@ return function(props)
 			
 			InfoLabel = e("TextLabel", {
 				Text = q.Text .. " <font color='#00FFCC'>(" .. q.Progress .. "/" .. q.Target .. ")</font>",
-				Size = UDim2.new(0.65, 0, 0, 20),
-				Position = UDim2.new(0, 15, 0, 10),
+				Size = UDim2.new(0.68, 0, 0, 20),
+				Position = UDim2.new(0.02, 0, 0, 10),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(240, 240, 240),
 				TextSize = 13,
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				RichText = true,
+				TextScaled = true,
 			}),
 
 			ProgressBarBg = e("Frame", {
-				Size = UDim2.new(0.65, 0, 0, 10),
-				Position = UDim2.new(0, 15, 0, 38),
+				Size = UDim2.new(0.68, 0, 0, 10),
+				Position = UDim2.new(0.02, 0, 0, 38),
 				BackgroundColor3 = Color3.fromRGB(20, 20, 25),
 				BorderSizePixel = 0,
 			}, {
@@ -75,14 +76,15 @@ return function(props)
 
 			ActionBtn = not isClaimed and e("TextButton", {
 				Text = isCompleted and "KLAIM\n($" .. GameUtils.formatCompact(q.RewardCash) .. ")" or "BELUM SELESAI",
-				Size = UDim2.new(0, 110, 0, 45),
-				Position = UDim2.new(1, -125, 0.5, -22),
+				Size = UDim2.new(0.26, 0, 0, 45),
+				Position = UDim2.new(0.72, 0, 0.5, -22),
 				BackgroundColor3 = isCompleted and Color3.fromRGB(0, 170, 110) or Color3.fromRGB(60, 60, 70),
 				TextColor3 = isCompleted and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 160),
 				Font = Enum.Font.GothamBold,
 				TextSize = 10,
 				BorderSizePixel = 0,
 				Active = isCompleted,
+				TextScaled = true,
 				[React.Event.Activated] = function()
 					if isCompleted and props.onClaimQuest then
 						props.onClaimQuest(q.ID)
@@ -92,12 +94,13 @@ return function(props)
 				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 			}) or e("TextLabel", {
 				Text = "✓ SELESAI",
-				Size = UDim2.new(0, 110, 0, 45),
-				Position = UDim2.new(1, -125, 0.5, -22),
+				Size = UDim2.new(0.26, 0, 0, 45),
+				Position = UDim2.new(0.72, 0, 0.5, -22),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(80, 255, 120),
 				TextSize = 11,
 				Font = Enum.Font.GothamBold,
+				TextScaled = true,
 			})
 		})
 	end
@@ -125,19 +128,20 @@ return function(props)
 				
 				InfoLabel = e("TextLabel", {
 					Text = m.Label .. " <font color='#00FFCC'>(" .. currentStat .. "/" .. m.Target .. ")</font>",
-					Size = UDim2.new(0.65, 0, 0, 20),
-					Position = UDim2.new(0, 15, 0, 10),
+					Size = UDim2.new(0.68, 0, 0, 20),
+					Position = UDim2.new(0.02, 0, 0, 10),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(240, 240, 240),
 					TextSize = 13,
 					Font = Enum.Font.GothamBold,
 					TextXAlignment = Enum.TextXAlignment.Left,
 					RichText = true,
+					TextScaled = true,
 				}),
 
 				ProgressBarBg = e("Frame", {
-					Size = UDim2.new(0.65, 0, 0, 10),
-					Position = UDim2.new(0, 15, 0, 38),
+					Size = UDim2.new(0.68, 0, 0, 10),
+					Position = UDim2.new(0.02, 0, 0, 38),
 					BackgroundColor3 = Color3.fromRGB(20, 20, 25),
 					BorderSizePixel = 0,
 				}, {
@@ -153,14 +157,15 @@ return function(props)
 
 				ActionBtn = not isClaimed and e("TextButton", {
 					Text = isCompleted and "KLAIM\n($" .. GameUtils.formatCompact(m.Reward) .. ")" or "BELUM SELESAI",
-					Size = UDim2.new(0, 110, 0, 45),
-					Position = UDim2.new(1, -125, 0.5, -22),
+					Size = UDim2.new(0.26, 0, 0, 45),
+					Position = UDim2.new(0.72, 0, 0.5, -22),
 					BackgroundColor3 = isCompleted and Color3.fromRGB(0, 170, 110) or Color3.fromRGB(60, 60, 70),
 					TextColor3 = isCompleted and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 160),
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
 					Active = isCompleted,
+					TextScaled = true,
 					[React.Event.Activated] = function()
 						if isCompleted and props.onClaimMilestone then
 							props.onClaimMilestone(m.ID)
@@ -170,12 +175,13 @@ return function(props)
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 				}) or e("TextLabel", {
 					Text = "✓ KLAIMED",
-					Size = UDim2.new(0, 110, 0, 45),
-					Position = UDim2.new(1, -125, 0.5, -22),
+					Size = UDim2.new(0.26, 0, 0, 45),
+					Position = UDim2.new(0.72, 0, 0.5, -22),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(80, 255, 120),
 					TextSize = 11,
 					Font = Enum.Font.GothamBold,
+					TextScaled = true,
 				})
 			})
 		end
@@ -212,7 +218,8 @@ return function(props)
 				Position = UDim2.new(0, 10, 0, 65),
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
-				CanvasSize = UDim2.new(0, 0, 0, 220),
+				CanvasSize = UDim2.new(0, 0, 0, 0),
+				AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			}, dailyElements)
 		}),
 
@@ -242,7 +249,8 @@ return function(props)
 				BackgroundTransparency = 1,
 				BorderSizePixel = 0,
 				ScrollBarThickness = 4,
-				CanvasSize = UDim2.new(0, 0, 0, 420),
+				CanvasSize = UDim2.new(0, 0, 0, 0),
+				AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			}, milestoneElements)
 		})
 	})
