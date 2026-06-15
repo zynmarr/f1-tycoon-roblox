@@ -130,7 +130,7 @@ local function createAdminButton()
 		or containerInstance:FindFirstChildOfClass("ImageButton")
 		or containerInstance:FindFirstChildOfClass("TextButton")
 
-	if template then
+	if template and template:IsA("GuiButton") then
 		local clone = (template :: Instance):Clone() :: GuiButton
 		clone.Name = "AdminEventBtn"
 

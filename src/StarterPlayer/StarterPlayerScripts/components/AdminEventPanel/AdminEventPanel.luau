@@ -56,25 +56,50 @@ return function(props: any)
 	
 	-- Gift Car Search & Autocomplete
 	local carSearchText, setCarSearchText = useState("")
-	local selectedCar, setSelectedCar = useState(nil :: any)
 	local isCarDropdownOpen, setIsCarDropdownOpen = useState(false)
 	local availableCars, setAvailableCars = useState({} :: {CarData})
 
-	-- 5. LISTEN TO SERVER CHANGES (REAL-TIME SYNC)
+	-- 5. INITIALIZE SLIDERS FROM SERVER ON MOUNT
+	useEffect(function()
+		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents", 10)
+		if not liveEvents then return end
+
+		local luckNode = liveEvents:FindFirstChild("LuckyChanceBoost") :: IntValue?
+		local expNode = liveEvents:FindFirstChild("ExpBoost") :: IntValue?
+		local variantNode = liveEvents:FindFirstChild("VariantBoost") :: IntValue?
+		local speedVal = (ReplicatedStorage:GetAttribute("SpeedBoost") :: number?) or 0
+
+		local goldenNode = liveEvents:FindFirstChild("VariantBoost_Golden") :: IntValue?
+		local rainbowNode = liveEvents:FindFirstChild("VariantBoost_Rainbow") :: IntValue?
+		local galaxyNode = liveEvents:FindFirstChild("VariantBoost_Galaxy") :: IntValue?
+		local hellfireNode = liveEvents:FindFirstChild("VariantBoost_Hellfire") :: IntValue?
+
+		if luckNode then setLuckInput(luckNode.Value) end
+		if expNode then setExpInput(expNode.Value) end
+		if variantNode then setVariantInput(variantNode.Value) end
+		setSpeedInput(speedVal)
+
+		if goldenNode then setGoldenInput(goldenNode.Value) end
+		if rainbowNode then setRainbowInput(rainbowNode.Value) end
+		if galaxyNode then setGalaxyInput(galaxyNode.Value) end
+		if hellfireNode then setHellfireInput(hellfireNode.Value) end
+	end, {})
+
+	-- 6. LISTEN TO SERVER CHANGES (REAL-TIME SYNC)
 	useEffect(function()
 		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents", 10)
 		if not liveEvents then return end
 
 		local function syncValues()
-			local luckNode = liveEvents:FindFirstChild("LuckyChanceBoost") :: NumberValue?
-			local expNode = liveEvents:FindFirstChild("ExpBoost") :: NumberValue?
-			local variantNode = liveEvents:FindFirstChild("VariantBoost") :: NumberValue?
+			local luckNode = liveEvents:FindFirstChild("LuckyChanceBoost") :: IntValue?
+			local expNode = liveEvents:FindFirstChild("ExpBoost") :: IntValue?
+			local variantNode = liveEvents:FindFirstChild("VariantBoost") :: IntValue?
 			local speedVal = (ReplicatedStorage:GetAttribute("SpeedBoost") :: number?) or 0
 
-			local goldenNode = liveEvents:FindFirstChild("VariantBoost_Golden") :: NumberValue?
-			local rainbowNode = liveEvents:FindFirstChild("VariantBoost_Rainbow") :: NumberValue?
-			local galaxyNode = liveEvents:FindFirstChild("VariantBoost_Galaxy") :: NumberValue?
-			local hellfireNode = liveEvents:FindFirstChild("VariantBoost_Hellfire") :: NumberValue?
+			local goldenNode = liveEvents:FindFirstChild("VariantBoost_Golden") :: IntValue?
+			local rainbowNode = liveEvents:FindFirstChild("VariantBoost_Rainbow") :: IntValue?
+			local galaxyNode = liveEvents:FindFirstChild("VariantBoost_Galaxy") :: IntValue?
+			local hellfireNode = liveEvents:FindFirstChild("VariantBoost_Hellfire") :: IntValue?
 
 			setLiveLuck(if luckNode then luckNode.Value else 0)
 			setLiveExp(if expNode then expNode.Value else 0)
@@ -100,15 +125,15 @@ return function(props: any)
 			local node = liveEvents:FindFirstChild(name)
 			if node then
 				table.insert(connections, node.Changed:Connect(syncValues))
-			else
-				table.insert(connections, liveEvents.ChildAdded:Connect(function(child: Instance)
-					if child.Name == name then
-						syncValues()
-						table.insert(connections, (child :: any).Changed:Connect(syncValues))
-					end
-				end))
 			end
 		end
+
+		table.insert(connections, liveEvents.ChildAdded:Connect(function(child: Instance)
+			if table.find(nodes, child.Name) then
+				syncValues()
+				table.insert(connections, (child :: any).Changed:Connect(syncValues))
+			end
+		end))
 
 		table.insert(connections, ReplicatedStorage:GetAttributeChangedSignal("SpeedBoost"):Connect(syncValues))
 
@@ -293,8 +318,9 @@ return function(props: any)
 	-- FILTERED CARS FOR SEARCH AUTOCOMPLETE
 	local filteredCars: {CarData} = {}
 	if carSearchText ~= "" then
+		local query = string.lower(carSearchText)
 		for _, c in ipairs(availableCars :: {CarData}) do
-			if string.find(string.lower(c.Name), string.lower(carSearchText)) then
+			if string.find(string.lower(c.Name), query, 1, true) then
 				table.insert(filteredCars, c)
 			end
 		end
@@ -519,6 +545,7 @@ return function(props: any)
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextYAlignment = Enum.TextYAlignment.Top,
 					ClearTextOnFocus = false,
+					MaxLength = 200,
 					[Change.Text] = function(box: TextBox)
 						setBroadcastText(box.Text)
 					end
@@ -890,6 +917,7 @@ return function(props: any)
 								if index > 20 then break end -- Limit to 20 search results for performance
 								
 								table.insert(items, e("TextButton", {
+									key = car.Name,
 									Text = string.format(" %s [%s]", car.Name, car.Rarity),
 									Size = UDim2.new(1, 0, 0, 20),
 									BackgroundColor3 = Color3.fromRGB(25, 25, 30),
@@ -908,6 +936,7 @@ return function(props: any)
 							
 							if #items == 0 then
 								table.insert(items, e("TextLabel", {
+									key = "NoCarsFound",
 									Text = " Mobil tidak ditemukan",
 									Size = UDim2.new(1, 0, 0, 20),
 									BackgroundTransparency = 1,
@@ -946,7 +975,6 @@ return function(props: any)
 	}, {
 		Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
 		SizeConstraint = e("UISizeConstraint", {
-			MinSize = Vector2.new(620, 360),
 			MaxSize = Vector2.new(880, 520),
 		}),
 
