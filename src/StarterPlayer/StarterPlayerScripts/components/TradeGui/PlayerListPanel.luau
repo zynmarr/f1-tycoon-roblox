@@ -1,4 +1,3 @@
---!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local React = require(ReplicatedStorage.Packages.React)
@@ -40,7 +39,9 @@ return function(props: PlayerListPanelProps)
 		task.spawn(function()
 			while active do
 				task.wait(2)
-				if not active then break end
+				if not active then
+					break
+				end
 				updateList()
 			end
 		end)
@@ -68,12 +69,12 @@ return function(props: PlayerListPanelProps)
 			Layout = e("UIListLayout", {
 				Padding = UDim.new(0, 6),
 				SortOrder = Enum.SortOrder.LayoutOrder,
-			})
+			}),
 		}
 
 		for index, info in ipairs(otherPlayers) do
 			local meetsRequirement = info.Rebirths >= 5
-			
+
 			childrenTable[info.Name] = e("Frame", {
 				key = info.Name,
 				Size = UDim2.new(1, 0, 0, 40),
@@ -82,7 +83,7 @@ return function(props: PlayerListPanelProps)
 				LayoutOrder = index,
 			}, {
 				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-				
+
 				-- Info container
 				Info = e("Frame", {
 					Size = UDim2.new(0.65, 0, 1, 0),
@@ -107,7 +108,7 @@ return function(props: PlayerListPanelProps)
 						Font = Enum.Font.GothamMedium,
 						TextSize = 8,
 						TextXAlignment = Enum.TextXAlignment.Left,
-					})
+					}),
 				}),
 
 				-- Action Button
@@ -125,10 +126,10 @@ return function(props: PlayerListPanelProps)
 						if meetsRequirement then
 							props.onInvite(info.Name)
 						end
-					end
+					end,
 				}, {
-					Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) })
-				})
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
+				}),
 			})
 		end
 
@@ -186,8 +187,8 @@ return function(props: PlayerListPanelProps)
 				BorderSizePixel = 0,
 				[Event.Activated] = props.onClose,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) })
-			})
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
+			}),
 		}),
 
 		-- PLAYER SCROLL LIST
@@ -199,6 +200,6 @@ return function(props: PlayerListPanelProps)
 			AutomaticCanvasSize = Enum.AutomaticSize.Y,
 			ScrollBarThickness = 3,
 			ScrollBarImageColor3 = Color3.fromRGB(60, 60, 75),
-		}, renderPlayerRows())
+		}, renderPlayerRows()),
 	})
 end

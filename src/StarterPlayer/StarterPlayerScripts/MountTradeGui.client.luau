@@ -280,6 +280,28 @@ if leaderstats then
 end
 task.defer(onRebirthsChanged)
 
+-- ===== HIDE OWN PROXIMITY PROMPT =====
+local function disableOwnPrompt(char: Model)
+	local hrp = char:WaitForChild("HumanoidRootPart", 10)
+	if not hrp then return end
+
+	local function checkPrompt(child: Instance)
+		if child.Name == "TradePrompt" and child:IsA("ProximityPrompt") then
+			child.Enabled = false
+		end
+	end
+
+	hrp.ChildAdded:Connect(checkPrompt)
+	for _, child in ipairs(hrp:GetChildren()) do
+		checkPrompt(child)
+	end
+end
+
+player.CharacterAdded:Connect(disableOwnPrompt)
+if player.Character then
+	task.spawn(disableOwnPrompt, player.Character)
+end
+
 -- ===== PROXIMITY PROMPT INTERACTION =====
 ProximityPromptService.PromptTriggered:Connect(function(prompt, playerWhoTriggered)
 	if playerWhoTriggered == player and prompt.Name == "TradePrompt" then

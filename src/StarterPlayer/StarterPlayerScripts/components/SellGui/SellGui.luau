@@ -24,13 +24,14 @@ local function SubCarItem(props)
 	local car = props.car
 	local stackChildName = props.stackChildName
 	local onSell = props.onSell
-	
-	local carName = props.name or "Unknown"
+
+	local _ = props.name or "Unknown"
 	local carPrice = props.price or 0
 	local carVariant = props.variant or "Normal"
 	local carRarity = props.rarity or "Common"
 	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
-	local rarityColor = GameConfig.Rarities[carRarity] and GameConfig.Rarities[carRarity].Color or Color3.fromRGB(150, 150, 150)
+	local rarityColor = GameConfig.Rarities[carRarity] and GameConfig.Rarities[carRarity].Color
+		or Color3.fromRGB(150, 150, 150)
 
 	return e("Frame", {
 		Size = UDim2.new(1, -30, 0, 75), -- Indented from left by 30 pixels
@@ -41,7 +42,7 @@ local function SubCarItem(props)
 		LayoutOrder = props.layoutOrder or 1,
 	}, {
 		UICorner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-		
+
 		-- Small indicator line on the left showing rarity color
 		RarityBar = e("Frame", {
 			Size = UDim2.new(0, 4, 1, -12),
@@ -76,7 +77,12 @@ local function SubCarItem(props)
 			}),
 
 			MetaText = e("TextLabel", {
-				Text = string.format("<font color='#%s'>%s</font> • <font color='#00FF00'>$%s</font>", rarityColor:ToHex(), carRarity:upper(), formatPrice(carPrice)),
+				Text = string.format(
+					"<font color='#%s'>%s</font> • <font color='#00FF00'>$%s</font>",
+					rarityColor:ToHex(),
+					carRarity:upper(),
+					formatPrice(carPrice)
+				),
 				Size = UDim2.new(1, 0, 0, 18),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(180, 180, 180),
@@ -142,22 +148,26 @@ local function CarItem(props)
 	end
 
 	local isStack = carAmount > 1
-	local rarityColor = GameConfig.Rarities[carRarity] and GameConfig.Rarities[carRarity].Color or Color3.fromRGB(150, 150, 150)
+	local rarityColor = GameConfig.Rarities[carRarity] and GameConfig.Rarities[carRarity].Color
+		or Color3.fromRGB(150, 150, 150)
 
 	-- Build nested sub-items UI if it is a stack and expanded
 	local subItems = {}
 	if isStack and isExpanded then
 		-- 1. Main Base Tool (Representing the first car item)
-		table.insert(subItems, e(SubCarItem, {
-			car = car,
-			stackChildName = "Base",
-			name = carName,
-			price = carPrice,
-			variant = carVariant,
-			rarity = carRarity,
-			onSell = onSell,
-			layoutOrder = 1,
-		}))
+		table.insert(
+			subItems,
+			e(SubCarItem, {
+				car = car,
+				stackChildName = "Base",
+				name = carName,
+				price = carPrice,
+				variant = carVariant,
+				rarity = carRarity,
+				onSell = onSell,
+				layoutOrder = 1,
+			})
+		)
 
 		-- 2. Inner stack configurations in tool folder
 		if typeof(car) == "Instance" then
@@ -166,16 +176,19 @@ local function CarItem(props)
 				local index = 2
 				for _, configNode in ipairs(stacksFolder:GetChildren()) do
 					if configNode:IsA("Configuration") then
-						table.insert(subItems, e(SubCarItem, {
-							car = car,
-							stackChildName = configNode.Name,
-							name = carName,
-							price = configNode:GetAttribute("Price") or 0,
-							variant = configNode:GetAttribute("Variant") or "Normal",
-							rarity = configNode:GetAttribute("Rarity") or "Common",
-							onSell = onSell,
-							layoutOrder = index,
-						}))
+						table.insert(
+							subItems,
+							e(SubCarItem, {
+								car = car,
+								stackChildName = configNode.Name,
+								name = carName,
+								price = configNode:GetAttribute("Price") or 0,
+								variant = configNode:GetAttribute("Variant") or "Normal",
+								rarity = configNode:GetAttribute("Rarity") or "Common",
+								onSell = onSell,
+								layoutOrder = index,
+							})
+						)
 						index = index + 1
 					end
 				end
@@ -183,16 +196,19 @@ local function CarItem(props)
 		else
 			-- Mock stack children for UI Storybook
 			for i = 2, carAmount do
-				table.insert(subItems, e(SubCarItem, {
-					car = car,
-					stackChildName = "MockStack_" .. i,
-					name = carName,
-					price = carPrice,
-					variant = carVariant,
-					rarity = carRarity,
-					onSell = onSell,
-					layoutOrder = i,
-				}))
+				table.insert(
+					subItems,
+					e(SubCarItem, {
+						car = car,
+						stackChildName = "MockStack_" .. i,
+						name = carName,
+						price = carPrice,
+						variant = carVariant,
+						rarity = carRarity,
+						onSell = onSell,
+						layoutOrder = i,
+					})
+				)
 			end
 		end
 	end
@@ -430,8 +446,12 @@ local function SellGui(props)
 		local charChildRemovedConn
 
 		local function setupCharacterListeners(character)
-			if charChildAddedConn then charChildAddedConn:Disconnect() end
-			if charChildRemovedConn then charChildRemovedConn:Disconnect() end
+			if charChildAddedConn then
+				charChildAddedConn:Disconnect()
+			end
+			if charChildRemovedConn then
+				charChildRemovedConn:Disconnect()
+			end
 
 			charChildAddedConn = character.ChildAdded:Connect(function(child)
 				if child:IsA("Tool") then
@@ -457,9 +477,15 @@ local function SellGui(props)
 		return function()
 			connection:Disconnect()
 			removeConnection:Disconnect()
-			if charAddedConn then charAddedConn:Disconnect() end
-			if charChildAddedConn then charChildAddedConn:Disconnect() end
-			if charChildRemovedConn then charChildRemovedConn:Disconnect() end
+			if charAddedConn then
+				charAddedConn:Disconnect()
+			end
+			if charChildAddedConn then
+				charChildAddedConn:Disconnect()
+			end
+			if charChildRemovedConn then
+				charChildRemovedConn:Disconnect()
+			end
 		end
 	end, {})
 
@@ -561,7 +587,7 @@ local function SellGui(props)
 			LayoutOrder = 1,
 		}, {
 			UICorner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
-			
+
 			-- Cover top corners of corner frame to look clean
 			CornerBlocker = e("Frame", {
 				Size = UDim2.new(1, 0, 0, 10),

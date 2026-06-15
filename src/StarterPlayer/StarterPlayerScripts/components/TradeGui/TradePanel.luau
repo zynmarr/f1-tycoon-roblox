@@ -57,7 +57,7 @@ return function(props: any)
 	local theirLocked = isP1 and state.IsLocked2 or state.IsLocked1
 
 	local myConfirmed = isP1 and state.IsConfirmed1 or state.IsConfirmed2
-	local theirConfirmed = isP1 and state.IsConfirmed2 or state.IsConfirmed1
+	local _ = isP1 and state.IsConfirmed2 or state.IsConfirmed1
 
 	local otherPlayer = isP1 and state.Player2 or state.Player1
 
@@ -377,13 +377,10 @@ return function(props: any)
 					TextSize = 9,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-					Stroke = e(
-						"UIStroke",
-						{
-							Color = theirLocked and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(60, 60, 70),
-							Thickness = 1,
-						}
-					),
+					Stroke = e("UIStroke", {
+						Color = theirLocked and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(60, 60, 70),
+						Thickness = 1,
+					}),
 				}),
 			}),
 		}),

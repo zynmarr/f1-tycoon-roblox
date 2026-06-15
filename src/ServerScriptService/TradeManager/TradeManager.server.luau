@@ -1,4 +1,3 @@
---!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -284,11 +283,15 @@ end)
 -- 4. CHARACTER PROXIMITY PROMPT MANAGEMENT FOR TRADING
 local function setupCharacterPrompt(player: Player, character: Model)
 	local hrp = character:WaitForChild("HumanoidRootPart", 10)
-	if not hrp then return end
+	if not hrp then
+		return
+	end
 
 	-- Clean up existing trade prompts
 	local existing = hrp:FindFirstChild("TradePrompt")
-	if existing then existing:Destroy() end
+	if existing then
+		existing:Destroy()
+	end
 
 	if getRebirthCount(player) >= 5 then
 		local prompt = Instance.new("ProximityPrompt")
@@ -306,7 +309,7 @@ Players.PlayerAdded:Connect(function(player)
 	player.CharacterAdded:Connect(function(character)
 		setupCharacterPrompt(player, character)
 	end)
-	
+
 	task.spawn(function()
 		local leaderstats = player:WaitForChild("leaderstats", 10)
 		if leaderstats then
@@ -343,7 +346,6 @@ for _, player in ipairs(Players:GetPlayers()) do
 		end
 	end)
 end
-
 
 -- 4. REGISTER SERVICE NETWORKER
 Networker.server.new("TradeService", TradeService, {

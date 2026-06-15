@@ -1,6 +1,5 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local React = require(ReplicatedStorage.Packages.React)
-local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 local e = React.createElement
 
 local REWARD_LIST = {
@@ -17,12 +16,14 @@ return function(props)
 	local streak = props.Streak or 0
 	local lastClaimTime = props.LastClaimTime or 0
 	local now = os.time()
-	
+
 	-- Cek apakah klaim harian saat ini aktif / siap diklaim
 	local isCooldownOver = (now - lastClaimTime) >= 72000 -- 20 jam
 	local activeClaimDay = streak + 1
-	if activeClaimDay > 7 then activeClaimDay = 1 end
-	
+	if activeClaimDay > 7 then
+		activeClaimDay = 1
+	end
+
 	-- Jika lewat 48 jam, streak kembali ke 1
 	local isStreakReset = (now - lastClaimTime) > 172800
 	if isStreakReset then
@@ -36,7 +37,7 @@ return function(props)
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 			Padding = UDim.new(0, 10),
 			SortOrder = Enum.SortOrder.LayoutOrder,
-		})
+		}),
 	}
 
 	for _, item in ipairs(REWARD_LIST) do
@@ -46,7 +47,7 @@ return function(props)
 
 		local cardBgColor = Color3.fromRGB(35, 35, 45)
 		local borderBgColor = Color3.fromRGB(55, 55, 65)
-		
+
 		if isClaimed then
 			cardBgColor = Color3.fromRGB(25, 45, 30)
 			borderBgColor = Color3.fromRGB(45, 100, 55)
@@ -63,7 +64,7 @@ return function(props)
 			LayoutOrder = item.Day,
 		}, {
 			Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-			
+
 			Header = e("TextLabel", {
 				Text = "HARI " .. item.Day,
 				Size = UDim2.new(1, 0, 0, 25),
@@ -153,7 +154,7 @@ return function(props)
 		BorderSizePixel = 0,
 	}, {
 		Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
-		
+
 		Title = e("TextLabel", {
 			Text = "HADIAH HARIAN (DAILY STREAK)",
 			Size = UDim2.new(1, -30, 0, 45),
@@ -195,6 +196,6 @@ return function(props)
 			TextColor3 = isCooldownOver and Color3.fromRGB(80, 255, 120) or Color3.fromRGB(230, 150, 50),
 			TextSize = 13,
 			Font = Enum.Font.GothamBold,
-		})
+		}),
 	})
 end
