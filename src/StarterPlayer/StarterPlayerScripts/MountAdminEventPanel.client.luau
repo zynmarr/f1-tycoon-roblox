@@ -8,7 +8,7 @@ local Packages = ReplicatedStorage:WaitForChild("Packages")
 local React = require(Packages.React)
 local ReactRoblox = require(Packages.ReactRoblox)
 local Networker = require(Packages.Networker)
-local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
+local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig") :: ModuleScript)
 
 local AdminEventPanel = require(script.Parent.components.AdminEventPanel.AdminEventPanel)
 
@@ -33,13 +33,13 @@ local uiIsOpen = false
 local adminBtn: GuiButton? = nil
 
 local function checkAdminPermission(): boolean
-	local playerRole = player:GetAttribute("Role") or "Player"
-	local roleData = RoleConfig.Roles[playerRole]
+	local playerRole = (player:GetAttribute("Role") :: string?) or "Player"
+	local roleData = (RoleConfig.Roles :: any)[playerRole]
 	
 	if playerRole == "Owner" or playerRole == "Developer" then
 		return true
 	elseif roleData then
-		return table.find(roleData.Permissions, "EditGameConfigs") ~= nil
+		return table.find(roleData.Permissions :: {string}, "EditGameConfigs") ~= nil
 	end
 	
 	return false
@@ -59,32 +59,32 @@ local function updateUIRender()
 			uiIsOpen = false
 			updateUIRender()
 		end,
-		onApplySettings = function(settings, isGlobal)
-			local result = adminEventService:fetch("setEventValues", settings, isGlobal)
+		onApplySettings = function(settings: any, isGlobal: boolean)
+			local result = adminEventService:fetch("setEventValues", settings, isGlobal) :: any
 			if result and result.Success then
 				print("[Client] Berhasil memperbarui konfigurasi event: " .. tostring(result.Message))
 			else
 				warn("[Client] Gagal memperbarui konfigurasi event: " .. tostring(result and result.Error or "Unknown error"))
 			end
 		end,
-		onStopAll = function(isGlobal)
-			local result = adminEventService:fetch("stopAllEvents", isGlobal)
+		onStopAll = function(isGlobal: boolean)
+			local result = adminEventService:fetch("stopAllEvents", isGlobal) :: any
 			if result and result.Success then
 				print("[Client] Berhasil menonaktifkan semua event: " .. tostring(result.Message))
 			else
 				warn("[Client] Gagal menonaktifkan semua event: " .. tostring(result and result.Error or "Unknown error"))
 			end
 		end,
-		onBroadcastMessage = function(message, isGlobal)
-			local result = adminEventService:fetch("broadcastMessage", message, isGlobal)
+		onBroadcastMessage = function(message: string, isGlobal: boolean)
+			local result = adminEventService:fetch("broadcastMessage", message, isGlobal) :: any
 			if result and result.Success then
 				print("[Client] Pengumuman terkirim: " .. tostring(result.Message))
 			else
 				warn("[Client] Gagal mengirim pengumuman: " .. tostring(result and result.Error or "Unknown error"))
 			end
 		end,
-		onGiftReward = function(giftType, targetPlayerName, isGlobal, params)
-			local result = adminEventService:fetch("giftPlayerReward", giftType, targetPlayerName, isGlobal, params)
+		onGiftReward = function(giftType: string, targetPlayerName: string, isGlobal: boolean, params: any)
+			local result = adminEventService:fetch("giftPlayerReward", giftType, targetPlayerName, isGlobal, params) :: any
 			if result and result.Success then
 				print("[Client] Gift terkirim: " .. tostring(result.Message))
 			else
@@ -92,15 +92,16 @@ local function updateUIRender()
 			end
 		end,
 		getAvailableCars = function()
-			return adminEventService:fetch("getAvailableCars")
+			return adminEventService:fetch("getAvailableCars") :: any
 		end,
 	}))
 end
 
 -- ===== DYNAMIC SIDEBAR BUTTON MANAGEMENT =====
 local function destroyAdminButton()
-	if adminBtn then
-		adminBtn:Destroy()
+	local btn = adminBtn
+	if btn then
+		btn:Destroy()
 		adminBtn = nil
 	end
 end
@@ -114,20 +115,23 @@ local function createAdminButton()
 		return
 	end
 
-	local container = sideMenuGui:WaitForChild("MainContainer", 10)
+	local sideMenuGuiInstance = sideMenuGui :: Instance
+	local container = sideMenuGuiInstance:WaitForChild("MainContainer", 10)
 	if not container then
 		warn("[AdminEventPanel] MainContainer tidak ditemukan di SideMenuGui!")
 		return
 	end
 
+	local containerInstance = container :: Instance
+
 	-- Mencari template tombol samping yang ada agar visualisasi seragam
-	local template = container:FindFirstChild("RebirthBtn")
-		or container:FindFirstChild("RewardsBtn")
-		or container:FindFirstChildOfClass("ImageButton")
-		or container:FindFirstChildOfClass("TextButton")
+	local template = containerInstance:FindFirstChild("RebirthBtn")
+		or containerInstance:FindFirstChild("RewardsBtn")
+		or containerInstance:FindFirstChildOfClass("ImageButton")
+		or containerInstance:FindFirstChildOfClass("TextButton")
 
 	if template then
-		local clone = template:Clone() :: GuiButton
+		local clone = (template :: Instance):Clone() :: GuiButton
 		clone.Name = "AdminEventBtn"
 
 		-- Konfigurasi teks / ikon
@@ -135,12 +139,12 @@ local function createAdminButton()
 			clone.Text = "⚙️ Event"
 		end
 
-		local textLabel = clone:FindFirstChildOfClass("TextLabel")
+		local textLabel = clone:FindFirstChildOfClass("TextLabel") :: TextLabel?
 		if textLabel then
 			textLabel.Text = "⚙️ Event"
 		end
 
-		local imageLabel = clone:FindFirstChildOfClass("ImageLabel")
+		local imageLabel = clone:FindFirstChildOfClass("ImageLabel") :: ImageLabel?
 		if imageLabel then
 			imageLabel.Image = "rbxassetid://10617937307" -- Gear icon
 		end
@@ -170,39 +174,32 @@ local function createAdminButton()
 		adminBtn = manualBtn
 	end
 
-	adminBtn.Parent = container
+	local btn = adminBtn :: GuiButton
+	btn.Parent = containerInstance
 
 	-- Setup Animasi Hover & Click sesuai SideMenuGui.client.luau
 	local tweenInfo = TweenInfo.new(0.10, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local ukuranAsli = adminBtn.Size
+	local ukuranAsli = btn.Size
 	local ukuranHover = UDim2.new(ukuranAsli.X.Scale, ukuranAsli.X.Offset + 10, ukuranAsli.Y.Scale, ukuranAsli.Y.Offset + 10)
 
-	adminBtn.MouseEnter:Connect(function()
-		if adminBtn then
-			TweenService:Create(adminBtn, tweenInfo, { Size = ukuranHover }):Play()
-		end
+	btn.MouseEnter:Connect(function()
+		TweenService:Create(btn, tweenInfo, { Size = ukuranHover }):Play()
 	end)
 
-	adminBtn.MouseLeave:Connect(function()
-		if adminBtn then
-			TweenService:Create(adminBtn, tweenInfo, { Size = ukuranAsli }):Play()
-		end
+	btn.MouseLeave:Connect(function()
+		TweenService:Create(btn, tweenInfo, { Size = ukuranAsli }):Play()
 	end)
 
-	adminBtn.MouseButton1Down:Connect(function()
-		if adminBtn then
-			TweenService:Create(adminBtn, TweenInfo.new(0.1), { Size = ukuranAsli }):Play()
-		end
+	btn.MouseButton1Down:Connect(function()
+		TweenService:Create(btn, TweenInfo.new(0.1), { Size = ukuranAsli }):Play()
 	end)
 
-	adminBtn.MouseButton1Up:Connect(function()
-		if adminBtn then
-			TweenService:Create(adminBtn, tweenInfo, { Size = ukuranHover }):Play()
-		end
+	btn.MouseButton1Up:Connect(function()
+		TweenService:Create(btn, tweenInfo, { Size = ukuranHover }):Play()
 	end)
 
 	-- Aktifkan Klik Toggle Panel
-	adminBtn.Activated:Connect(function()
+	btn.Activated:Connect(function()
 		uiIsOpen = not uiIsOpen
 		updateUIRender()
 	end)
@@ -228,7 +225,7 @@ player:GetAttributeChangedSignal("Role"):Connect(onRoleChanged)
 task.defer(onRoleChanged)
 
 -- ===== SHORTCUT KEYBOARD TOGGLE (F4) =====
-UserInputService.InputBegan:Connect(function(input, processed)
+UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
 	if processed then return end
 	if input.KeyCode == Enum.KeyCode.F4 then
 		if checkAdminPermission() then

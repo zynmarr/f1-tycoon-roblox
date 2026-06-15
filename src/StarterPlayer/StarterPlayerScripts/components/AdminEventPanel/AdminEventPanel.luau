@@ -2,10 +2,17 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local React = require(ReplicatedStorage.Packages.React)
 local e = React.createElement
+local Event = (React :: any).Event
+local Change = (React :: any).Change
 local useState = React.useState
 local useEffect = React.useEffect
 
-return function(props)
+type CarData = {
+	Name: string,
+	Rarity: string,
+}
+
+return function(props: any)
 	-- 1. TABS MANAGEMENT
 	local activeTab, setActiveTab = useState("Multipliers") -- "Multipliers" | "Broadcast" | "Gifts"
 
@@ -49,9 +56,9 @@ return function(props)
 	
 	-- Gift Car Search & Autocomplete
 	local carSearchText, setCarSearchText = useState("")
-	local selectedCar, setSelectedCar = useState(nil)
+	local selectedCar, setSelectedCar = useState(nil :: any)
 	local isCarDropdownOpen, setIsCarDropdownOpen = useState(false)
-	local availableCars, setAvailableCars = useState({})
+	local availableCars, setAvailableCars = useState({} :: {CarData})
 
 	-- 5. LISTEN TO SERVER CHANGES (REAL-TIME SYNC)
 	useEffect(function()
@@ -59,30 +66,30 @@ return function(props)
 		if not liveEvents then return end
 
 		local function syncValues()
-			local luckNode = liveEvents:FindFirstChild("LuckyChanceBoost")
-			local expNode = liveEvents:FindFirstChild("ExpBoost")
-			local variantNode = liveEvents:FindFirstChild("VariantBoost")
-			local speedVal = ReplicatedStorage:GetAttribute("SpeedBoost") or 0
+			local luckNode = liveEvents:FindFirstChild("LuckyChanceBoost") :: NumberValue?
+			local expNode = liveEvents:FindFirstChild("ExpBoost") :: NumberValue?
+			local variantNode = liveEvents:FindFirstChild("VariantBoost") :: NumberValue?
+			local speedVal = (ReplicatedStorage:GetAttribute("SpeedBoost") :: number?) or 0
 
-			local goldenNode = liveEvents:FindFirstChild("VariantBoost_Golden")
-			local rainbowNode = liveEvents:FindFirstChild("VariantBoost_Rainbow")
-			local galaxyNode = liveEvents:FindFirstChild("VariantBoost_Galaxy")
-			local hellfireNode = liveEvents:FindFirstChild("VariantBoost_Hellfire")
+			local goldenNode = liveEvents:FindFirstChild("VariantBoost_Golden") :: NumberValue?
+			local rainbowNode = liveEvents:FindFirstChild("VariantBoost_Rainbow") :: NumberValue?
+			local galaxyNode = liveEvents:FindFirstChild("VariantBoost_Galaxy") :: NumberValue?
+			local hellfireNode = liveEvents:FindFirstChild("VariantBoost_Hellfire") :: NumberValue?
 
-			setLiveLuck(luckNode and luckNode.Value or 0)
-			setLiveExp(expNode and expNode.Value or 0)
-			setLiveVariant(variantNode and variantNode.Value or 0)
+			setLiveLuck(if luckNode then luckNode.Value else 0)
+			setLiveExp(if expNode then expNode.Value else 0)
+			setLiveVariant(if variantNode then variantNode.Value else 0)
 			setLiveSpeed(speedVal)
 
-			setLiveGolden(goldenNode and goldenNode.Value or 0)
-			setLiveRainbow(rainbowNode and rainbowNode.Value or 0)
-			setLiveGalaxy(galaxyNode and galaxyNode.Value or 0)
-			setLiveHellfire(hellfireNode and hellfireNode.Value or 0)
+			setLiveGolden(if goldenNode then goldenNode.Value else 0)
+			setLiveRainbow(if rainbowNode then rainbowNode.Value else 0)
+			setLiveGalaxy(if galaxyNode then galaxyNode.Value else 0)
+			setLiveHellfire(if hellfireNode then hellfireNode.Value else 0)
 		end
 
 		syncValues()
 
-		local connections = {}
+		local connections: {RBXScriptConnection} = {}
 		local nodes = {
 			"LuckyChanceBoost", "ExpBoost", "VariantBoost",
 			"VariantBoost_Golden", "VariantBoost_Rainbow",
@@ -94,10 +101,10 @@ return function(props)
 			if node then
 				table.insert(connections, node.Changed:Connect(syncValues))
 			else
-				table.insert(connections, liveEvents.ChildAdded:Connect(function(child)
+				table.insert(connections, liveEvents.ChildAdded:Connect(function(child: Instance)
 					if child.Name == name then
 						syncValues()
-						table.insert(connections, child.Changed:Connect(syncValues))
+						table.insert(connections, (child :: any).Changed:Connect(syncValues))
 					end
 				end))
 			end
@@ -116,7 +123,7 @@ return function(props)
 	useEffect(function()
 		if props.getAvailableCars then
 			task.spawn(function()
-				local cars = props.getAvailableCars()
+				local cars = props.getAvailableCars() :: {CarData}?
 				if cars then
 					setAvailableCars(cars)
 				end
@@ -146,7 +153,7 @@ return function(props)
 		end
 	end
 
-	local function applyPreset(presetName)
+	local function applyPreset(presetName: string)
 		if presetName == "DoubleEXP" then
 			setLuckInput(0)
 			setExpInput(100)
@@ -196,7 +203,7 @@ return function(props)
 	end
 
 	-- 8. SLIDER GENERATOR HELPER
-	local function createSliderRow(label, min, max, value, setValue)
+	local function createSliderRow(label: string, min: number, max: number, value: number, setValue: any)
 		return e("Frame", {
 			Size = UDim2.new(1, 0, 0, 36),
 			BackgroundTransparency = 1,
@@ -222,7 +229,7 @@ return function(props)
 				TextSize = 11,
 				BorderSizePixel = 0,
 				ClearTextOnFocus = false,
-				[React.Event.FocusLost] = function(box)
+				[Event.FocusLost] = function(box: TextBox)
 					local val = tonumber(box.Text) or 0
 					local clamped = math.clamp(val, min, max)
 					setValue(clamped)
@@ -238,7 +245,8 @@ return function(props)
 				Position = UDim2.new(0.37, 60, 0.5, -4),
 				BackgroundColor3 = Color3.fromRGB(20, 20, 25),
 				BorderSizePixel = 0,
-				[React.Event.Activated] = function(btn, input)
+				[Event.Activated] = function(btn: any, input: any)
+					if not input then return end
 					local btnAbsPos = btn.AbsolutePosition.X
 					local btnAbsSize = btn.AbsoluteSize.X
 					local mouseX = input.Position.X
@@ -260,7 +268,7 @@ return function(props)
 	end
 
 	-- 9. TAB SELECTOR RENDERER
-	local function createTabBtn(tabId, label, icon)
+	local function createTabBtn(tabId: string, label: string, icon: string)
 		local isActive = activeTab == tabId
 		return e("TextButton", {
 			Text = icon .. " " .. label,
@@ -270,7 +278,7 @@ return function(props)
 			Font = Enum.Font.GothamBold,
 			TextSize = 11,
 			BorderSizePixel = 0,
-			[React.Event.Activated] = function()
+			[Event.Activated] = function()
 				setActiveTab(tabId)
 			end,
 		}, {
@@ -283,15 +291,15 @@ return function(props)
 	end
 
 	-- FILTERED CARS FOR SEARCH AUTOCOMPLETE
-	local filteredCars = {}
+	local filteredCars: {CarData} = {}
 	if carSearchText ~= "" then
-		for _, c in ipairs(availableCars) do
+		for _, c in ipairs(availableCars :: {CarData}) do
 			if string.find(string.lower(c.Name), string.lower(carSearchText)) then
 				table.insert(filteredCars, c)
 			end
 		end
 	else
-		filteredCars = availableCars
+		filteredCars = availableCars :: {CarData}
 	end
 
 	-- TAB 1 LAYOUT: MULTIPLIERS
@@ -328,7 +336,7 @@ return function(props)
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
-					[React.Event.Activated] = function()
+					[Event.Activated] = function()
 						setIsAccordionOpen(not isAccordionOpen)
 					end,
 				}, {
@@ -408,21 +416,21 @@ return function(props)
 						Text = "🔥 DOUBLE EXP (+100%)",
 						Size = UDim2.new(1, 0, 0, 22), BackgroundColor3 = Color3.fromRGB(35, 35, 45),
 						TextColor3 = Color3.fromRGB(0, 220, 200), Font = Enum.Font.GothamBold, TextSize = 8, BorderSizePixel = 0,
-						[React.Event.Activated] = function() applyPreset("DoubleEXP") end,
+						[Event.Activated] = function() applyPreset("DoubleEXP") end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 					
 					BtnLuckyHype = e("TextButton", {
 						Text = "🍀 LUCKY HYPE (+200% Luck, +10% Var)",
 						Size = UDim2.new(1, 0, 0, 22), BackgroundColor3 = Color3.fromRGB(35, 35, 45),
 						TextColor3 = Color3.fromRGB(0, 220, 200), Font = Enum.Font.GothamBold, TextSize = 8, BorderSizePixel = 0,
-						[React.Event.Activated] = function() applyPreset("LuckyHype") end,
+						[Event.Activated] = function() applyPreset("LuckyHype") end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 
 					BtnWeekend = e("TextButton", {
 						Text = "🎉 WEEKEND BOOST (ALL MULTIPLIERS)",
 						Size = UDim2.new(1, 0, 0, 22), BackgroundColor3 = Color3.fromRGB(35, 35, 45),
 						TextColor3 = Color3.fromRGB(230, 160, 50), Font = Enum.Font.GothamBold, TextSize = 8, BorderSizePixel = 0,
-						[React.Event.Activated] = function() applyPreset("WeekendBoost") end,
+						[Event.Activated] = function() applyPreset("WeekendBoost") end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) })
 				}),
 
@@ -435,7 +443,7 @@ return function(props)
 					Font = Enum.Font.GothamBold,
 					TextSize = 9,
 					BorderSizePixel = 0,
-					[React.Event.Activated] = function() setIsGlobalEvent(not isGlobalEvent) end,
+					[Event.Activated] = function() setIsGlobalEvent(not isGlobalEvent) end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", {
@@ -458,7 +466,7 @@ return function(props)
 						Font = Enum.Font.GothamBold,
 						TextSize = 10,
 						BorderSizePixel = 0,
-						[React.Event.Activated] = handleApply,
+						[Event.Activated] = handleApply,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
 
 					Stop = e("TextButton", {
@@ -469,7 +477,7 @@ return function(props)
 						Font = Enum.Font.GothamBold,
 						TextSize = 10,
 						BorderSizePixel = 0,
-						[React.Event.Activated] = handleStopAll,
+						[Event.Activated] = handleStopAll,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) })
 				})
 			})
@@ -511,7 +519,7 @@ return function(props)
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextYAlignment = Enum.TextYAlignment.Top,
 					ClearTextOnFocus = false,
-					[React.Change.Text] = function(box)
+					[Change.Text] = function(box: TextBox)
 						setBroadcastText(box.Text)
 					end
 				})
@@ -531,7 +539,7 @@ return function(props)
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
-					[React.Event.Activated] = function() setIsGlobalBroadcast(true) end,
+					[Event.Activated] = function() setIsGlobalBroadcast(true) end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", {
@@ -548,7 +556,7 @@ return function(props)
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
-					[React.Event.Activated] = function() setIsGlobalBroadcast(false) end,
+					[Event.Activated] = function() setIsGlobalBroadcast(false) end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", {
@@ -566,7 +574,7 @@ return function(props)
 				Font = Enum.Font.GothamBold,
 				TextSize = 11,
 				BorderSizePixel = 0,
-				[React.Event.Activated] = function()
+				[Event.Activated] = function()
 					if broadcastText ~= "" and props.onBroadcastMessage then
 						props.onBroadcastMessage(broadcastText, isGlobalBroadcast)
 						setBroadcastText("") -- Reset field
@@ -601,7 +609,7 @@ return function(props)
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
-					[React.Event.Activated] = function() setTargetType("All") end,
+					[Event.Activated] = function() setTargetType("All") end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", { Color = targetType == "All" and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 45, 55), Thickness = 1 }),
@@ -615,7 +623,7 @@ return function(props)
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
-					[React.Event.Activated] = function() setTargetType("Specific") end,
+					[Event.Activated] = function() setTargetType("Specific") end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", { Color = targetType == "Specific" and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 45, 55), Thickness = 1 }),
@@ -632,7 +640,7 @@ return function(props)
 					TextSize = 10,
 					BorderSizePixel = 0,
 					ClearTextOnFocus = false,
-					[React.Change.Text] = function(box) setTargetPlayerName(box.Text) end,
+					[Change.Text] = function(box: TextBox) setTargetPlayerName(box.Text) end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", { Color = Color3.fromRGB(55, 55, 65), Thickness = 1 }),
@@ -654,7 +662,7 @@ return function(props)
 					Font = Enum.Font.GothamBold,
 					TextSize = 9,
 					BorderSizePixel = 0,
-					[React.Event.Activated] = function() setIsGlobalGift(not isGlobalGift) end,
+					[Event.Activated] = function() setIsGlobalGift(not isGlobalGift) end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", { Color = isGlobalGift and Color3.fromRGB(0, 200, 120) or Color3.fromRGB(70, 70, 80), Thickness = 1 })
@@ -698,7 +706,7 @@ return function(props)
 						TextSize = 11,
 						BorderSizePixel = 0,
 						ClearTextOnFocus = false,
-						[React.Change.Text] = function(box) setGiftCashAmount(tonumber(box.Text) or 0) end,
+						[Change.Text] = function(box: TextBox) setGiftCashAmount(tonumber(box.Text) or 0) end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 
 					SendBtn = e("TextButton", {
@@ -709,7 +717,7 @@ return function(props)
 						Font = Enum.Font.GothamBold,
 						TextSize = 9,
 						BorderSizePixel = 0,
-						[React.Event.Activated] = function()
+						[Event.Activated] = function()
 							local target = targetType == "All" and "All" or targetPlayerName
 							if target ~= "" and props.onGiftReward then
 								props.onGiftReward("Cash", target, isGlobalGift, { Amount = giftCashAmount })
@@ -725,7 +733,7 @@ return function(props)
 						Font = Enum.Font.GothamBold,
 						TextSize = 8,
 						BorderSizePixel = 0,
-						[React.Event.Activated] = function()
+						[Event.Activated] = function()
 							local target = targetType == "All" and "All" or targetPlayerName
 							if target ~= "" and props.onGiftReward then
 								props.onGiftReward("24hCash", target, isGlobalGift, {})
@@ -765,7 +773,7 @@ return function(props)
 						TextSize = 11,
 						BorderSizePixel = 0,
 						ClearTextOnFocus = false,
-						[React.Change.Text] = function(box)
+						[Change.Text] = function(box: TextBox)
 							local val = tonumber(box.Text) or 12
 							setGiftBoxLevel(math.clamp(val, 1, 30))
 						end,
@@ -779,7 +787,7 @@ return function(props)
 						Font = Enum.Font.GothamBold,
 						TextSize = 9,
 						BorderSizePixel = 0,
-						[React.Event.Activated] = function()
+						[Event.Activated] = function()
 							local target = targetType == "All" and "All" or targetPlayerName
 							if target ~= "" and props.onGiftReward then
 								props.onGiftReward("Box", target, isGlobalGift, { Level = giftBoxLevel })
@@ -795,7 +803,7 @@ return function(props)
 						Font = Enum.Font.GothamBold,
 						TextSize = 8,
 						BorderSizePixel = 0,
-						[React.Event.Activated] = function()
+						[Event.Activated] = function()
 							local target = targetType == "All" and "All" or targetPlayerName
 							if target ~= "" and props.onGiftReward then
 								props.onGiftReward("Box", target, isGlobalGift, { Level = 12 })
@@ -833,11 +841,11 @@ return function(props)
 						TextSize = 10,
 						BorderSizePixel = 0,
 						ClearTextOnFocus = false,
-						[React.Change.Text] = function(box)
+						[Change.Text] = function(box: TextBox)
 							setCarSearchText(box.Text)
 							setIsCarDropdownOpen(true)
 						end,
-						[React.Event.Focused] = function()
+						[Event.Focused] = function()
 							setIsCarDropdownOpen(true)
 						end,
 					}, {
@@ -853,7 +861,7 @@ return function(props)
 						Font = Enum.Font.GothamBold,
 						TextSize = 9,
 						BorderSizePixel = 0,
-						[React.Event.Activated] = function()
+						[Event.Activated] = function()
 							local target = targetType == "All" and "All" or targetPlayerName
 							if target ~= "" and carSearchText ~= "" and props.onGiftReward then
 								props.onGiftReward("Car", target, isGlobalGift, { CarName = carSearchText })
@@ -878,7 +886,7 @@ return function(props)
 						-- Render matching cars
 						Cars = e(React.Fragment, nil, (function()
 							local items = {}
-							for index, car in ipairs(filteredCars) do
+							for index, car: CarData in ipairs(filteredCars) do
 								if index > 20 then break end -- Limit to 20 search results for performance
 								
 								table.insert(items, e("TextButton", {
@@ -891,7 +899,7 @@ return function(props)
 									TextXAlignment = Enum.TextXAlignment.Left,
 									BorderSizePixel = 0,
 									ZIndex = 11,
-									[React.Event.Activated] = function()
+									[Event.Activated] = function()
 										setCarSearchText(car.Name)
 										setIsCarDropdownOpen(false)
 									end
@@ -981,7 +989,7 @@ return function(props)
 				Font = Enum.Font.GothamBold,
 				TextSize = 11,
 				BorderSizePixel = 0,
-				[React.Event.Activated] = function()
+				[Event.Activated] = function()
 					if props.onClose then props.onClose() end
 				end,
 			}, {
