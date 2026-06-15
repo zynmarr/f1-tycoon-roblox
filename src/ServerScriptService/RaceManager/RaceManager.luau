@@ -55,8 +55,10 @@ local function getPlayerCar(player: Player, carInfo: any)
 	local function matchTool(tool: Instance)
 		if not GameUtils.isCar(tool) then return false end
 		if tool.Name ~= carName then return false end
-		if targetRarity and tool:GetAttribute("Rarity") ~= targetRarity then return false end
-		if targetVariant and tool:GetAttribute("Variant") ~= targetVariant then return false end
+		local toolRarity = tool:GetAttribute("Rarity") or "Common"
+		local toolVariant = tool:GetAttribute("Variant") or "Normal"
+		if targetRarity and toolRarity ~= targetRarity then return false end
+		if targetVariant and toolVariant ~= targetVariant then return false end
 		return true
 	end
 

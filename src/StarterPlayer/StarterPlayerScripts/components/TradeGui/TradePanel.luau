@@ -283,7 +283,7 @@ return function(props: any)
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
 			CancelBtn = e("TextButton", {
-				Text = "✕ BATAL",
+				Text = "X BATAL",
 				Size = UDim2.new(0, 80, 0, 26),
 				Position = UDim2.new(1, -95, 0.5, -13),
 				BackgroundColor3 = Color3.fromRGB(55, 30, 30),

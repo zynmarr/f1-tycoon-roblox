@@ -636,7 +636,7 @@ local function RacePanel(props)
 			Spacer = e("Frame", { Size = UDim2.new(1, 0, 1, -220), BackgroundTransparency = 1 }),
 
 			CloseBtn = e("TextButton", {
-				Text = "✕  TUTUP",
+				Text = "X  TUTUP",
 				Size = UDim2.new(1, 0, 0, 36),
 				BackgroundColor3 = Color3.fromRGB(32, 32, 38),
 				TextColor3 = Color3.fromRGB(200, 200, 200),

@@ -1168,7 +1168,7 @@ return function(props: any)
 			}),
 
 			CloseBtn = e("TextButton", {
-				Text = "✕",
+				Text = "X",
 				Size = UDim2.new(0, 26, 0, 26),
 				Position = UDim2.new(1, -36, 0.5, -13),
 				BackgroundColor3 = Color3.fromRGB(45, 45, 55),

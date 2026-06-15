@@ -91,7 +91,7 @@ closeBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 closeBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 10
-closeBtn.Text = "✕"
+closeBtn.Text = "X"
 closeBtn.Parent = banner
 
 local btnCorner = Instance.new("UICorner")

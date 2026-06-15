@@ -177,7 +177,7 @@ return function(props: PlayerListPanelProps)
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
 			CloseBtn = e("TextButton", {
-				Text = "✕",
+				Text = "X",
 				Size = UDim2.new(0, 24, 0, 24),
 				Position = UDim2.new(1, -34, 0.5, -12),
 				BackgroundColor3 = Color3.fromRGB(35, 35, 45),
