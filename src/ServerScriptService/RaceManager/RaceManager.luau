@@ -1,10 +1,8 @@
---!strict
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
-local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
 local DataManager = require(game.ServerScriptService.DataManager.DataManager)
 
@@ -24,13 +22,25 @@ end
 
 -- Rarity & Variant speed multipliers
 local RaritySpeeds = {
-	Common = 1.0, Uncommon = 1.05, Rare = 1.10, Epic = 1.15,
-	Legendary = 1.20, Mythic = 1.25, God = 1.30, Celestial = 1.35,
+	Common = 1.0,
+	Uncommon = 1.05,
+	Rare = 1.10,
+	Epic = 1.15,
+	Legendary = 1.20,
+	Mythic = 1.25,
+	God = 1.30,
+	Celestial = 1.35,
 }
 
 local VariantSpeeds = {
-	Normal = 1.0, Carbon = 1.05, Shiny = 1.10, Golden = 1.15,
-	Rainbow = 1.20, Frostbite = 1.25, Galaxy = 1.30, Hellfire = 1.35,
+	Normal = 1.0,
+	Carbon = 1.05,
+	Shiny = 1.10,
+	Golden = 1.15,
+	Rainbow = 1.20,
+	Frostbite = 1.25,
+	Galaxy = 1.30,
+	Hellfire = 1.35,
 }
 
 -- Helper: find player's car from backpack, character, or data matching Name, Rarity, and Variant if specified
@@ -51,14 +61,22 @@ local function getPlayerCar(player: Player, carInfo: any)
 
 	local char = player.Character
 	local backpack = player:FindFirstChild("Backpack")
-	
+
 	local function matchTool(tool: Instance)
-		if not GameUtils.isCar(tool) then return false end
-		if tool.Name ~= carName then return false end
+		if not GameUtils.isCar(tool) then
+			return false
+		end
+		if tool.Name ~= carName then
+			return false
+		end
 		local toolRarity = tool:GetAttribute("Rarity") or "Common"
 		local toolVariant = tool:GetAttribute("Variant") or "Normal"
-		if targetRarity and toolRarity ~= targetRarity then return false end
-		if targetVariant and toolVariant ~= targetVariant then return false end
+		if targetRarity and toolRarity ~= targetRarity then
+			return false
+		end
+		if targetVariant and toolVariant ~= targetVariant then
+			return false
+		end
 		return true
 	end
 
@@ -92,8 +110,12 @@ local function getPlayerCar(player: Player, carInfo: any)
 				local attrs = item.Attributes or {}
 				local itemRarity = attrs.Rarity or "Common"
 				local itemVariant = attrs.Variant or "Normal"
-				if targetRarity and itemRarity ~= targetRarity then continue end
-				if targetVariant and itemVariant ~= targetVariant then continue end
+				if targetRarity and itemRarity ~= targetRarity then
+					continue
+				end
+				if targetVariant and itemVariant ~= targetVariant then
+					continue
+				end
 				return {
 					Name = item.Name,
 					Rarity = itemRarity,
@@ -107,7 +129,9 @@ end
 
 -- Deterministic positional formula mirrored from client
 local function getPositionAtTime(t: number, baseSpeed: number, multiplier: number, seed: number, index: number): number
-	if t < 0 then return 0 end
+	if t < 0 then
+		return 0
+	end
 	local dist = baseSpeed * t
 	local launchBoost = 0
 	if multiplier > 1.0 then
@@ -125,7 +149,7 @@ end
 -- Networker Endpoints
 -- =====================================================
 
-function RaceManager.getRaceStats(player: Player)
+function RaceManager:getRaceStats(player: Player)
 	local data = DataManager.getPlayerData(player)
 	if data and data.Stats and data.Stats.RaceStats then
 		return data.Stats.RaceStats
@@ -133,8 +157,24 @@ function RaceManager.getRaceStats(player: Player)
 	return { Wins = 0, Losses = 0, CashEarned = 0 }
 end
 
-function RaceManager.startAIRace(player: Player, carInfo: any, difficulty: string)
-	if not player or not player.Parent then return { Success = false, Error = "Pemain tidak ditemukan" } end
+function RaceManager:startAIRace(player: Player, carInfo: any, difficulty: string)
+	print(
+		"[RaceManager:startAIRace] self:",
+		typeof(self),
+		tostring(self),
+		"player:",
+		typeof(player),
+		tostring(player),
+		"carInfo:",
+		typeof(carInfo),
+		tostring(carInfo),
+		"difficulty:",
+		typeof(difficulty),
+		tostring(difficulty)
+	)
+	if not player or not player.Parent then
+		return { Success = false, Error = "Pemain tidak ditemukan" }
+	end
 	if (type(carInfo) ~= "string" and type(carInfo) ~= "table") or type(difficulty) ~= "string" then
 		return { Success = false, Error = "Parameter tidak valid" }
 	end
@@ -162,14 +202,22 @@ function RaceManager.startAIRace(player: Player, carInfo: any, difficulty: strin
 	local startTime = workspace:GetServerTimeNow() + 7
 
 	local session = {
-		RaceId = raceId, Type = "AI", StartTime = startTime, Laps = 3,
-		Seed = seed, Difficulty = difficulty, Winner = nil,
+		RaceId = raceId,
+		Type = "AI",
+		StartTime = startTime,
+		Laps = 3,
+		Seed = seed,
+		Difficulty = difficulty,
+		Winner = nil,
 		Participants = {
 			[tostring(player.UserId)] = {
-				Name = player.Name, CarName = car.Name,
-				BaseSpeed = baseSpeed, Multiplier = 1.0, IsHuman = true,
-			}
-		}
+				Name = player.Name,
+				CarName = car.Name,
+				BaseSpeed = baseSpeed,
+				Multiplier = 1.0,
+				IsHuman = true,
+			},
+		},
 	}
 
 	local aiCarNames = {
@@ -180,28 +228,42 @@ function RaceManager.startAIRace(player: Player, carInfo: any, difficulty: strin
 
 	for i, aiSpeed in ipairs(aiSpeeds) do
 		local aiMultiplier = 1.0
-		if difficulty == "Medium" then aiMultiplier = 1.12
-		elseif difficulty == "Hard" then aiMultiplier = 1.25 end
+		if difficulty == "Medium" then
+			aiMultiplier = 1.12
+		elseif difficulty == "Hard" then
+			aiMultiplier = 1.25
+		end
 
 		session.Participants["AI_" .. i] = {
 			Name = "AI " .. (aiCarNames[i] or "Rival"),
 			CarName = aiCarNames[i] or ("AI Car " .. i),
-			BaseSpeed = aiSpeed, Multiplier = aiMultiplier, IsHuman = false,
+			BaseSpeed = aiSpeed,
+			Multiplier = aiMultiplier,
+			IsHuman = false,
 		}
 	end
 
 	activeRaces[raceId] = session
 
 	return {
-		Success = true, RaceId = raceId, StartTime = startTime,
-		Seed = seed, Difficulty = difficulty,
+		Success = true,
+		RaceId = raceId,
+		StartTime = startTime,
+		Seed = seed,
+		Difficulty = difficulty,
 		Participants = session.Participants,
 	}
 end
 
-function RaceManager.sendPvPChallenge(player: Player, opponentName: string, carInfo: any, betAmount: number)
-	if not player or not player.Parent then return { Success = false, Error = "Pemain tidak ditemukan" } end
-	if type(opponentName) ~= "string" or (type(carInfo) ~= "string" and type(carInfo) ~= "table") or type(betAmount) ~= "number" then
+function RaceManager:sendPvPChallenge(player: Player, opponentName: string, carInfo: any, betAmount: number)
+	if not player or not player.Parent then
+		return { Success = false, Error = "Pemain tidak ditemukan" }
+	end
+	if
+		type(opponentName) ~= "string"
+		or (type(carInfo) ~= "string" and type(carInfo) ~= "table")
+		or type(betAmount) ~= "number"
+	then
 		return { Success = false, Error = "Parameter tidak valid" }
 	end
 
@@ -218,7 +280,9 @@ function RaceManager.sendPvPChallenge(player: Player, opponentName: string, carI
 	end
 
 	local car = getPlayerCar(player, carInfo)
-	if not car then return { Success = false, Error = "Mobil tidak ditemukan" } end
+	if not car then
+		return { Success = false, Error = "Mobil tidak ditemukan" }
+	end
 
 	local opponent = Players:FindFirstChild(opponentName)
 	if not opponent or opponent == player then
@@ -232,28 +296,40 @@ function RaceManager.sendPvPChallenge(player: Player, opponentName: string, carI
 
 	local challengeId = HttpService:GenerateGUID(false)
 	pvpChallenges[challengeId] = {
-		ChallengeId = challengeId, Challenger = player, Opponent = opponent,
-		ChallengerCar = car, BetAmount = betAmount, Time = tick(),
+		ChallengeId = challengeId,
+		Challenger = player,
+		Opponent = opponent,
+		ChallengerCar = car,
+		BetAmount = betAmount,
+		Time = tick(),
 	}
 
 	pcall(function()
 		raceEvent:FireClient(opponent, "ChallengeReceived", {
-			ChallengerName = player.Name, BetAmount = betAmount, ChallengeId = challengeId,
+			ChallengerName = player.Name,
+			BetAmount = betAmount,
+			ChallengeId = challengeId,
 		})
 	end)
 
 	return { Success = true, Message = "Tantangan berhasil dikirim ke " .. opponentName }
 end
 
-function RaceManager.acceptPvPChallenge(player: Player, challengeId: string, carInfo: any)
-	if not player or not player.Parent then return { Success = false, Error = "Pemain tidak ditemukan" } end
+function RaceManager:acceptPvPChallenge(player: Player, challengeId: string, carInfo: any)
+	if not player or not player.Parent then
+		return { Success = false, Error = "Pemain tidak ditemukan" }
+	end
 	if type(challengeId) ~= "string" or (type(carInfo) ~= "string" and type(carInfo) ~= "table") then
 		return { Success = false, Error = "Parameter tidak valid" }
 	end
 
 	local challenge = pvpChallenges[challengeId]
-	if not challenge then return { Success = false, Error = "Tantangan tidak ditemukan atau sudah kadaluarsa" } end
-	if challenge.Opponent ~= player then return { Success = false, Error = "Tantangan ini bukan untuk Anda" } end
+	if not challenge then
+		return { Success = false, Error = "Tantangan tidak ditemukan atau sudah kadaluarsa" }
+	end
+	if challenge.Opponent ~= player then
+		return { Success = false, Error = "Tantangan ini bukan untuk Anda" }
+	end
 
 	local challenger = challenge.Challenger
 	if not challenger or not challenger.Parent then
@@ -269,11 +345,17 @@ function RaceManager.acceptPvPChallenge(player: Player, challengeId: string, car
 		return { Success = false, Error = "Data keuangan tidak siap" }
 	end
 
-	if challCash.Value < challenge.BetAmount then return { Success = false, Error = "Penantang tidak lagi memiliki saldo cukup" } end
-	if oppCash.Value < challenge.BetAmount then return { Success = false, Error = "Saldo Cash Anda tidak mencukupi" } end
+	if challCash.Value < challenge.BetAmount then
+		return { Success = false, Error = "Penantang tidak lagi memiliki saldo cukup" }
+	end
+	if oppCash.Value < challenge.BetAmount then
+		return { Success = false, Error = "Saldo Cash Anda tidak mencukupi" }
+	end
 
 	local car = getPlayerCar(player, carInfo)
-	if not car then return { Success = false, Error = "Mobil tidak ditemukan" } end
+	if not car then
+		return { Success = false, Error = "Mobil tidak ditemukan" }
+	end
 
 	-- Lock the bet from both players
 	challCash.Value -= challenge.BetAmount
@@ -281,7 +363,9 @@ function RaceManager.acceptPvPChallenge(player: Player, challengeId: string, car
 	DataManager.syncData(challenger)
 	DataManager.syncData(player)
 
-	local cSpeed = 0.5 * (RaritySpeeds[challenge.ChallengerCar.Rarity] or 1.0) * (VariantSpeeds[challenge.ChallengerCar.Variant] or 1.0)
+	local cSpeed = 0.5
+		* (RaritySpeeds[challenge.ChallengerCar.Rarity] or 1.0)
+		* (VariantSpeeds[challenge.ChallengerCar.Variant] or 1.0)
 	local oSpeed = 0.5 * (RaritySpeeds[car.Rarity] or 1.0) * (VariantSpeeds[car.Variant] or 1.0)
 
 	local raceId = HttpService:GenerateGUID(false)
@@ -289,26 +373,40 @@ function RaceManager.acceptPvPChallenge(player: Player, challengeId: string, car
 	local startTime = workspace:GetServerTimeNow() + 7
 
 	local session = {
-		RaceId = raceId, Type = "PvP", StartTime = startTime, Laps = 3,
-		Seed = seed, BetAmount = challenge.BetAmount, Winner = nil,
+		RaceId = raceId,
+		Type = "PvP",
+		StartTime = startTime,
+		Laps = 3,
+		Seed = seed,
+		BetAmount = challenge.BetAmount,
+		Winner = nil,
 		Participants = {
 			[tostring(challenger.UserId)] = {
-				Name = challenger.Name, CarName = challenge.ChallengerCar.Name,
-				BaseSpeed = cSpeed, Multiplier = 1.0, IsHuman = true,
+				Name = challenger.Name,
+				CarName = challenge.ChallengerCar.Name,
+				BaseSpeed = cSpeed,
+				Multiplier = 1.0,
+				IsHuman = true,
 			},
 			[tostring(player.UserId)] = {
-				Name = player.Name, CarName = car.Name,
-				BaseSpeed = oSpeed, Multiplier = 1.0, IsHuman = true,
+				Name = player.Name,
+				CarName = car.Name,
+				BaseSpeed = oSpeed,
+				Multiplier = 1.0,
+				IsHuman = true,
 			},
-		}
+		},
 	}
 
 	activeRaces[raceId] = session
 	pvpChallenges[challengeId] = nil
 
 	local startData = {
-		RaceId = raceId, StartTime = startTime, Seed = seed,
-		BetAmount = challenge.BetAmount, Participants = session.Participants,
+		RaceId = raceId,
+		StartTime = startTime,
+		Seed = seed,
+		BetAmount = challenge.BetAmount,
+		Participants = session.Participants,
 	}
 	pcall(function()
 		raceEvent:FireClient(challenger, "StartPvPRace", startData)
@@ -318,19 +416,27 @@ function RaceManager.acceptPvPChallenge(player: Player, challengeId: string, car
 	return { Success = true, Message = "Tantangan diterima!" }
 end
 
-function RaceManager.submitLaunchTime(player: Player, raceId: string, reactionTime: number)
-	if not player or not player.Parent then return { Success = false, Error = "Pemain tidak ditemukan" } end
+function RaceManager:submitLaunchTime(player: Player, raceId: string, reactionTime: number)
+	if not player or not player.Parent then
+		return { Success = false, Error = "Pemain tidak ditemukan" }
+	end
 	if type(raceId) ~= "string" or type(reactionTime) ~= "number" then
 		return { Success = false, Error = "Parameter tidak valid" }
 	end
 
 	local session = activeRaces[raceId]
-	if not session then return { Success = false, Error = "Sesi balapan tidak ditemukan" } end
+	if not session then
+		return { Success = false, Error = "Sesi balapan tidak ditemukan" }
+	end
 
 	local participant = session.Participants[tostring(player.UserId)]
-	if not participant then return { Success = false, Error = "Anda bukan bagian dari balapan ini" } end
+	if not participant then
+		return { Success = false, Error = "Anda bukan bagian dari balapan ini" }
+	end
 
-	if participant.Submitted then return { Success = false, Error = "Waktu reaksi sudah pernah disubmit" } end
+	if participant.Submitted then
+		return { Success = false, Error = "Waktu reaksi sudah pernah disubmit" }
+	end
 	participant.Submitted = true
 
 	-- ANTI-CHEAT: Validate submission latency to prevent clients spoofing early times
@@ -366,11 +472,15 @@ function RaceManager.submitLaunchTime(player: Player, raceId: string, reactionTi
 	return { Success = true, Multiplier = multiplier, Message = msg }
 end
 
-function RaceManager.getRaceOutcome(player: Player, raceId: string)
-	if not player or not player.Parent then return { Success = false, Error = "Pemain tidak ditemukan" } end
+function RaceManager:getRaceOutcome(player: Player, raceId: string)
+	if not player or not player.Parent then
+		return { Success = false, Error = "Pemain tidak ditemukan" }
+	end
 
 	local session = activeRaces[raceId]
-	if not session then return { Success = false, Error = "Balapan sudah diselesaikan atau tidak ditemukan" } end
+	if not session then
+		return { Success = false, Error = "Balapan sudah diselesaikan atau tidak ditemukan" }
+	end
 	if not session.Participants[tostring(player.UserId)] then
 		return { Success = false, Error = "Anda bukan peserta balapan ini" }
 	end
@@ -406,7 +516,9 @@ function RaceManager.getRaceOutcome(player: Player, raceId: string)
 	for key, part in pairs(session.Participants) do
 		table.insert(ranks, { Key = key, Name = part.Name, FinishTime = finishTimes[key] })
 	end
-	table.sort(ranks, function(a, b) return a.FinishTime < b.FinishTime end)
+	table.sort(ranks, function(a, b)
+		return a.FinishTime < b.FinishTime
+	end)
 
 	local playerRank = #ranks
 	for rank, rInfo in ipairs(ranks) do
@@ -420,9 +532,13 @@ function RaceManager.getRaceOutcome(player: Player, raceId: string)
 	local rewardCash = 0
 
 	if session.Type == "AI" and isWin then
-		if session.Difficulty == "Easy" then rewardCash = 1000
-		elseif session.Difficulty == "Medium" then rewardCash = 5000
-		elseif session.Difficulty == "Hard" then rewardCash = 25000 end
+		if session.Difficulty == "Easy" then
+			rewardCash = 1000
+		elseif session.Difficulty == "Medium" then
+			rewardCash = 5000
+		elseif session.Difficulty == "Hard" then
+			rewardCash = 25000
+		end
 	elseif session.Type == "PvP" and isWin then
 		rewardCash = session.BetAmount * 2
 	end
@@ -434,8 +550,12 @@ function RaceManager.getRaceOutcome(player: Player, raceId: string)
 			data.Stats.RaceStats = { Wins = 0, Losses = 0, CashEarned = 0, WinStreak = 0, PvPWins = 0 }
 		end
 		local rStats = data.Stats.RaceStats
-		if not rStats.WinStreak then rStats.WinStreak = 0 end
-		if not rStats.PvPWins then rStats.PvPWins = 0 end
+		if not rStats.WinStreak then
+			rStats.WinStreak = 0
+		end
+		if not rStats.PvPWins then
+			rStats.PvPWins = 0
+		end
 
 		if isWin then
 			rStats.Wins += 1

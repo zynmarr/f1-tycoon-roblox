@@ -224,13 +224,32 @@ local function buildLiveRanks(positions, raceData, playerUserId)
 		local isLocal = info.Key == playerUserId
 		local lap = math.min(3, math.floor(info.Theta / (2 * math.pi)) + 1)
 
+		-- Match color to the dot color
+		local rankColor
+		local key = info.Key
+		if key == playerUserId then
+			rankColor = Color3.fromRGB(0, 255, 100)
+		elseif key:sub(1, 3) == "AI_" then
+			local num = tonumber(key:sub(4)) or 1
+			if num == 1 then
+				rankColor = Color3.fromRGB(255, 50, 50)
+			elseif num == 2 then
+				rankColor = Color3.fromRGB(255, 200, 0)
+			else
+				rankColor = Color3.fromRGB(255, 130, 0)
+			end
+		else
+			rankColor = Color3.fromRGB(0, 170, 255)
+		end
+
 		elements["PR_" .. i] = e("TextLabel", {
-			Text = string.format("%d. %s (Lap %d)", i, info.Name:sub(1, 12), lap),
-			Size = UDim2.new(0.22, 0, 1, 0),
+			Text = string.format("  %d. %s (Lap %d)", i, info.Name:sub(1, 12), lap),
+			Size = UDim2.new(1, 0, 0, 18),
 			BackgroundTransparency = 1,
-			TextColor3 = isLocal and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(230, 230, 230),
+			TextColor3 = rankColor,
 			Font = isLocal and Enum.Font.GothamBold or Enum.Font.GothamMedium,
 			TextSize = 9,
+			TextXAlignment = Enum.TextXAlignment.Left,
 		})
 	end
 	return elements
@@ -1214,31 +1233,37 @@ local function RacePanel(props)
 				LiveBoard = e(
 					"Frame",
 					{
-						Size = UDim2.new(1, 0, 0, 52),
-						Position = UDim2.new(0, 0, 0, 328),
+						Size = UDim2.new(0.82, 0, 0, 120),
+						Position = UDim2.new(0.09, 0, 0, 328),
 						BackgroundColor3 = Color3.fromRGB(12, 12, 16),
 						BorderSizePixel = 0,
 					},
 					mergeChildren({
 						Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-						Pad = e("UIPadding", { PaddingLeft = UDim.new(0, 12), PaddingRight = UDim.new(0, 12) }),
+						Pad = e("UIPadding", {
+							PaddingTop = UDim.new(0, 10),
+							PaddingBottom = UDim.new(0, 10),
+							PaddingLeft = UDim.new(0, 14),
+							PaddingRight = UDim.new(0, 14),
+						}),
 						Layout = e(
 							"UIListLayout",
 							{
-								FillDirection = Enum.FillDirection.Horizontal,
-								Padding = UDim.new(0, 12),
-								VerticalAlignment = Enum.VerticalAlignment.Center,
+								FillDirection = Enum.FillDirection.Vertical,
+								Padding = UDim.new(0, 3),
+								HorizontalAlignment = Enum.HorizontalAlignment.Left,
 							}
 						),
 						BoardLabel = e(
 							"TextLabel",
 							{
 								Text = "LIVE RANK:",
-								Size = UDim2.new(0.18, 0, 1, 0),
+								Size = UDim2.new(1, 0, 0, 16),
 								BackgroundTransparency = 1,
 								TextColor3 = Color3.fromRGB(100, 100, 110),
 								Font = Enum.Font.GothamBold,
 								TextSize = 10,
+								TextXAlignment = Enum.TextXAlignment.Left,
 							}
 						),
 					}, buildLiveRanks(positions, raceData, playerUid))
