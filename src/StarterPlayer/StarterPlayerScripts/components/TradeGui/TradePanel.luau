@@ -1,4 +1,3 @@
---!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local React = require(ReplicatedStorage.Packages.React)
 local e = React.createElement
@@ -18,7 +17,9 @@ type CarInventoryData = {
 -- Helper to scan Backpack for owned cars
 local function getOwnedCars(player: Player): { CarInventoryData }
 	local backpack = player:FindFirstChild("Backpack")
-	if not backpack then return {} end
+	if not backpack then
+		return {}
+	end
 
 	local cars = {}
 	for _, child in ipairs(backpack:GetChildren()) do
@@ -27,7 +28,7 @@ local function getOwnedCars(player: Player): { CarInventoryData }
 			local name = child:GetAttribute("Name") or child.Name
 			local rarity = child:GetAttribute("Rarity") or "Common"
 			local variant = child:GetAttribute("Variant") or "Admin"
-			
+
 			table.insert(cars, {
 				FullName = child.Name,
 				Name = name,
@@ -43,7 +44,7 @@ end
 return function(props: any)
 	local state = props.state
 	local localPlayer = props.localPlayer
-	
+
 	if not state or not state.Active then
 		return nil
 	end
@@ -51,13 +52,13 @@ return function(props: any)
 	local isP1 = localPlayer == state.Player1
 	local myOffer = isP1 and state.Offer1 or state.Offer2
 	local theirOffer = isP1 and state.Offer2 or state.Offer1
-	
+
 	local myLocked = isP1 and state.IsLocked1 or state.IsLocked2
 	local theirLocked = isP1 and state.IsLocked2 or state.IsLocked1
-	
+
 	local myConfirmed = isP1 and state.IsConfirmed1 or state.IsConfirmed2
 	local theirConfirmed = isP1 and state.IsConfirmed2 or state.IsConfirmed1
-	
+
 	local otherPlayer = isP1 and state.Player2 or state.Player1
 
 	-- 1. STATE FOR INVENTORY & FILTER
@@ -67,7 +68,9 @@ return function(props: any)
 	-- Sync inventory with Backpack changes dynamically
 	useEffect(function()
 		local backpack = localPlayer:WaitForChild("Backpack", 10)
-		if not backpack then return end
+		if not backpack then
+			return
+		end
 
 		local function updateInventory()
 			setOwnedCars(getOwnedCars(localPlayer))
@@ -109,7 +112,7 @@ return function(props: any)
 				CellSize = UDim2.new(0.3, 0, 0.45, 0),
 				CellPadding = UDim2.new(0.03, 0, 0.05, 0),
 				SortOrder = Enum.SortOrder.LayoutOrder,
-			})
+			}),
 		}
 
 		local index = 0
@@ -130,7 +133,7 @@ return function(props: any)
 					if isMine and not myLocked and props.onRemoveCar then
 						props.onRemoveCar(carFullName)
 					end
-				end
+				end,
 			}, {
 				Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
 				Title = e("TextLabel", {
@@ -172,7 +175,7 @@ return function(props: any)
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					TextXAlignment = Enum.TextXAlignment.Right,
-				}) or nil
+				}) or nil,
 			})
 		end
 
@@ -186,7 +189,7 @@ return function(props: any)
 				CellSize = UDim2.new(0, 100, 0, 60),
 				CellPadding = UDim2.new(0, 8, 0, 8),
 				SortOrder = Enum.SortOrder.LayoutOrder,
-			})
+			}),
 		}
 
 		for _, car in ipairs(filteredCars) do
@@ -199,7 +202,7 @@ return function(props: any)
 					if not myLocked and props.onAddCar then
 						props.onAddCar(car.FullName)
 					end
-				end
+				end,
 			}, {
 				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 				Stroke = e("UIStroke", { Color = Color3.fromRGB(45, 45, 55), Thickness = 1 }),
@@ -232,7 +235,7 @@ return function(props: any)
 					Font = Enum.Font.GothamMedium,
 					TextSize = 7,
 					TextXAlignment = Enum.TextXAlignment.Left,
-				})
+				}),
 			})
 		end
 
@@ -289,9 +292,11 @@ return function(props: any)
 				TextSize = 9,
 				BorderSizePixel = 0,
 				[Event.Activated] = function()
-					if props.onCancel then props.onCancel() end
-				end
-			}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) })
+					if props.onCancel then
+						props.onCancel()
+					end
+				end,
+			}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
 		}),
 
 		-- WORKSPACE (OFFERS AREA)
@@ -331,10 +336,14 @@ return function(props: any)
 					BorderSizePixel = 0,
 					[Event.Activated] = function()
 						if props.onLock and props.onUnlock then
-							if myLocked then props.onUnlock() else props.onLock() end
+							if myLocked then
+								props.onUnlock()
+							else
+								props.onLock()
+							end
 						end
-					end
-				}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) })
+					end,
+				}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
 			}),
 
 			-- Player 2 Offer (Theirs)
@@ -368,98 +377,118 @@ return function(props: any)
 					TextSize = 9,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-					Stroke = e("UIStroke", { Color = theirLocked and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(60, 60, 70), Thickness = 1 })
-				})
-			})
-		}),
-
-	-- INVENTORY DRAWER (BOTTOM)
-	InventoryDrawer = e("Frame", {
-		Size = UDim2.new(1, -30, 0.35, 0),
-		Position = UDim2.new(0, 15, 0, 280),
-		BackgroundTransparency = 1,
-	}, {
-		Header = e("Frame", {
-			Size = UDim2.new(1, 0, 0, 20),
-			BackgroundTransparency = 1,
-		}, {
-			Title = e("TextLabel", {
-				Text = "📦 PILIH MOBIL DARI TAS ANDA",
-				Size = UDim2.new(0.5, 0, 1, 0),
-				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(180, 180, 190),
-				Font = Enum.Font.GothamBold,
-				TextSize = 9,
-				TextXAlignment = Enum.TextXAlignment.Left,
+					Stroke = e(
+						"UIStroke",
+						{
+							Color = theirLocked and Color3.fromRGB(0, 200, 100) or Color3.fromRGB(60, 60, 70),
+							Thickness = 1,
+						}
+					),
+				}),
 			}),
-			SearchBg = e("Frame", {
-				Size = UDim2.new(0.4, 0, 1, 0),
-				Position = UDim2.new(0.6, 0, 0, 0),
-				BackgroundColor3 = Color3.fromRGB(25, 25, 32),
-				BorderSizePixel = 0,
-			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
-				TextBox = e("TextBox", {
-					Text = carSearchText,
-					PlaceholderText = "Cari Mobil...",
-					Size = UDim2.new(1, -10, 1, 0),
-					Position = UDim2.new(0, 5, 0, 0),
-					BackgroundTransparency = 1,
-					TextColor3 = Color3.fromRGB(240, 240, 240),
-					PlaceholderColor3 = Color3.fromRGB(100, 100, 110),
-					Font = Enum.Font.GothamMedium,
-					TextSize = 8,
-					ClearTextOnFocus = false,
-					[Change.Text] = function(box: TextBox)
-						setCarSearchText(box.Text)
-					end
-				})
-			})
 		}),
 
-		-- List
-		ScrollList = e("ScrollingFrame", {
-			Size = UDim2.new(1, 0, 1, -25),
-			Position = UDim2.new(0, 0, 0, 25),
+		-- INVENTORY DRAWER (BOTTOM)
+		InventoryDrawer = e("Frame", {
+			Size = UDim2.new(1, -30, 0.35, 0),
+			Position = UDim2.new(0, 15, 0, 280),
 			BackgroundTransparency = 1,
-			CanvasSize = UDim2.new(0, 0, 0, 0),
-			AutomaticCanvasSize = Enum.AutomaticSize.Y,
-			ScrollBarThickness = 3,
-			ScrollBarImageColor3 = Color3.fromRGB(60, 60, 75),
-		}, renderInventory())
-	}),
-
-	-- CONFIRM OVERLAY/BUTTON DRAWER
-	ConfirmOverlay = (myLocked and theirLocked) and e("Frame", {
-		Size = UDim2.new(1, 0, 0.16, 0),
-		Position = UDim2.new(0, 0, 0.84, 0),
-		BackgroundColor3 = Color3.fromRGB(20, 20, 25),
-		BorderSizePixel = 0,
-		ZIndex = 15,
-	}, {
-		Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
-		ConfirmBtn = e("TextButton", {
-			Text = state.CountdownActive and (state.CountdownSeconds > 0 and string.format("SIAP DALAM (%ds)", state.CountdownSeconds) or (myConfirmed and "MENUNGGU LAWAN..." or "SETUJUI PERTUKARAN (CONFIRM)")) or "MENUNGGU...",
-			Size = UDim2.new(0.6, 0, 0.6, 0),
-			AnchorPoint = Vector2.new(0.5, 0.5),
-			Position = UDim2.new(0.5, 0, 0.5, 0),
-			BackgroundColor3 = (state.CountdownActive and state.CountdownSeconds == 0) and (myConfirmed and Color3.fromRGB(20, 45, 30) or Color3.fromRGB(0, 180, 100)) or Color3.fromRGB(35, 35, 45),
-			TextColor3 = Color3.fromRGB(255, 255, 255),
-			Font = Enum.Font.GothamBold,
-			TextSize = 11,
-			BorderSizePixel = 0,
-			[Event.Activated] = function()
-				if state.CountdownActive and state.CountdownSeconds == 0 and not myConfirmed and props.onConfirm then
-					props.onConfirm()
-				end
-			end
 		}, {
-			Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-			Stroke = e("UIStroke", {
-				Color = (state.CountdownActive and state.CountdownSeconds == 0 and not myConfirmed) and Color3.fromRGB(0, 220, 120) or Color3.fromRGB(60, 60, 70),
-				Thickness = 1
-			})
-		})
-	}) or nil
-})
+			Header = e("Frame", {
+				Size = UDim2.new(1, 0, 0, 20),
+				BackgroundTransparency = 1,
+			}, {
+				Title = e("TextLabel", {
+					Text = "📦 PILIH MOBIL DARI TAS ANDA",
+					Size = UDim2.new(0.5, 0, 1, 0),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(180, 180, 190),
+					Font = Enum.Font.GothamBold,
+					TextSize = 9,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}),
+				SearchBg = e("Frame", {
+					Size = UDim2.new(0.4, 0, 1, 0),
+					Position = UDim2.new(0.6, 0, 0, 0),
+					BackgroundColor3 = Color3.fromRGB(25, 25, 32),
+					BorderSizePixel = 0,
+				}, {
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
+					TextBox = e("TextBox", {
+						Text = carSearchText,
+						PlaceholderText = "Cari Mobil...",
+						Size = UDim2.new(1, -10, 1, 0),
+						Position = UDim2.new(0, 5, 0, 0),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(240, 240, 240),
+						PlaceholderColor3 = Color3.fromRGB(100, 100, 110),
+						Font = Enum.Font.GothamMedium,
+						TextSize = 8,
+						ClearTextOnFocus = false,
+						[Change.Text] = function(box: TextBox)
+							setCarSearchText(box.Text)
+						end,
+					}),
+				}),
+			}),
+
+			-- List
+			ScrollList = e("ScrollingFrame", {
+				Size = UDim2.new(1, 0, 1, -25),
+				Position = UDim2.new(0, 0, 0, 25),
+				BackgroundTransparency = 1,
+				CanvasSize = UDim2.new(0, 0, 0, 0),
+				AutomaticCanvasSize = Enum.AutomaticSize.Y,
+				ScrollBarThickness = 3,
+				ScrollBarImageColor3 = Color3.fromRGB(60, 60, 75),
+			}, renderInventory()),
+		}),
+
+		-- CONFIRM OVERLAY/BUTTON DRAWER
+		ConfirmOverlay = (myLocked and theirLocked)
+				and e("Frame", {
+					Size = UDim2.new(1, 0, 0.16, 0),
+					Position = UDim2.new(0, 0, 0.84, 0),
+					BackgroundColor3 = Color3.fromRGB(20, 20, 25),
+					BorderSizePixel = 0,
+					ZIndex = 15,
+				}, {
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
+					ConfirmBtn = e("TextButton", {
+						Text = state.CountdownActive and (state.CountdownSeconds > 0 and string.format(
+							"SIAP DALAM (%ds)",
+							state.CountdownSeconds
+						) or (myConfirmed and "MENUNGGU LAWAN..." or "SETUJUI PERTUKARAN (CONFIRM)")) or "MENUNGGU...",
+						Size = UDim2.new(0.6, 0, 0.6, 0),
+						AnchorPoint = Vector2.new(0.5, 0.5),
+						Position = UDim2.new(0.5, 0, 0.5, 0),
+						BackgroundColor3 = (state.CountdownActive and state.CountdownSeconds == 0)
+								and (myConfirmed and Color3.fromRGB(20, 45, 30) or Color3.fromRGB(0, 180, 100))
+							or Color3.fromRGB(35, 35, 45),
+						TextColor3 = Color3.fromRGB(255, 255, 255),
+						Font = Enum.Font.GothamBold,
+						TextSize = 11,
+						BorderSizePixel = 0,
+						[Event.Activated] = function()
+							if
+								state.CountdownActive
+								and state.CountdownSeconds == 0
+								and not myConfirmed
+								and props.onConfirm
+							then
+								props.onConfirm()
+							end
+						end,
+					}, {
+						Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+						Stroke = e("UIStroke", {
+							Color = (state.CountdownActive and state.CountdownSeconds == 0 and not myConfirmed)
+									and Color3.fromRGB(0, 220, 120)
+								or Color3.fromRGB(60, 60, 70),
+							Thickness = 1,
+						}),
+					}),
+				})
+			or nil,
+	})
 end

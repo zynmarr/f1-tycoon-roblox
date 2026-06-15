@@ -281,6 +281,70 @@ Players.PlayerRemoving:Connect(function(player)
 	end
 end)
 
+-- 4. CHARACTER PROXIMITY PROMPT MANAGEMENT FOR TRADING
+local function setupCharacterPrompt(player: Player, character: Model)
+	local hrp = character:WaitForChild("HumanoidRootPart", 10)
+	if not hrp then return end
+
+	-- Clean up existing trade prompts
+	local existing = hrp:FindFirstChild("TradePrompt")
+	if existing then existing:Destroy() end
+
+	if getRebirthCount(player) >= 5 then
+		local prompt = Instance.new("ProximityPrompt")
+		prompt.Name = "TradePrompt"
+		prompt.ActionText = "Trade"
+		prompt.ObjectText = player.Name
+		prompt.HoldDuration = 1.0
+		prompt.MaxActivationDistance = 10
+		prompt.RequiresLineOfSight = false
+		prompt.Parent = hrp
+	end
+end
+
+Players.PlayerAdded:Connect(function(player)
+	player.CharacterAdded:Connect(function(character)
+		setupCharacterPrompt(player, character)
+	end)
+	
+	task.spawn(function()
+		local leaderstats = player:WaitForChild("leaderstats", 10)
+		if leaderstats then
+			local rebirthVal = leaderstats:WaitForChild("Rebirth", 10)
+			if rebirthVal and rebirthVal:IsA("IntValue") then
+				rebirthVal.Changed:Connect(function(val)
+					if val >= 5 and player.Character then
+						setupCharacterPrompt(player, player.Character)
+					end
+				end)
+			end
+		end
+	end)
+end)
+
+for _, player in ipairs(Players:GetPlayers()) do
+	if player.Character then
+		setupCharacterPrompt(player, player.Character)
+	end
+	player.CharacterAdded:Connect(function(character)
+		setupCharacterPrompt(player, character)
+	end)
+	task.spawn(function()
+		local leaderstats = player:WaitForChild("leaderstats", 10)
+		if leaderstats then
+			local rebirthVal = leaderstats:WaitForChild("Rebirth", 10)
+			if rebirthVal and rebirthVal:IsA("IntValue") then
+				rebirthVal.Changed:Connect(function(val)
+					if val >= 5 and player.Character then
+						setupCharacterPrompt(player, player.Character)
+					end
+				end)
+			end
+		end
+	end)
+end
+
+
 -- 4. REGISTER SERVICE NETWORKER
 Networker.server.new("TradeService", TradeService, {
 	TradeService.sendTradeRequest :: any,
