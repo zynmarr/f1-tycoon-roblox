@@ -8,6 +8,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameUtils = require(ReplicatedStorage.GameUtils)
 local RoleManager = require(game.ServerScriptService.RoleManager.RoleManager)
+local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
 
 local SPAWNER_TAG = "ParkingArea"
 local playerPassiveIncome = {} -- [Player] = number (total passive income/sec)
@@ -134,8 +135,7 @@ local function parkedInArea(area: Part)
 
 		-- MODE: PARKIR (Jika area sedang Kosong)
 		if not isActive then
-			local isCarTool = toolOnCharacter
-				and (CollectionService:HasTag(toolOnCharacter, "Car") or toolOnCharacter:GetAttribute("Price") ~= nil)
+			local isCarTool = toolOnCharacter and GameUtils.isCar(toolOnCharacter)
 			if toolOnCharacter and isCarTool then
 				warn("Parking mode: Menyimpan mobil...")
 				storeCarToArea(player, area, toolOnCharacter)
@@ -213,7 +213,18 @@ function ParkingAreaManager.Init()
 							multiplier = 1.2
 						end
 
-						local addedCash = math.floor(totalIncome * multiplier)
+						-- Rebirth: Cash Multiplier
+						local data = require(game.ServerScriptService.DataManager.DataManager).getPlayerData(player)
+						local rebirthUpgrades = data and data.RebirthUpgrades or {}
+						local cashMulLevel = rebirthUpgrades.CashMultiplier or 0
+						local cashMulBonus = 1 + (RebirthConfig.getUpgradeEffect("CashMultiplier", cashMulLevel) / 100)
+
+						-- Rebirth: Double Cash Chance
+						local dccLevel = rebirthUpgrades.DoubleCashChance or 0
+						local dccChance = RebirthConfig.getUpgradeEffect("DoubleCashChance", dccLevel)
+						local doubleMultiplier = (math.random() * 100 < dccChance) and 2 or 1
+
+						local addedCash = math.floor(totalIncome * multiplier * cashMulBonus * doubleMultiplier)
 						cash.Value = cash.Value + addedCash
 					end
 				end
@@ -230,6 +241,28 @@ end
 
 function ParkingAreaManager.resetPassiveIncome(player: Player)
 	playerPassiveIncome[player] = 0
+end
+
+function ParkingAreaManager.recalculatePassiveIncome(player: Player)
+	local totalIncome = 0
+	local myPlot = GameUtils.getPlayerPlot(player)
+	if myPlot then
+		local parkingLots = myPlot:FindFirstChild("AllParkingLots")
+		if parkingLots then
+			for _, parking in ipairs(parkingLots:GetChildren()) do
+				local carsFolder = parking:FindFirstChild("MyCars", true)
+				if carsFolder then
+					for _, car in ipairs(carsFolder:GetChildren()) do
+						if car:IsA("Tool") then
+							local carIncome = car:GetAttribute("Income") :: number or 0
+							totalIncome = totalIncome + carIncome
+						end
+					end
+				end
+			end
+		end
+	end
+	playerPassiveIncome[player] = totalIncome
 end
 
 function ParkingAreaManager.getPlayerPassiveIncome(player: Player): number

@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameUtils = require(ReplicatedStorage.GameUtils)
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local UpgradeConfig = require(ReplicatedStorage:WaitForChild("UpgradeConfig"))
+local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
 local boxTemplate = game:GetService("ServerStorage"):WaitForChild("Box")
 
 local DataManager = require(script.Parent.Parent.DataManager.DataManager)
@@ -108,9 +109,19 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 		or 0
 	local activeVariants = {}
 
+	-- Baca Rebirth Upgrade data pemain untuk variant chances
+	local rebirthUpgrades = {}
+	do
+		local pData = DataManager.getPlayerData(player)
+		if pData and pData.RebirthUpgrades then
+			rebirthUpgrades = pData.RebirthUpgrades
+		end
+	end
+	local rebirthAllVariantsBonus = RebirthConfig.getUpgradeEffect("AllVariantsBoost", rebirthUpgrades.AllVariantsBoost or 0)
+
 	-- Roll variants dynamically each time to ensure correct gacha randomness
 	for vName, vData in pairs(GameConfig.Variants) do
-		if vName ~= "Normal" then
+		if vName ~= "Normal" and vName ~= "Admin" then
 			-- Cari boost spesifik untuk varian ini dari LiveEvents
 			local specUpgrade = machineArea:GetAttribute("Upg_VariantChance_" .. vName) or 0
 			local specVariantBoost = 0
@@ -122,7 +133,10 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 				end
 			end
 
-			local totalChance = vData.Chance + specUpgrade + allUpgrade + globalVariantBoost + specVariantBoost
+			-- Rebirth: Bonus spesifik per varian
+			local rebirthSpecBonus = RebirthConfig.getUpgradeEffect("VariantChance_" .. vName, rebirthUpgrades["VariantChance_" .. vName] or 0)
+
+			local totalChance = vData.Chance + specUpgrade + allUpgrade + globalVariantBoost + specVariantBoost + rebirthSpecBonus + rebirthAllVariantsBonus
 
 			-- MENGGUNAKAN LOGIKA RANDOM YANG LEBIH PRESISI UNTUK DESIMAL
 			local rng = math.random() * 100

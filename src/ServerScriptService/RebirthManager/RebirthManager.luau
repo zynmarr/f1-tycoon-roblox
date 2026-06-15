@@ -4,23 +4,38 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local DataManager = require(game.ServerScriptService.DataManager.DataManager)
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
+local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
 
--- ===== REBIRTH POINTS FORMULA (OPSE A - SCALE HARD) =====
+-- ===== REBIRTH POINTS FORMULA (LINIER: 340 * (level + 1)) =====
 function RebirthManager:calculateRebirthPoints(rebirthLevel: number): number
-	if rebirthLevel == 0 then return 50 end
-	if rebirthLevel == 1 then return 100 end
-	if rebirthLevel == 2 then return 180 end
-	
-	local points = 180
-	for i = 3, rebirthLevel do
-		if i % 3 == 0 then
-			points = (points * 2) + 20
-		else
-			points = points + 100
+	return 340 * (rebirthLevel + 1)
+end
+
+-- ===== APPLY REBIRTH UPGRADES KE KARAKTER =====
+-- Dipanggil setiap kali karakter spawn atau pemain membeli upgrade
+local function applyRebirthUpgrades(player: Player)
+	local data = DataManager.getPlayerData(player)
+	if not data or not data.RebirthUpgrades then return end
+
+	local upgrades = data.RebirthUpgrades
+
+	-- Walkspeed
+	local char = player.Character
+	if char then
+		local humanoid = char:FindFirstChildOfClass("Humanoid")
+		if humanoid then
+			local wsLevel = upgrades.WalkspeedBoost or 0
+			local wsBonus = RebirthConfig.getUpgradeEffect("WalkspeedBoost", wsLevel)
+			humanoid.WalkSpeed = 16 + wsBonus
 		end
 	end
-	return points
+
+	-- MaxInventorySlots — simpan sebagai atribut player agar bisa dibaca BoxManager
+	local invLevel = upgrades.MaxInventorySlots or 0
+	local invBonus = RebirthConfig.getUpgradeEffect("MaxInventorySlots", invLevel)
+	player:SetAttribute("RebirthInventoryBonus", invBonus)
 end
+RebirthManager.applyRebirthUpgrades = applyRebirthUpgrades
 
 -- ===== TYCOON RESET MECHANICS =====
 local function resetPlayerPlotAndAssets(player: Player)
@@ -66,25 +81,28 @@ local function resetPlayerPlotAndAssets(player: Player)
 		if parkingLots then
 			for _, parking in ipairs(parkingLots:GetChildren()) do
 				local carsFolder = parking:FindFirstChild("MyCars", true)
+				local hasRemainingCar = false
 				if carsFolder then
 					for _, car in ipairs(carsFolder:GetChildren()) do
 						local isVariantAdmin = car:GetAttribute("Variant") == "Admin"
 						local hasAdminName = string.find(string.lower(car.Name), "admin") ~= nil
 						if not isVariantAdmin and not hasAdminName then
 							car:Destroy()
+						else
+							hasRemainingCar = true
 						end
 					end
 				end
 				local prompt = parking:FindFirstChild("ProximityPrompt")
 				if prompt then
-					prompt:SetAttribute("IsActive", false)
+					prompt:SetAttribute("IsActive", hasRemainingCar)
 				end
 			end
 		end
 
-		-- Reset passive income cache on rebirth
+		-- Recalculate passive income based on remaining (Admin) cars on rebirth
 		local ParkingAreaManager = require(game.ServerScriptService.ParkingAreaManager.ParkingAreaManager)
-		ParkingAreaManager.resetPassiveIncome(player)
+		ParkingAreaManager.recalculatePassiveIncome(player)
 		
 		-- Reset Tycoon Machines purchase attributes & active boxes
 		local machines = myPlot:FindFirstChild("Machines")
@@ -123,7 +141,14 @@ function RebirthManager:requestRebirth(player: Player)
 	if not data then return { Success = false, Error = "Data tidak ditemukan!" } end
 	
 	local currentRebirth = data.Stats.Rebirth or 0
-	local cost = 1000000 * (2.5 ^ currentRebirth)
+
+	-- Cek batas maksimum rebirth
+	if currentRebirth >= RebirthConfig.MAX_REBIRTH then
+		return { Success = false, Error = "Anda sudah mencapai Rebirth Level Maksimum (" .. RebirthConfig.MAX_REBIRTH .. ")!" }
+	end
+
+	-- Formula biaya baru: 1,000,000 * (1.6 ^ currentRebirth)
+	local cost = math.floor(1000000 * (1.6 ^ currentRebirth))
 	
 	local leaderstats = player:FindFirstChild("leaderstats")
 	local cashVal = leaderstats and leaderstats:FindFirstChild("Cash")
@@ -155,8 +180,15 @@ function RebirthManager:purchaseRebirthUpgrade(player: Player, upgradeName: stri
 	
 	local currentLevel = data.RebirthUpgrades[upgradeName]
 	if currentLevel == nil then return { Success = false, Error = "Upgrade '" .. upgradeName .. "' tidak valid!" } end
-	
-	local cost = 50 * (2 ^ currentLevel) -- Mulai dari 50, 100, 200, 400, dst.
+
+	-- Cek batas maksimum level upgrade
+	local maxLevel = RebirthConfig.UPGRADE_CAPS[upgradeName]
+	if maxLevel and currentLevel >= maxLevel then
+		return { Success = false, Error = "Upgrade '" .. upgradeName .. "' sudah mencapai level maksimum!" }
+	end
+
+	-- Hitung biaya menggunakan formula dari RebirthConfig
+	local cost = RebirthConfig.getUpgradeCost(upgradeName, currentLevel)
 	if (data.Stats.RebirthPoints or 0) < cost then
 		return { Success = false, Error = "Rebirth Points tidak cukup! Butuh " .. cost .. " RP" }
 	end
@@ -169,7 +201,11 @@ function RebirthManager:purchaseRebirthUpgrade(player: Player, upgradeName: stri
 	if pointsVal then pointsVal.Value = data.Stats.RebirthPoints end
 	
 	DataManager.syncData(player)
-	return { Success = true, Message = "Upgrade " .. upgradeName .. " berhasil ditingkatkan!" }
+
+	-- Terapkan efek upgrade langsung ke karakter pemain
+	applyRebirthUpgrades(player)
+
+	return { Success = true, Message = "Upgrade " .. upgradeName .. " berhasil ditingkatkan ke Level " .. (currentLevel + 1) .. "!" }
 end
 
 -- ===== DAILY REWARDS & QUESTS LOGIC =====
@@ -382,6 +418,19 @@ function RebirthManager.Init()
 		end
 
 		task.spawn(setupCashListener)
+
+		-- Terapkan upgrade walkspeed & inventory setiap kali karakter spawn
+		player.CharacterAdded:Connect(function()
+			task.wait(0.5) -- tunggu humanoid tersedia
+			applyRebirthUpgrades(player)
+		end)
+		-- Terapkan juga untuk karakter yang sudah ada saat ini
+		if player.Character then
+			task.spawn(function()
+				task.wait(0.5)
+				applyRebirthUpgrades(player)
+			end)
+		end
 	end)
 
 	-- Tangani player yang sudah ada

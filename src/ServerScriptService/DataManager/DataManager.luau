@@ -24,8 +24,15 @@ local DEFAULT_DATA = {
 	RebirthUpgrades = {
 		CashMultiplier = 0,
 		LuckMultiplier = 0,
+		WalkspeedBoost = 0,
+		MaxInventorySlots = 0,
+		DoubleCashChance = 0,
+		AllVariantsBoost = 0,
 		VariantChance_Rainbow = 0,
-		VariantChance_All = 0,
+		VariantChance_Frostbite = 0,
+		VariantChance_Galaxy = 0,
+		VariantChance_Hellfire = 0,
+		VariantChance_Cosmic = 0,
 	},
 	DailyRewards = {
 		LastClaimTime = 0,

@@ -169,8 +169,7 @@ local function openBox(player)
 		local car = carTemplate[math.random(1, #carTemplate)]:Clone()
 		--local car = CARS_STORAGE:FindFirstChild("Common"):FindFirstChild("Paindre Edition"):Clone()
 		-- Proses penempelan ke pemain...
-		local baseIncome = GameConfig.CalculatePrice(tierData.BasePrice, tier, variants)
-		local SellPrice = math.floor(baseIncome * 0.6)
+		local baseIncome, SellPrice = GameConfig.CalculatePrice(tierData.BasePrice, tier, variants)
 
 		car:SetAttribute("Income", baseIncome)
 		car:SetAttribute("Price", SellPrice)

@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
 local RoleManager = require(game:GetService("ServerScriptService"):WaitForChild("RoleManager"):WaitForChild("RoleManager"))
+local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
 
 -- ===============================================
 -- SELLGUI SERVER HANDLER (NETWORKER VERSION)
@@ -164,7 +165,20 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 	if RoleManager.hasPermission(player, "VIPMultiplier") then
 		multiplier = 1.2 -- 20% bonus Cash untuk VIP/Staff
 	end
-	local finalHarga = math.floor(harga * multiplier)
+
+	-- Rebirth: Cash Multiplier
+	local DataManager = require(game.ServerScriptService.DataManager.DataManager)
+	local playerData = DataManager.getPlayerData(player)
+	local rebirthUpgrades = playerData and playerData.RebirthUpgrades or {}
+	local cashMulLevel = rebirthUpgrades.CashMultiplier or 0
+	local cashMulBonus = 1 + (RebirthConfig.getUpgradeEffect("CashMultiplier", cashMulLevel) / 100)
+
+	-- Rebirth: Double Cash Chance
+	local dccLevel = rebirthUpgrades.DoubleCashChance or 0
+	local dccChance = RebirthConfig.getUpgradeEffect("DoubleCashChance", dccLevel)
+	local doubleMultiplier = (math.random() * 100 < dccChance) and 2 or 1
+
+	local finalHarga = math.floor(harga * multiplier * cashMulBonus * doubleMultiplier)
 
 	leaderstats.Cash.Value = leaderstats.Cash.Value + finalHarga
 
@@ -188,7 +202,8 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 			.. nama
 			.. " seharga $"
 			.. finalHarga
-			.. (multiplier > 1 and " (VIP +20%!)" or ""),
+			.. (multiplier > 1 and " (VIP +20%!)" or "")
+			.. (doubleMultiplier > 1 and " (DOUBLE CASH!)" or ""),
 	}
 end
 
@@ -253,6 +268,18 @@ function SellGuiManager:sellAllCars(player, cars)
 		multiplier = 1.2 -- 20% bonus Cash untuk VIP/Staff
 	end
 
+	-- Rebirth: Cash Multiplier
+	local DataManager = require(game.ServerScriptService.DataManager.DataManager)
+	local playerData = DataManager.getPlayerData(player)
+	local rebirthUpgrades = playerData and playerData.RebirthUpgrades or {}
+	local cashMulLevel = rebirthUpgrades.CashMultiplier or 0
+	local cashMulBonus = 1 + (RebirthConfig.getUpgradeEffect("CashMultiplier", cashMulLevel) / 100)
+
+	-- Rebirth: Double Cash Chance (roll sekali untuk seluruh batch sell-all)
+	local dccLevel = rebirthUpgrades.DoubleCashChance or 0
+	local dccChance = RebirthConfig.getUpgradeEffect("DoubleCashChance", dccLevel)
+	local doubleMultiplier = (math.random() * 100 < dccChance) and 2 or 1
+
 	-- ANTI-CHEAT: Deduplikasi referensi mobil untuk mencegah exploit duplikasi
 	local processedCars = {}
 
@@ -268,7 +295,7 @@ function SellGuiManager:sellAllCars(player, cars)
 				-- Tambahkan harga mobil utama
 				local basePrice = car:GetAttribute("Price") or 0
 				if basePrice > 0 and basePrice <= 999999999 then
-					local finalBase = math.floor(basePrice * multiplier)
+					local finalBase = math.floor(basePrice * multiplier * cashMulBonus * doubleMultiplier)
 					leaderstats.Cash.Value = leaderstats.Cash.Value + finalBase
 					totalEarned = totalEarned + finalBase
 					carsCount = carsCount + 1
@@ -281,7 +308,7 @@ function SellGuiManager:sellAllCars(player, cars)
 						if configNode:IsA("Configuration") then
 							local stackPrice = configNode:GetAttribute("Price") or 0
 							if stackPrice > 0 and stackPrice <= 999999999 then
-								local finalStack = math.floor(stackPrice * multiplier)
+								local finalStack = math.floor(stackPrice * multiplier * cashMulBonus * doubleMultiplier)
 								leaderstats.Cash.Value = leaderstats.Cash.Value + finalStack
 								totalEarned = totalEarned + finalStack
 								carsCount = carsCount + 1

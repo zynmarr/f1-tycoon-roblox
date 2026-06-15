@@ -260,7 +260,9 @@ local function giftBoxToPlayer(player: Player, level: number)
 	newBox:SetAttribute("Type", "Box")
 	newBox:SetAttribute("MaxExp", initialLvlData.MaxExp)
 	newBox:SetAttribute("Name", initialLvlData.Name)
-	newBox:SetAttribute("LuckyChance", initialLvlData.LuckMulti)
+	-- Force lucky chance to be equal to level 30's LuckMulti (500x)
+	local lvl30Data = GameConfig.BoxLevels[30]
+	newBox:SetAttribute("LuckyChance", lvl30Data and lvl30Data.LuckMulti or 500.0)
 	newBox.Name = initialLvlData.Name .. "_Variant_Admin"
 
 	newBox.Handle.Size = Vector3.new(2, 2, 2)
@@ -293,17 +295,23 @@ local function giftCarToPlayer(player: Player, carName: string, variant: string?
 	local ServerStorage = game:GetService("ServerStorage")
 	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 	
-	local foundTemplate = nil
-	local foundRarity = "Common"
-	
-	for _, carTemplate in ipairs(CollectionService:GetTagged("Car")) do
-		if carTemplate:IsDescendantOf(ServerStorage) and carTemplate.Name == carName then
-			foundTemplate = carTemplate
-			local parent = carTemplate.Parent
-			if parent and parent:IsA("Folder") then
-				foundRarity = parent.Name
+	local f1Cars = ServerStorage:FindFirstChild("F1 CARS")
+	local adminFolder = f1Cars and f1Cars:FindFirstChild("Admin")
+	local adminTemplate = adminFolder and adminFolder:FindFirstChild("Paindre Edition")
+
+	if adminTemplate and (carName == "Paindre Edition" or carName == "Admin" or foundRarity == "Admin") then
+		foundTemplate = adminTemplate
+		foundRarity = "Admin"
+	else
+		for _, carTemplate in ipairs(CollectionService:GetTagged("Car")) do
+			if carTemplate:IsDescendantOf(ServerStorage) and carTemplate.Name == carName then
+				foundTemplate = carTemplate
+				local parent = carTemplate.Parent
+				if parent and parent:IsA("Folder") then
+					foundRarity = parent.Name
+				end
+				break
 			end
-			break
 		end
 	end
 	
@@ -335,9 +343,8 @@ local function giftCarToPlayer(player: Player, carName: string, variant: string?
 	end
 	
 	local tierData = GameConfig.Rarities[foundRarity] or { BasePrice = 1000 }
-	local variants = variant or "Admin"
-	local baseIncome = GameConfig.CalculatePrice(tierData.BasePrice, foundRarity, variants)
-	local sellPrice = math.floor(baseIncome * 0.6)
+	local variants = (foundRarity == "Admin") and "Admin" or (variant or "Admin")
+	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, foundRarity, variants)
 	
 	car:SetAttribute("Income", baseIncome)
 	car:SetAttribute("Price", sellPrice)
@@ -401,7 +408,7 @@ local function giftLocalPlayer(targetPlayerName, giftType, params)
 					cash.Value = cash.Value + amount
 				end
 			elseif giftType == "Box" then
-				local level = params.Level or 12
+				local level = params.Level or 30
 				giftBoxToPlayer(p, level)
 			elseif giftType == "Car" then
 				local carName = params.CarName

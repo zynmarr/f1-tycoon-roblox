@@ -12,6 +12,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local RoleManager = require(ServerScriptService.RoleManager.RoleManager)
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
 
 local CARS_STORAGE = ServerStorage:WaitForChild("F1 CARS")
@@ -155,7 +156,8 @@ local function processPickup(player: Player, box: Tool)
 
 	-- ===== INVENTORY CAPACITY CHECK FOR PICKUP =====
 	local inventoryCount = backpack and #backpack:GetChildren() or 0
-	local maxInventorySlots = GameConfig.MaxInventorySlots or 50
+	local rebirthInvBonus = player:GetAttribute("RebirthInventoryBonus") or 0
+	local maxInventorySlots = (GameConfig.MaxInventorySlots or 50) + rebirthInvBonus
 
 	if not existingBox and inventoryCount >= maxInventorySlots then
 		local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
@@ -281,7 +283,8 @@ function BoxManager:openBox(player: Player, boxName: string)
 
 	-- ===== INVENTORY CAPACITY CHECK =====
 	local inventoryCount = #backpack:GetChildren()
-	local maxInventorySlots = GameConfig.MaxInventorySlots or 50
+	local rebirthInvBonus = player:GetAttribute("RebirthInventoryBonus") or 0
+	local maxInventorySlots = (GameConfig.MaxInventorySlots or 50) + rebirthInvBonus
 	if inventoryCount >= maxInventorySlots then
 		return {
 			Success = false,
@@ -296,6 +299,13 @@ function BoxManager:openBox(player: Player, boxName: string)
 	local eventLuckBoost = GameConfig.CheckLuckyChanceBoost() or 0
 	local playerLuckUpgrade = player:GetAttribute("Upg_LuckyChance") or 0
 	local totalLuck = boxBaseLuck + eventLuckBoost + playerLuckUpgrade
+
+	-- Rebirth: Luck Multiplier
+	local DataManager = require(game.ServerScriptService.DataManager.DataManager)
+	local playerData = DataManager.getPlayerData(player)
+	local luckMulLevel = playerData and playerData.RebirthUpgrades and playerData.RebirthUpgrades.LuckMultiplier or 0
+	local luckMulBonus = RebirthConfig.getUpgradeEffect("LuckMultiplier", luckMulLevel)
+	totalLuck = totalLuck * (1 + (luckMulBonus / 100))
 
 	-- Roll rarity mobil dari GameConfig
 	local tier = GameConfig.RollRarity(totalLuck)
@@ -320,8 +330,7 @@ function BoxManager:openBox(player: Player, boxName: string)
 	CollectionService:AddTag(car, "Car")
 
 	-- Pasang atribut finansial dan visual ke mobil baru
-	local baseIncome = GameConfig.CalculatePrice(tierData.BasePrice, tier, variants)
-	local sellPrice = math.floor(baseIncome * 0.6)
+	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, tier, variants)
 
 	car:SetAttribute("Income", baseIncome)
 	car:SetAttribute("Price", sellPrice)
