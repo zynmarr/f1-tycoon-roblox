@@ -1,6 +1,7 @@
 --!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local React = require(ReplicatedStorage.Packages.React)
+local Packages = ReplicatedStorage:WaitForChild("Packages")
+local React = require(Packages:WaitForChild("React") :: ModuleScript)
 local e = React.createElement
 local Event = (React :: any).Event
 local Change = (React :: any).Change
@@ -25,7 +26,7 @@ return function(props: any)
 	local rainbowInput, setRainbowInput = useState(0)
 	local galaxyInput, setGalaxyInput = useState(0)
 	local hellfireInput, setHellfireInput = useState(0)
-	
+
 	local isAccordionOpen, setIsAccordionOpen = useState(false)
 	local isGlobalEvent, setIsGlobalEvent = useState(false)
 
@@ -47,22 +48,24 @@ return function(props: any)
 	local targetType, setTargetType = useState("All") -- "All" | "Specific"
 	local targetPlayerName, setTargetPlayerName = useState("")
 	local isGlobalGift, setIsGlobalGift = useState(true)
-	
+
 	-- Gift Cash
 	local giftCashAmount, setGiftCashAmount = useState(10000)
-	
+
 	-- Gift Box
 	local giftBoxLevel, setGiftBoxLevel = useState(12)
-	
+
 	-- Gift Car Search & Autocomplete
 	local carSearchText, setCarSearchText = useState("")
 	local isCarDropdownOpen, setIsCarDropdownOpen = useState(false)
-	local availableCars, setAvailableCars = useState({} :: {CarData})
+	local availableCars, setAvailableCars = useState({} :: { CarData })
 
 	-- 5. INITIALIZE SLIDERS FROM SERVER ON MOUNT
 	useEffect(function()
 		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents", 10)
-		if not liveEvents then return end
+		if not liveEvents then
+			return
+		end
 
 		local luckNode = liveEvents:FindFirstChild("LuckyChanceBoost") :: IntValue?
 		local expNode = liveEvents:FindFirstChild("ExpBoost") :: IntValue?
@@ -74,21 +77,37 @@ return function(props: any)
 		local galaxyNode = liveEvents:FindFirstChild("VariantBoost_Galaxy") :: IntValue?
 		local hellfireNode = liveEvents:FindFirstChild("VariantBoost_Hellfire") :: IntValue?
 
-		if luckNode then setLuckInput(luckNode.Value) end
-		if expNode then setExpInput(expNode.Value) end
-		if variantNode then setVariantInput(variantNode.Value) end
+		if luckNode then
+			setLuckInput(luckNode.Value)
+		end
+		if expNode then
+			setExpInput(expNode.Value)
+		end
+		if variantNode then
+			setVariantInput(variantNode.Value)
+		end
 		setSpeedInput(speedVal)
 
-		if goldenNode then setGoldenInput(goldenNode.Value) end
-		if rainbowNode then setRainbowInput(rainbowNode.Value) end
-		if galaxyNode then setGalaxyInput(galaxyNode.Value) end
-		if hellfireNode then setHellfireInput(hellfireNode.Value) end
+		if goldenNode then
+			setGoldenInput(goldenNode.Value)
+		end
+		if rainbowNode then
+			setRainbowInput(rainbowNode.Value)
+		end
+		if galaxyNode then
+			setGalaxyInput(galaxyNode.Value)
+		end
+		if hellfireNode then
+			setHellfireInput(hellfireNode.Value)
+		end
 	end, {})
 
 	-- 6. LISTEN TO SERVER CHANGES (REAL-TIME SYNC)
 	useEffect(function()
 		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents", 10)
-		if not liveEvents then return end
+		if not liveEvents then
+			return
+		end
 
 		local function syncValues()
 			local luckNode = liveEvents:FindFirstChild("LuckyChanceBoost") :: IntValue?
@@ -114,11 +133,15 @@ return function(props: any)
 
 		syncValues()
 
-		local connections: {RBXScriptConnection} = {}
+		local connections: { RBXScriptConnection } = {}
 		local nodes = {
-			"LuckyChanceBoost", "ExpBoost", "VariantBoost",
-			"VariantBoost_Golden", "VariantBoost_Rainbow",
-			"VariantBoost_Galaxy", "VariantBoost_Hellfire"
+			"LuckyChanceBoost",
+			"ExpBoost",
+			"VariantBoost",
+			"VariantBoost_Golden",
+			"VariantBoost_Rainbow",
+			"VariantBoost_Galaxy",
+			"VariantBoost_Hellfire",
 		}
 
 		for _, name in ipairs(nodes) do
@@ -128,12 +151,15 @@ return function(props: any)
 			end
 		end
 
-		table.insert(connections, liveEvents.ChildAdded:Connect(function(child: Instance)
-			if table.find(nodes, child.Name) then
-				syncValues()
-				table.insert(connections, (child :: any).Changed:Connect(syncValues))
-			end
-		end))
+		table.insert(
+			connections,
+			liveEvents.ChildAdded:Connect(function(child: Instance)
+				if table.find(nodes, child.Name) then
+					syncValues()
+					table.insert(connections, (child :: any).Changed:Connect(syncValues))
+				end
+			end)
+		)
 
 		table.insert(connections, ReplicatedStorage:GetAttributeChangedSignal("SpeedBoost"):Connect(syncValues))
 
@@ -148,7 +174,7 @@ return function(props: any)
 	useEffect(function()
 		if props.getAvailableCars then
 			task.spawn(function()
-				local cars = props.getAvailableCars() :: {CarData}?
+				local cars = props.getAvailableCars() :: { CarData }?
 				if cars then
 					setAvailableCars(cars)
 				end
@@ -190,8 +216,14 @@ return function(props: any)
 			setHellfireInput(0)
 			if props.onApplySettings then
 				props.onApplySettings({
-					LuckBoost = 0, ExpBoost = 100, SpeedBoost = 0, VariantBoost = 0,
-					VariantBoost_Golden = 0, VariantBoost_Rainbow = 0, VariantBoost_Galaxy = 0, VariantBoost_Hellfire = 0
+					LuckBoost = 0,
+					ExpBoost = 100,
+					SpeedBoost = 0,
+					VariantBoost = 0,
+					VariantBoost_Golden = 0,
+					VariantBoost_Rainbow = 0,
+					VariantBoost_Galaxy = 0,
+					VariantBoost_Hellfire = 0,
 				}, isGlobalEvent)
 			end
 		elseif presetName == "LuckyHype" then
@@ -205,8 +237,14 @@ return function(props: any)
 			setHellfireInput(0)
 			if props.onApplySettings then
 				props.onApplySettings({
-					LuckBoost = 200, ExpBoost = 0, SpeedBoost = 0, VariantBoost = 10,
-					VariantBoost_Golden = 0, VariantBoost_Rainbow = 0, VariantBoost_Galaxy = 0, VariantBoost_Hellfire = 0
+					LuckBoost = 200,
+					ExpBoost = 0,
+					SpeedBoost = 0,
+					VariantBoost = 10,
+					VariantBoost_Golden = 0,
+					VariantBoost_Rainbow = 0,
+					VariantBoost_Galaxy = 0,
+					VariantBoost_Hellfire = 0,
 				}, isGlobalEvent)
 			end
 		elseif presetName == "WeekendBoost" then
@@ -220,8 +258,14 @@ return function(props: any)
 			setHellfireInput(0)
 			if props.onApplySettings then
 				props.onApplySettings({
-					LuckBoost = 150, ExpBoost = 150, SpeedBoost = 10, VariantBoost = 20,
-					VariantBoost_Golden = 0, VariantBoost_Rainbow = 0, VariantBoost_Galaxy = 0, VariantBoost_Hellfire = 0
+					LuckBoost = 150,
+					ExpBoost = 150,
+					SpeedBoost = 10,
+					VariantBoost = 20,
+					VariantBoost_Golden = 0,
+					VariantBoost_Rainbow = 0,
+					VariantBoost_Galaxy = 0,
+					VariantBoost_Hellfire = 0,
 				}, isGlobalEvent)
 			end
 		end
@@ -271,7 +315,9 @@ return function(props: any)
 				BackgroundColor3 = Color3.fromRGB(20, 20, 25),
 				BorderSizePixel = 0,
 				[Event.Activated] = function(btn: any, input: any)
-					if not input then return end
+					if not input then
+						return
+					end
 					local btnAbsPos = btn.AbsolutePosition.X
 					local btnAbsSize = btn.AbsoluteSize.X
 					local mouseX = input.Position.X
@@ -287,8 +333,8 @@ return function(props: any)
 					BorderSizePixel = 0,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
-				})
-			})
+				}),
+			}),
 		})
 	end
 
@@ -311,21 +357,21 @@ return function(props: any)
 			Stroke = e("UIStroke", {
 				Color = isActive and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 45, 55),
 				Thickness = 1,
-			})
+			}),
 		})
 	end
 
 	-- FILTERED CARS FOR SEARCH AUTOCOMPLETE
-	local filteredCars: {CarData} = {}
+	local filteredCars: { CarData } = {}
 	if carSearchText ~= "" then
 		local query = string.lower(carSearchText)
-		for _, c in ipairs(availableCars :: {CarData}) do
+		for _, c in ipairs(availableCars :: { CarData }) do
 			if string.find(string.lower(c.Name), query, 1, true) then
 				table.insert(filteredCars, c)
 			end
 		end
 	else
-		filteredCars = availableCars :: {CarData}
+		filteredCars = availableCars :: { CarData }
 	end
 
 	-- TAB 1 LAYOUT: MULTIPLIERS
@@ -401,35 +447,73 @@ return function(props: any)
 					BorderSizePixel = 0,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-					Padding = e("UIPadding", { PaddingTop = UDim.new(0, 6), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) }),
+					Padding = e(
+						"UIPadding",
+						{ PaddingTop = UDim.new(0, 6), PaddingLeft = UDim.new(0, 8), PaddingRight = UDim.new(0, 8) }
+					),
 					List = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 1) }),
-					
+
 					Title = e("TextLabel", {
 						Text = "🔴 LIVE MONITOR STATUS",
-						Size = UDim2.new(1, 0, 0, 16), BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(255, 60, 60), Font = Enum.Font.GothamBold, TextSize = 9,
+						Size = UDim2.new(1, 0, 0, 16),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(255, 60, 60),
+						Font = Enum.Font.GothamBold,
+						TextSize = 9,
 					}),
 					LuckText = e("TextLabel", {
-						Text = string.format("Luck: <font color='#00FFCC'>%d%%</font> | Exp: <font color='#00FFCC'>+%d%%</font>", liveLuck, liveExp),
-						Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(220, 220, 220),
-						TextSize = 8, Font = Enum.Font.GothamBold, RichText = true, TextXAlignment = Enum.TextXAlignment.Left,
+						Text = string.format(
+							"Luck: <font color='#00FFCC'>%d%%</font> | Exp: <font color='#00FFCC'>+%d%%</font>",
+							liveLuck,
+							liveExp
+						),
+						Size = UDim2.new(1, 0, 0, 14),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(220, 220, 220),
+						TextSize = 8,
+						Font = Enum.Font.GothamBold,
+						RichText = true,
+						TextXAlignment = Enum.TextXAlignment.Left,
 					}),
 					SpeedText = e("TextLabel", {
-						Text = string.format("Speed: <font color='#00FFCC'>%d%%</font> | Global Variant: <font color='#00FFCC'>%d%%</font>", liveSpeed, liveVariant),
-						Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(220, 220, 220),
-						TextSize = 8, Font = Enum.Font.GothamBold, RichText = true, TextXAlignment = Enum.TextXAlignment.Left,
+						Text = string.format(
+							"Speed: <font color='#00FFCC'>%d%%</font> | Global Variant: <font color='#00FFCC'>%d%%</font>",
+							liveSpeed,
+							liveVariant
+						),
+						Size = UDim2.new(1, 0, 0, 14),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(220, 220, 220),
+						TextSize = 8,
+						Font = Enum.Font.GothamBold,
+						RichText = true,
+						TextXAlignment = Enum.TextXAlignment.Left,
 					}),
 					VariantsText = e("TextLabel", {
-						Text = string.format("🔱G:%d%% | 🌈R:%d%% | 🌌Gx:%d%% | 🔥H:%d%%", liveGolden, liveRainbow, liveGalaxy, liveHellfire),
-						Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1, TextColor3 = Color3.fromRGB(180, 180, 180),
-						TextSize = 8, Font = Enum.Font.GothamBold, RichText = true, TextXAlignment = Enum.TextXAlignment.Left,
-					})
+						Text = string.format(
+							"🔱G:%d%% | 🌈R:%d%% | 🌌Gx:%d%% | 🔥H:%d%%",
+							liveGolden,
+							liveRainbow,
+							liveGalaxy,
+							liveHellfire
+						),
+						Size = UDim2.new(1, 0, 0, 14),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(180, 180, 180),
+						TextSize = 8,
+						Font = Enum.Font.GothamBold,
+						RichText = true,
+						TextXAlignment = Enum.TextXAlignment.Left,
+					}),
 				}),
 
 				PresetsTitle = e("TextLabel", {
 					Text = "PRESET EVENT INSTAN",
-					Size = UDim2.new(1, 0, 0, 14), BackgroundTransparency = 1,
-					TextColor3 = Color3.fromRGB(240, 240, 240), Font = Enum.Font.GothamBold, TextSize = 9,
+					Size = UDim2.new(1, 0, 0, 14),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(240, 240, 240),
+					Font = Enum.Font.GothamBold,
+					TextSize = 9,
 				}),
 
 				PresetsContainer = e("Frame", {
@@ -437,53 +521,78 @@ return function(props: any)
 					BackgroundTransparency = 1,
 				}, {
 					List = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 4) }),
-					
+
 					BtnDoubleExp = e("TextButton", {
 						Text = "🔥 DOUBLE EXP (+100%)",
-						Size = UDim2.new(1, 0, 0, 22), BackgroundColor3 = Color3.fromRGB(35, 35, 45),
-						TextColor3 = Color3.fromRGB(0, 220, 200), Font = Enum.Font.GothamBold, TextSize = 8, BorderSizePixel = 0,
-						[Event.Activated] = function() applyPreset("DoubleEXP") end,
+						Size = UDim2.new(1, 0, 0, 22),
+						BackgroundColor3 = Color3.fromRGB(35, 35, 45),
+						TextColor3 = Color3.fromRGB(0, 220, 200),
+						Font = Enum.Font.GothamBold,
+						TextSize = 8,
+						BorderSizePixel = 0,
+						[Event.Activated] = function()
+							applyPreset("DoubleEXP")
+						end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
-					
+
 					BtnLuckyHype = e("TextButton", {
 						Text = "🍀 LUCKY HYPE (+200% Luck, +10% Var)",
-						Size = UDim2.new(1, 0, 0, 22), BackgroundColor3 = Color3.fromRGB(35, 35, 45),
-						TextColor3 = Color3.fromRGB(0, 220, 200), Font = Enum.Font.GothamBold, TextSize = 8, BorderSizePixel = 0,
-						[Event.Activated] = function() applyPreset("LuckyHype") end,
+						Size = UDim2.new(1, 0, 0, 22),
+						BackgroundColor3 = Color3.fromRGB(35, 35, 45),
+						TextColor3 = Color3.fromRGB(0, 220, 200),
+						Font = Enum.Font.GothamBold,
+						TextSize = 8,
+						BorderSizePixel = 0,
+						[Event.Activated] = function()
+							applyPreset("LuckyHype")
+						end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 
 					BtnWeekend = e("TextButton", {
 						Text = "🎉 WEEKEND BOOST (ALL MULTIPLIERS)",
-						Size = UDim2.new(1, 0, 0, 22), BackgroundColor3 = Color3.fromRGB(35, 35, 45),
-						TextColor3 = Color3.fromRGB(230, 160, 50), Font = Enum.Font.GothamBold, TextSize = 8, BorderSizePixel = 0,
-						[Event.Activated] = function() applyPreset("WeekendBoost") end,
-					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) })
+						Size = UDim2.new(1, 0, 0, 22),
+						BackgroundColor3 = Color3.fromRGB(35, 35, 45),
+						TextColor3 = Color3.fromRGB(230, 160, 50),
+						Font = Enum.Font.GothamBold,
+						TextSize = 8,
+						BorderSizePixel = 0,
+						[Event.Activated] = function()
+							applyPreset("WeekendBoost")
+						end,
+					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 				}),
 
 				-- Target global vs server toggle for event
 				GlobalToggle = e("TextButton", {
-					Text = (isGlobalEvent and "🌎 LINGKUP: GLOBAL (SEMUA SERVER)" or "🖥️ LINGKUP: SERVER INI SAJA"),
+					Text = (
+						isGlobalEvent and "🌎 LINGKUP: GLOBAL (SEMUA SERVER)" or "🖥️ LINGKUP: SERVER INI SAJA"
+					),
 					Size = UDim2.new(1, 0, 0, 26),
 					BackgroundColor3 = isGlobalEvent and Color3.fromRGB(20, 50, 40) or Color3.fromRGB(40, 40, 48),
 					TextColor3 = isGlobalEvent and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(200, 200, 210),
 					Font = Enum.Font.GothamBold,
 					TextSize = 9,
 					BorderSizePixel = 0,
-					[Event.Activated] = function() setIsGlobalEvent(not isGlobalEvent) end,
+					[Event.Activated] = function()
+						setIsGlobalEvent(not isGlobalEvent)
+					end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", {
 						Color = isGlobalEvent and Color3.fromRGB(0, 200, 120) or Color3.fromRGB(70, 70, 80),
 						Thickness = 1,
-					})
+					}),
 				}),
 
 				ActionContainer = e("Frame", {
 					Size = UDim2.new(1, 0, 0, 32),
 					BackgroundTransparency = 1,
 				}, {
-					List = e("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6) }),
-					
+					List = e(
+						"UIListLayout",
+						{ FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6) }
+					),
+
 					Apply = e("TextButton", {
 						Text = "TERAPKAN",
 						Size = UDim2.new(0.6, 0, 1, 0),
@@ -504,9 +613,9 @@ return function(props: any)
 						TextSize = 10,
 						BorderSizePixel = 0,
 						[Event.Activated] = handleStopAll,
-					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) })
-				})
-			})
+					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
+				}),
+			}),
 		})
 	end
 
@@ -517,11 +626,14 @@ return function(props: any)
 			BackgroundTransparency = 1,
 		}, {
 			List = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 10) }),
-			
+
 			Title = e("TextLabel", {
 				Text = "📢 BROADCAST ANNOUNCEMENT BANNER",
-				Size = UDim2.new(1, 0, 0, 20), BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(240, 240, 240), Font = Enum.Font.GothamBold, TextSize = 12,
+				Size = UDim2.new(1, 0, 0, 20),
+				BackgroundTransparency = 1,
+				TextColor3 = Color3.fromRGB(240, 240, 240),
+				Font = Enum.Font.GothamBold,
+				TextSize = 12,
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
 
@@ -548,8 +660,8 @@ return function(props: any)
 					MaxLength = 200,
 					[Change.Text] = function(box: TextBox)
 						setBroadcastText(box.Text)
-					end
-				})
+					end,
+				}),
 			}),
 
 			ScopeSelector = e("Frame", {
@@ -557,7 +669,7 @@ return function(props: any)
 				BackgroundTransparency = 1,
 			}, {
 				List = e("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 10) }),
-				
+
 				GlobalBtn = e("TextButton", {
 					Text = "🌎 Semua Server (Global)",
 					Size = UDim2.new(0.48, 0, 1, 0),
@@ -566,31 +678,36 @@ return function(props: any)
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
-					[Event.Activated] = function() setIsGlobalBroadcast(true) end,
+					[Event.Activated] = function()
+						setIsGlobalBroadcast(true)
+					end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", {
 						Color = isGlobalBroadcast and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 45, 55),
 						Thickness = 1,
-					})
+					}),
 				}),
 
 				ServerBtn = e("TextButton", {
 					Text = "🖥️ Hanya Server Ini",
 					Size = UDim2.new(0.48, 0, 1, 0),
-					BackgroundColor3 = not isGlobalBroadcast and Color3.fromRGB(30, 45, 65) or Color3.fromRGB(22, 22, 28),
+					BackgroundColor3 = not isGlobalBroadcast and Color3.fromRGB(30, 45, 65)
+						or Color3.fromRGB(22, 22, 28),
 					TextColor3 = not isGlobalBroadcast and Color3.fromRGB(0, 220, 255) or Color3.fromRGB(160, 160, 170),
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
-					[Event.Activated] = function() setIsGlobalBroadcast(false) end,
+					[Event.Activated] = function()
+						setIsGlobalBroadcast(false)
+					end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", {
 						Color = not isGlobalBroadcast and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 45, 55),
 						Thickness = 1,
-					})
-				})
+					}),
+				}),
 			}),
 
 			SendBtn = e("TextButton", {
@@ -609,7 +726,7 @@ return function(props: any)
 				end,
 			}, {
 				Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-			})
+			}),
 		})
 	end
 
@@ -627,7 +744,7 @@ return function(props: any)
 				BackgroundTransparency = 1,
 			}, {
 				List = e("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 8) }),
-				
+
 				AllBtn = e("TextButton", {
 					Text = "👥 Semua Player",
 					Size = UDim2.new(0.3, 0, 1, 0),
@@ -636,24 +753,36 @@ return function(props: any)
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
-					[Event.Activated] = function() setTargetType("All") end,
+					[Event.Activated] = function()
+						setTargetType("All")
+					end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-					Stroke = e("UIStroke", { Color = targetType == "All" and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 45, 55), Thickness = 1 }),
+					Stroke = e("UIStroke", {
+						Color = targetType == "All" and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 45, 55),
+						Thickness = 1,
+					}),
 				}),
 
 				SpecificBtn = e("TextButton", {
 					Text = "👤 Spesifik Player",
 					Size = UDim2.new(0.3, 0, 1, 0),
-					BackgroundColor3 = targetType == "Specific" and Color3.fromRGB(30, 45, 65) or Color3.fromRGB(22, 22, 28),
-					TextColor3 = targetType == "Specific" and Color3.fromRGB(0, 220, 255) or Color3.fromRGB(160, 160, 170),
+					BackgroundColor3 = targetType == "Specific" and Color3.fromRGB(30, 45, 65)
+						or Color3.fromRGB(22, 22, 28),
+					TextColor3 = targetType == "Specific" and Color3.fromRGB(0, 220, 255)
+						or Color3.fromRGB(160, 160, 170),
 					Font = Enum.Font.GothamBold,
 					TextSize = 10,
 					BorderSizePixel = 0,
-					[Event.Activated] = function() setTargetType("Specific") end,
+					[Event.Activated] = function()
+						setTargetType("Specific")
+					end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-					Stroke = e("UIStroke", { Color = targetType == "Specific" and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 45, 55), Thickness = 1 }),
+					Stroke = e("UIStroke", {
+						Color = targetType == "Specific" and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(45, 45, 55),
+						Thickness = 1,
+					}),
 				}),
 
 				SpecificInput = targetType == "Specific" and e("TextBox", {
@@ -667,34 +796,47 @@ return function(props: any)
 					TextSize = 10,
 					BorderSizePixel = 0,
 					ClearTextOnFocus = false,
-					[Change.Text] = function(box: TextBox) setTargetPlayerName(box.Text) end,
+					[Change.Text] = function(box: TextBox)
+						setTargetPlayerName(box.Text)
+					end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					Stroke = e("UIStroke", { Color = Color3.fromRGB(55, 55, 65), Thickness = 1 }),
-				}) or nil
+				}) or nil,
 			}),
 
 			-- Scope for All players (Global vs Server)
-			ScopeHeader = targetType == "All" and e("Frame", {
-				Size = UDim2.new(1, 0, 0, 26),
-				BackgroundTransparency = 1,
-			}, {
-				List = e("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 10) }),
-				
-				GlobalGiftToggle = e("TextButton", {
-					Text = (isGlobalGift and "🌎 GLOBAL (GIFT SEMUA SERVER)" or "🖥️ SERVER INI SAJA"),
-					Size = UDim2.new(0.62, 0, 1, 0),
-					BackgroundColor3 = isGlobalGift and Color3.fromRGB(20, 50, 40) or Color3.fromRGB(40, 40, 48),
-					TextColor3 = isGlobalGift and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(200, 200, 210),
-					Font = Enum.Font.GothamBold,
-					TextSize = 9,
-					BorderSizePixel = 0,
-					[Event.Activated] = function() setIsGlobalGift(not isGlobalGift) end,
-				}, {
-					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-					Stroke = e("UIStroke", { Color = isGlobalGift and Color3.fromRGB(0, 200, 120) or Color3.fromRGB(70, 70, 80), Thickness = 1 })
-				})
-			}) or nil,
+			ScopeHeader = targetType == "All"
+					and e("Frame", {
+						Size = UDim2.new(1, 0, 0, 26),
+						BackgroundTransparency = 1,
+					}, {
+						List = e(
+							"UIListLayout",
+							{ FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 10) }
+						),
+
+						GlobalGiftToggle = e("TextButton", {
+							Text = (isGlobalGift and "🌎 GLOBAL (GIFT SEMUA SERVER)" or "🖥️ SERVER INI SAJA"),
+							Size = UDim2.new(0.62, 0, 1, 0),
+							BackgroundColor3 = isGlobalGift and Color3.fromRGB(20, 50, 40)
+								or Color3.fromRGB(40, 40, 48),
+							TextColor3 = isGlobalGift and Color3.fromRGB(0, 255, 150) or Color3.fromRGB(200, 200, 210),
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+							BorderSizePixel = 0,
+							[Event.Activated] = function()
+								setIsGlobalGift(not isGlobalGift)
+							end,
+						}, {
+							Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+							Stroke = e("UIStroke", {
+								Color = isGlobalGift and Color3.fromRGB(0, 200, 120) or Color3.fromRGB(70, 70, 80),
+								Thickness = 1,
+							}),
+						}),
+					})
+				or nil,
 
 			-- scrolling gift cards container
 			GiftCardsScroll = e("ScrollingFrame", {
@@ -706,7 +848,7 @@ return function(props: any)
 				ScrollBarImageColor3 = Color3.fromRGB(60, 60, 75),
 			}, {
 				List = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 10) }),
-				
+
 				-- Row 1: Cash & Fast Actions
 				CashRow = e("Frame", {
 					Size = UDim2.new(1, -6, 0, 66),
@@ -714,13 +856,23 @@ return function(props: any)
 					BorderSizePixel = 0,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-					Padding = e("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }),
-					List = e("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 10), VerticalAlignment = Enum.VerticalAlignment.Center }),
+					Padding = e(
+						"UIPadding",
+						{ PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }
+					),
+					List = e("UIListLayout", {
+						FillDirection = Enum.FillDirection.Horizontal,
+						Padding = UDim.new(0, 10),
+						VerticalAlignment = Enum.VerticalAlignment.Center,
+					}),
 
 					Title = e("TextLabel", {
 						Text = "💵 GIFT CASH",
-						Size = UDim2.new(0.2, 0, 0, 20), BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(0, 255, 120), Font = Enum.Font.GothamBold, TextSize = 10,
+						Size = UDim2.new(0.2, 0, 0, 20),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(0, 255, 120),
+						Font = Enum.Font.GothamBold,
+						TextSize = 10,
 						TextXAlignment = Enum.TextXAlignment.Left,
 					}),
 
@@ -733,7 +885,9 @@ return function(props: any)
 						TextSize = 11,
 						BorderSizePixel = 0,
 						ClearTextOnFocus = false,
-						[Change.Text] = function(box: TextBox) setGiftCashAmount(tonumber(box.Text) or 0) end,
+						[Change.Text] = function(box: TextBox)
+							setGiftCashAmount(tonumber(box.Text) or 0)
+						end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 
 					SendBtn = e("TextButton", {
@@ -749,7 +903,7 @@ return function(props: any)
 							if target ~= "" and props.onGiftReward then
 								props.onGiftReward("Cash", target, isGlobalGift, { Amount = giftCashAmount })
 							end
-						end
+						end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 
 					FastCashBtn = e("TextButton", {
@@ -765,8 +919,8 @@ return function(props: any)
 							if target ~= "" and props.onGiftReward then
 								props.onGiftReward("24hCash", target, isGlobalGift, {})
 							end
-						end
-					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) })
+						end,
+					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 				}),
 
 				-- Row 2: Box Gifting
@@ -776,19 +930,33 @@ return function(props: any)
 					BorderSizePixel = 0,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-					Padding = e("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }),
-					List = e("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 10), VerticalAlignment = Enum.VerticalAlignment.Center }),
+					Padding = e(
+						"UIPadding",
+						{ PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }
+					),
+					List = e("UIListLayout", {
+						FillDirection = Enum.FillDirection.Horizontal,
+						Padding = UDim.new(0, 10),
+						VerticalAlignment = Enum.VerticalAlignment.Center,
+					}),
 
 					Title = e("TextLabel", {
 						Text = "📦 GIFT BOX",
-						Size = UDim2.new(0.2, 0, 0, 20), BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(0, 170, 255), Font = Enum.Font.GothamBold, TextSize = 10,
+						Size = UDim2.new(0.2, 0, 0, 20),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(0, 170, 255),
+						Font = Enum.Font.GothamBold,
+						TextSize = 10,
 						TextXAlignment = Enum.TextXAlignment.Left,
 					}),
 
 					LabelLvl = e("TextLabel", {
-						Text = "Lv (1-30):", Size = UDim2.new(0.12, 0, 0, 20), BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(200, 200, 200), Font = Enum.Font.GothamBold, TextSize = 10,
+						Text = "Lv (1-30):",
+						Size = UDim2.new(0.12, 0, 0, 20),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(200, 200, 200),
+						Font = Enum.Font.GothamBold,
+						TextSize = 10,
 					}),
 
 					Input = e("TextBox", {
@@ -819,7 +987,7 @@ return function(props: any)
 							if target ~= "" and props.onGiftReward then
 								props.onGiftReward("Box", target, isGlobalGift, { Level = giftBoxLevel })
 							end
-						end
+						end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 
 					FastBoxBtn = e("TextButton", {
@@ -835,8 +1003,8 @@ return function(props: any)
 							if target ~= "" and props.onGiftReward then
 								props.onGiftReward("Box", target, isGlobalGift, { Level = 12 })
 							end
-						end
-					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) })
+						end,
+					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 				}),
 
 				-- Row 3: Car Gifting (Dropdown search autocompletion)
@@ -846,12 +1014,18 @@ return function(props: any)
 					BorderSizePixel = 0,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-					Padding = e("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }),
-					
+					Padding = e(
+						"UIPadding",
+						{ PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }
+					),
+
 					Title = e("TextLabel", {
 						Text = "🏎️ GIFT CAR INSTAN",
-						Size = UDim2.new(0.25, 0, 0, 20), BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(255, 100, 100), Font = Enum.Font.GothamBold, TextSize = 10,
+						Size = UDim2.new(0.25, 0, 0, 20),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(255, 100, 100),
+						Font = Enum.Font.GothamBold,
+						TextSize = 10,
 						TextXAlignment = Enum.TextXAlignment.Left,
 					}),
 
@@ -893,70 +1067,80 @@ return function(props: any)
 							if target ~= "" and carSearchText ~= "" and props.onGiftReward then
 								props.onGiftReward("Car", target, isGlobalGift, { CarName = carSearchText })
 							end
-						end
+						end,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 
 					-- Floating Dropdown Autocomplete menu
-					DropdownList = isCarDropdownOpen and e("ScrollingFrame", {
-						Size = UDim2.new(0.42, 0, 0, 100),
-						Position = UDim2.new(0.27, 0, 0, 32),
-						BackgroundColor3 = Color3.fromRGB(25, 25, 30),
-						BorderSizePixel = 1,
-						BorderColor3 = Color3.fromRGB(55, 55, 65),
-						CanvasSize = UDim2.new(0, 0, 0, 0),
-						AutomaticCanvasSize = Enum.AutomaticSize.Y,
-						ZIndex = 10,
-						ScrollBarThickness = 3,
-					}, (function()
-						local childrenTable = {
-							Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical }),
-						}
-						
-						for index, car in ipairs(filteredCars) do
-							if index > 20 then break end -- Limit to 20 search results for performance
-							
-							childrenTable[car.Name] = e("TextButton", {
-								Text = string.format(" %s [%s]", car.Name, car.Rarity),
-								Size = UDim2.new(1, 0, 0, 20),
-								BackgroundColor3 = Color3.fromRGB(25, 25, 30),
-								TextColor3 = Color3.fromRGB(220, 220, 220),
-								Font = Enum.Font.GothamMedium,
-								TextSize = 8,
-								TextXAlignment = Enum.TextXAlignment.Left,
-								BorderSizePixel = 0,
-								ZIndex = 11,
-								[Event.Activated] = function()
-									setCarSearchText(car.Name)
-									setIsCarDropdownOpen(false)
-								end
-							})
-						end
-						
-						if #filteredCars == 0 then
-							childrenTable.NoCarsFound = e("TextLabel", {
-								Text = " Mobil tidak ditemukan",
-								Size = UDim2.new(1, 0, 0, 20),
-								BackgroundTransparency = 1,
-								TextColor3 = Color3.fromRGB(150, 150, 150),
-								Font = Enum.Font.GothamMedium,
-								TextSize = 8,
-								TextXAlignment = Enum.TextXAlignment.Left,
-								ZIndex = 11,
-							})
-						end
-						
-						return childrenTable
-					end)()) or nil,
+					DropdownList = isCarDropdownOpen and e(
+						"ScrollingFrame",
+						{
+							Size = UDim2.new(0.42, 0, 0, 100),
+							Position = UDim2.new(0.27, 0, 0, 32),
+							BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+							BorderSizePixel = 1,
+							BorderColor3 = Color3.fromRGB(55, 55, 65),
+							CanvasSize = UDim2.new(0, 0, 0, 0),
+							AutomaticCanvasSize = Enum.AutomaticSize.Y,
+							ZIndex = 10,
+							ScrollBarThickness = 3,
+						},
+						(function()
+							local childrenTable = {
+								Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical }),
+							}
+
+							for index, car in ipairs(filteredCars) do
+								if index > 20 then
+									break
+								end -- Limit to 20 search results for performance
+
+								childrenTable[car.Name] = e("TextButton", {
+									Text = string.format(" %s [%s]", car.Name, car.Rarity),
+									Size = UDim2.new(1, 0, 0, 20),
+									BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+									TextColor3 = Color3.fromRGB(220, 220, 220),
+									Font = Enum.Font.GothamMedium,
+									TextSize = 8,
+									TextXAlignment = Enum.TextXAlignment.Left,
+									BorderSizePixel = 0,
+									ZIndex = 11,
+									[Event.Activated] = function()
+										setCarSearchText(car.Name)
+										setIsCarDropdownOpen(false)
+									end,
+								})
+							end
+
+							if #filteredCars == 0 then
+								childrenTable.NoCarsFound = e("TextLabel", {
+									Text = " Mobil tidak ditemukan",
+									Size = UDim2.new(1, 0, 0, 20),
+									BackgroundTransparency = 1,
+									TextColor3 = Color3.fromRGB(150, 150, 150),
+									Font = Enum.Font.GothamMedium,
+									TextSize = 8,
+									TextXAlignment = Enum.TextXAlignment.Left,
+									ZIndex = 11,
+								})
+							end
+
+							return childrenTable
+						end)()
+					) or nil,
 
 					-- Info Text
 					InfoLabel = e("TextLabel", {
 						Text = "Pilih mobil dari daftar dropdown atau ketik nama template mobil secara presisi.",
-						Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, 48), BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(140, 140, 150), Font = Enum.Font.GothamMedium, TextSize = 8,
+						Size = UDim2.new(1, 0, 0, 16),
+						Position = UDim2.new(0, 0, 0, 48),
+						BackgroundTransparency = 1,
+						TextColor3 = Color3.fromRGB(140, 140, 150),
+						Font = Enum.Font.GothamMedium,
+						TextSize = 8,
 						TextXAlignment = Enum.TextXAlignment.Left,
-					})
-				})
-			})
+					}),
+				}),
+			}),
 		})
 	end
 
@@ -1014,11 +1198,13 @@ return function(props: any)
 				TextSize = 11,
 				BorderSizePixel = 0,
 				[Event.Activated] = function()
-					if props.onClose then props.onClose() end
+					if props.onClose then
+						props.onClose()
+					end
 				end,
 			}, {
 				Corner = e("UICorner", { CornerRadius = UDim.new(0, 13) }),
-			})
+			}),
 		}),
 
 		-- MAIN BODY CONTAINER (RESPONSIVE INNER FRAME)
@@ -1036,7 +1222,7 @@ return function(props: any)
 					return renderGiftsTab()
 				end
 				return nil
-			end)()
-		})
+			end)(),
+		}),
 	})
 end
