@@ -213,18 +213,6 @@ return function(props: any)
 			setRainbowInput(0)
 			setGalaxyInput(0)
 			setHellfireInput(0)
-			if props.onApplySettings then
-				props.onApplySettings({
-					LuckBoost = 0,
-					ExpBoost = 100,
-					SpeedBoost = 0,
-					VariantBoost = 0,
-					VariantBoost_Golden = 0,
-					VariantBoost_Rainbow = 0,
-					VariantBoost_Galaxy = 0,
-					VariantBoost_Hellfire = 0,
-				}, isGlobalEvent)
-			end
 		elseif presetName == "LuckyHype" then
 			setLuckInput(200)
 			setExpInput(0)
@@ -234,18 +222,6 @@ return function(props: any)
 			setRainbowInput(0)
 			setGalaxyInput(0)
 			setHellfireInput(0)
-			if props.onApplySettings then
-				props.onApplySettings({
-					LuckBoost = 200,
-					ExpBoost = 0,
-					SpeedBoost = 0,
-					VariantBoost = 10,
-					VariantBoost_Golden = 0,
-					VariantBoost_Rainbow = 0,
-					VariantBoost_Galaxy = 0,
-					VariantBoost_Hellfire = 0,
-				}, isGlobalEvent)
-			end
 		elseif presetName == "WeekendBoost" then
 			setLuckInput(150)
 			setExpInput(150)
@@ -255,18 +231,6 @@ return function(props: any)
 			setRainbowInput(0)
 			setGalaxyInput(0)
 			setHellfireInput(0)
-			if props.onApplySettings then
-				props.onApplySettings({
-					LuckBoost = 150,
-					ExpBoost = 150,
-					SpeedBoost = 10,
-					VariantBoost = 20,
-					VariantBoost_Golden = 0,
-					VariantBoost_Rainbow = 0,
-					VariantBoost_Galaxy = 0,
-					VariantBoost_Hellfire = 0,
-				}, isGlobalEvent)
-			end
 		end
 	end
 
@@ -592,24 +556,35 @@ return function(props: any)
 						{ FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6) }
 					),
 
-					Apply = e("TextButton", {
-						Text = "TERAPKAN",
-						Size = UDim2.new(0.6, 0, 1, 0),
+					StartEvent = e("TextButton", {
+						Text = "START EVENT",
+						Size = UDim2.new(0.38, 0, 1, 0),
 						BackgroundColor3 = Color3.fromRGB(0, 170, 100),
 						TextColor3 = Color3.fromRGB(255, 255, 255),
 						Font = Enum.Font.GothamBold,
-						TextSize = 10,
+						TextSize = 9,
+						BorderSizePixel = 0,
+						[Event.Activated] = handleApply,
+					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
+
+					Apply = e("TextButton", {
+						Text = "TERAPKAN",
+						Size = UDim2.new(0.28, 0, 1, 0),
+						BackgroundColor3 = Color3.fromRGB(50, 60, 75),
+						TextColor3 = Color3.fromRGB(255, 255, 255),
+						Font = Enum.Font.GothamBold,
+						TextSize = 9,
 						BorderSizePixel = 0,
 						[Event.Activated] = handleApply,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
 
 					Stop = e("TextButton", {
 						Text = "STOP ALL",
-						Size = UDim2.new(0.37, 0, 1, 0),
+						Size = UDim2.new(0.28, 0, 1, 0),
 						BackgroundColor3 = Color3.fromRGB(190, 45, 45),
 						TextColor3 = Color3.fromRGB(255, 255, 255),
 						Font = Enum.Font.GothamBold,
-						TextSize = 10,
+						TextSize = 9,
 						BorderSizePixel = 0,
 						[Event.Activated] = handleStopAll,
 					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
@@ -656,9 +631,14 @@ return function(props: any)
 					TextXAlignment = Enum.TextXAlignment.Left,
 					TextYAlignment = Enum.TextYAlignment.Top,
 					ClearTextOnFocus = false,
-					MaxLength = 200,
 					[Change.Text] = function(box: TextBox)
-						setBroadcastText(box.Text)
+						local text = box.Text
+						if string.len(text) > 200 then
+							box.Text = string.sub(text, 1, 200)
+							setBroadcastText(box.Text)
+						else
+							setBroadcastText(text)
+						end
 					end,
 				}),
 			}),
