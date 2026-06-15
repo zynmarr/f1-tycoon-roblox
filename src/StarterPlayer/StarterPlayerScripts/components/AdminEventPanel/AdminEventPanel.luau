@@ -907,50 +907,46 @@ return function(props: any)
 						AutomaticCanvasSize = Enum.AutomaticSize.Y,
 						ZIndex = 10,
 						ScrollBarThickness = 3,
-					}, {
-						Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical }),
+					}, (function()
+						local childrenTable = {
+							Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical }),
+						}
 						
-						-- Render matching cars
-						Cars = e(React.Fragment, nil, (function()
-							local items = {}
-							for index, car: CarData in ipairs(filteredCars) do
-								if index > 20 then break end -- Limit to 20 search results for performance
-								
-								table.insert(items, e("TextButton", {
-									key = car.Name,
-									Text = string.format(" %s [%s]", car.Name, car.Rarity),
-									Size = UDim2.new(1, 0, 0, 20),
-									BackgroundColor3 = Color3.fromRGB(25, 25, 30),
-									TextColor3 = Color3.fromRGB(220, 220, 220),
-									Font = Enum.Font.GothamMedium,
-									TextSize = 8,
-									TextXAlignment = Enum.TextXAlignment.Left,
-									BorderSizePixel = 0,
-									ZIndex = 11,
-									[Event.Activated] = function()
-										setCarSearchText(car.Name)
-										setIsCarDropdownOpen(false)
-									end
-								}))
-							end
+						for index, car in ipairs(filteredCars) do
+							if index > 20 then break end -- Limit to 20 search results for performance
 							
-							if #items == 0 then
-								table.insert(items, e("TextLabel", {
-									key = "NoCarsFound",
-									Text = " Mobil tidak ditemukan",
-									Size = UDim2.new(1, 0, 0, 20),
-									BackgroundTransparency = 1,
-									TextColor3 = Color3.fromRGB(150, 150, 150),
-									Font = Enum.Font.GothamMedium,
-									TextSize = 8,
-									TextXAlignment = Enum.TextXAlignment.Left,
-									ZIndex = 11,
-								}))
-							end
-							
-							return items
-						end)())
-					}) or nil,
+							childrenTable[car.Name] = e("TextButton", {
+								Text = string.format(" %s [%s]", car.Name, car.Rarity),
+								Size = UDim2.new(1, 0, 0, 20),
+								BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+								TextColor3 = Color3.fromRGB(220, 220, 220),
+								Font = Enum.Font.GothamMedium,
+								TextSize = 8,
+								TextXAlignment = Enum.TextXAlignment.Left,
+								BorderSizePixel = 0,
+								ZIndex = 11,
+								[Event.Activated] = function()
+									setCarSearchText(car.Name)
+									setIsCarDropdownOpen(false)
+								end
+							})
+						end
+						
+						if #filteredCars == 0 then
+							childrenTable.NoCarsFound = e("TextLabel", {
+								Text = " Mobil tidak ditemukan",
+								Size = UDim2.new(1, 0, 0, 20),
+								BackgroundTransparency = 1,
+								TextColor3 = Color3.fromRGB(150, 150, 150),
+								Font = Enum.Font.GothamMedium,
+								TextSize = 8,
+								TextXAlignment = Enum.TextXAlignment.Left,
+								ZIndex = 11,
+							})
+						end
+						
+						return childrenTable
+					end)()) or nil,
 
 					-- Info Text
 					InfoLabel = e("TextLabel", {
