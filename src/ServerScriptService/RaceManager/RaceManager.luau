@@ -33,18 +33,54 @@ local VariantSpeeds = {
 	Rainbow = 1.20, Frostbite = 1.25, Galaxy = 1.30, Hellfire = 1.35,
 }
 
--- Helper: find player's car from backpack, character, or data
-local function getPlayerCar(player: Player, carName: string)
+-- Helper: find player's car from backpack, character, or data matching Name, Rarity, and Variant if specified
+local function getPlayerCar(player: Player, carInfo: any)
+	local carName = ""
+	local targetRarity = nil
+	local targetVariant = nil
+
+	if type(carInfo) == "table" then
+		carName = carInfo.Name
+		targetRarity = carInfo.Rarity
+		targetVariant = carInfo.Variant
+	elseif type(carInfo) == "string" then
+		carName = carInfo
+	else
+		return nil
+	end
+
 	local char = player.Character
 	local backpack = player:FindFirstChild("Backpack")
-	local tool = (char and char:FindFirstChild(carName)) or (backpack and backpack:FindFirstChild(carName))
+	
+	local function matchTool(tool: Instance)
+		if not GameUtils.isCar(tool) then return false end
+		if tool.Name ~= carName then return false end
+		if targetRarity and tool:GetAttribute("Rarity") ~= targetRarity then return false end
+		if targetVariant and tool:GetAttribute("Variant") ~= targetVariant then return false end
+		return true
+	end
 
-	if tool and GameUtils.isCar(tool) then
-		return {
-			Name = tool.Name,
-			Rarity = tool:GetAttribute("Rarity") or "Common",
-			Variant = tool:GetAttribute("Variant") or "Normal",
-		}
+	if char then
+		for _, child in ipairs(char:GetChildren()) do
+			if matchTool(child) then
+				return {
+					Name = child.Name,
+					Rarity = child:GetAttribute("Rarity") or "Common",
+					Variant = child:GetAttribute("Variant") or "Normal",
+				}
+			end
+		end
+	end
+	if backpack then
+		for _, child in ipairs(backpack:GetChildren()) do
+			if matchTool(child) then
+				return {
+					Name = child.Name,
+					Rarity = child:GetAttribute("Rarity") or "Common",
+					Variant = child:GetAttribute("Variant") or "Normal",
+				}
+			end
+		end
 	end
 
 	local data = DataManager.getPlayerData(player)
@@ -52,10 +88,14 @@ local function getPlayerCar(player: Player, carName: string)
 		for _, item in ipairs(data.Inventory) do
 			if item.Name == carName then
 				local attrs = item.Attributes or {}
+				local itemRarity = attrs.Rarity or "Common"
+				local itemVariant = attrs.Variant or "Normal"
+				if targetRarity and itemRarity ~= targetRarity then continue end
+				if targetVariant and itemVariant ~= targetVariant then continue end
 				return {
 					Name = item.Name,
-					Rarity = attrs.Rarity or "Common",
-					Variant = attrs.Variant or "Normal",
+					Rarity = itemRarity,
+					Variant = itemVariant,
 				}
 			end
 		end
@@ -74,7 +114,8 @@ local function getPositionAtTime(t: number, baseSpeed: number, multiplier: numbe
 	elseif multiplier < 1.0 then
 		launchBoost = (multiplier - 1) * baseSpeed * math.min(t, 10)
 	end
-	local variance = math.sin(t * 0.7 + index * 1.5 + seed) * 0.5
+	local varianceAmp = (multiplier < 1.0) and 0.1 or 0.5
+	local variance = math.sin(t * 0.7 + index * 1.5 + seed) * varianceAmp
 	return dist + launchBoost + variance
 end
 
@@ -90,13 +131,13 @@ function RaceManager.getRaceStats(player: Player)
 	return { Wins = 0, Losses = 0, CashEarned = 0 }
 end
 
-function RaceManager.startAIRace(player: Player, carName: string, difficulty: string)
+function RaceManager.startAIRace(player: Player, carInfo: any, difficulty: string)
 	if not player or not player.Parent then return { Success = false, Error = "Pemain tidak ditemukan" } end
-	if type(carName) ~= "string" or type(difficulty) ~= "string" then
+	if (type(carInfo) ~= "string" and type(carInfo) ~= "table") or type(difficulty) ~= "string" then
 		return { Success = false, Error = "Parameter tidak valid" }
 	end
 
-	local car = getPlayerCar(player, carName)
+	local car = getPlayerCar(player, carInfo)
 	if not car then
 		return { Success = false, Error = "Mobil tidak ditemukan di garasi/tas Anda" }
 	end
@@ -156,14 +197,15 @@ function RaceManager.startAIRace(player: Player, carName: string, difficulty: st
 	}
 end
 
-function RaceManager.sendPvPChallenge(player: Player, opponentName: string, carName: string, betAmount: number)
+function RaceManager.sendPvPChallenge(player: Player, opponentName: string, carInfo: any, betAmount: number)
 	if not player or not player.Parent then return { Success = false, Error = "Pemain tidak ditemukan" } end
-	if type(opponentName) ~= "string" or type(carName) ~= "string" or type(betAmount) ~= "number" then
+	if type(opponentName) ~= "string" or (type(carInfo) ~= "string" and type(carInfo) ~= "table") or type(betAmount) ~= "number" then
 		return { Success = false, Error = "Parameter tidak valid" }
 	end
 
 	betAmount = math.floor(betAmount)
-	if betAmount < 0 or betAmount > 1000000000 then
+	-- ANTI-CHEAT: Defensive comparison guarding against NaN betAmount values
+	if not (betAmount >= 0 and betAmount <= 1000000000) then
 		return { Success = false, Error = "Jumlah taruhan tidak valid" }
 	end
 
@@ -173,7 +215,7 @@ function RaceManager.sendPvPChallenge(player: Player, opponentName: string, carN
 		return { Success = false, Error = "Saldo Cash Anda tidak mencukupi" }
 	end
 
-	local car = getPlayerCar(player, carName)
+	local car = getPlayerCar(player, carInfo)
 	if not car then return { Success = false, Error = "Mobil tidak ditemukan" } end
 
 	local opponent = Players:FindFirstChild(opponentName)
@@ -201,9 +243,9 @@ function RaceManager.sendPvPChallenge(player: Player, opponentName: string, carN
 	return { Success = true, Message = "Tantangan berhasil dikirim ke " .. opponentName }
 end
 
-function RaceManager.acceptPvPChallenge(player: Player, challengeId: string, carName: string)
+function RaceManager.acceptPvPChallenge(player: Player, challengeId: string, carInfo: any)
 	if not player or not player.Parent then return { Success = false, Error = "Pemain tidak ditemukan" } end
-	if type(challengeId) ~= "string" or type(carName) ~= "string" then
+	if type(challengeId) ~= "string" or (type(carInfo) ~= "string" and type(carInfo) ~= "table") then
 		return { Success = false, Error = "Parameter tidak valid" }
 	end
 
@@ -216,12 +258,19 @@ function RaceManager.acceptPvPChallenge(player: Player, challengeId: string, car
 		return { Success = false, Error = "Penantang telah keluar dari server" }
 	end
 
-	local challCash = challenger.leaderstats.Cash
-	local oppCash = player.leaderstats.Cash
+	-- Safe leaderstats lookup to prevent nil dereference runtime error
+	local challStats = challenger:FindFirstChild("leaderstats")
+	local oppStats = player:FindFirstChild("leaderstats")
+	local challCash = challStats and challStats:FindFirstChild("Cash")
+	local oppCash = oppStats and oppStats:FindFirstChild("Cash")
+	if not challCash or not oppCash then
+		return { Success = false, Error = "Data keuangan tidak siap" }
+	end
+
 	if challCash.Value < challenge.BetAmount then return { Success = false, Error = "Penantang tidak lagi memiliki saldo cukup" } end
 	if oppCash.Value < challenge.BetAmount then return { Success = false, Error = "Saldo Cash Anda tidak mencukupi" } end
 
-	local car = getPlayerCar(player, carName)
+	local car = getPlayerCar(player, carInfo)
 	if not car then return { Success = false, Error = "Mobil tidak ditemukan" } end
 
 	-- Lock the bet from both players
@@ -281,6 +330,20 @@ function RaceManager.submitLaunchTime(player: Player, raceId: string, reactionTi
 
 	if participant.Submitted then return { Success = false, Error = "Waktu reaksi sudah pernah disubmit" } end
 	participant.Submitted = true
+
+	-- ANTI-CHEAT: Validate submission latency to prevent clients spoofing early times
+	local serverTime = workspace:GetServerTimeNow()
+	local elapsed = serverTime - session.StartTime
+	if elapsed > 2.0 then
+		-- Late launch forced to slow
+		reactionTime = 999
+	else
+		-- Check if the client's reported reactionTime deviates too much from server time
+		local latency = serverTime - (session.StartTime + reactionTime)
+		if math.abs(latency) > 0.5 then
+			reactionTime = elapsed
+		end
+	end
 
 	local multiplier = 1.0
 	local msg = "Launch Lambat!"
@@ -362,26 +425,51 @@ function RaceManager.getRaceOutcome(player: Player, raceId: string)
 		rewardCash = session.BetAmount * 2
 	end
 
-	-- Update profile stats
+	-- Update profile stats safely and track WinStreak and PvPWins
 	local data = DataManager.getPlayerData(player)
 	if data and data.Stats then
 		if not data.Stats.RaceStats then
-			data.Stats.RaceStats = { Wins = 0, Losses = 0, CashEarned = 0 }
+			data.Stats.RaceStats = { Wins = 0, Losses = 0, CashEarned = 0, WinStreak = 0, PvPWins = 0 }
 		end
 		local rStats = data.Stats.RaceStats
+		if not rStats.WinStreak then rStats.WinStreak = 0 end
+		if not rStats.PvPWins then rStats.PvPWins = 0 end
+
 		if isWin then
 			rStats.Wins += 1
+			rStats.WinStreak += 1
+			if session.Type == "PvP" then
+				rStats.PvPWins += 1
+			end
 			rStats.CashEarned += rewardCash
 			if rewardCash > 0 then
-				player.leaderstats.Cash.Value += rewardCash
+				local leaderstats = player:FindFirstChild("leaderstats")
+				local cashVal = leaderstats and leaderstats:FindFirstChild("Cash")
+				if cashVal then
+					cashVal.Value += rewardCash
+				end
 			end
 		else
 			rStats.Losses += 1
+			rStats.WinStreak = 0
 		end
 		DataManager.syncData(player)
 	end
 
-	activeRaces[raceId] = nil
+	-- PvP Race Outcome Deletion Race Condition Fix: Wait for all human players to query outcome
+	session.RetrievedOutcomes = session.RetrievedOutcomes or {}
+	session.RetrievedOutcomes[tostring(player.UserId)] = true
+
+	local allRetrieved = true
+	for _, part in pairs(session.Participants) do
+		if part.IsHuman and not session.RetrievedOutcomes[tostring(part.UserId)] then
+			allRetrieved = false
+			break
+		end
+	end
+	if allRetrieved then
+		activeRaces[raceId] = nil
+	end
 	return { Success = true, Ranks = ranks, PlayerRank = playerRank, RewardCash = rewardCash }
 end
 
@@ -399,7 +487,7 @@ function RaceManager.Init()
 	})
 	print("[RaceManager] RaceService Networker endpoints berhasil didaftarkan.")
 
-	-- Expire stale PvP challenges every 60s
+	-- Expire stale PvP challenges and cleanup stale active races to prevent memory leaks
 	task.spawn(function()
 		while true do
 			task.wait(60)
@@ -407,6 +495,13 @@ function RaceManager.Init()
 			for id, challenge in pairs(pvpChallenges) do
 				if now - challenge.Time > 30 then
 					pvpChallenges[id] = nil
+				end
+			end
+
+			local serverTime = workspace:GetServerTimeNow()
+			for id, session in pairs(activeRaces) do
+				if serverTime - session.StartTime > 180 then
+					activeRaces[id] = nil
 				end
 			end
 		end

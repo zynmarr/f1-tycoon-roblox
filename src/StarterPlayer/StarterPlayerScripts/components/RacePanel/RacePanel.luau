@@ -45,7 +45,8 @@ local function getPositionAtTime(t, baseSpeed, multiplier, seed, index)
 	elseif multiplier < 1.0 then
 		launchBoost = (multiplier - 1) * baseSpeed * math.min(t, 10)
 	end
-	local variance = math.sin(t * 0.7 + index * 1.5 + seed) * 0.5
+	local varianceAmp = (multiplier < 1.0) and 0.1 or 0.5
+	local variance = math.sin(t * 0.7 + index * 1.5 + seed) * varianceAmp
 	return dist + launchBoost + variance
 end
 
@@ -90,7 +91,7 @@ end
 local function buildCarList(ownedCars, selectedCar, setSelectedCar)
 	local elements = {}
 	for i, car in ipairs(ownedCars) do
-		local isSelected = selectedCar and selectedCar.Name == car.Name
+		local isSelected = selectedCar and selectedCar.Name == car.Name and selectedCar.Variant == car.Variant and selectedCar.Rarity == car.Rarity
 		local rarityColor = RarityColors[car.Rarity] or Color3.fromRGB(200, 200, 200)
 		local shortName = car.Name:match("^([^%-]+)") or car.Name
 		shortName = shortName:gsub("%s+$", "")
@@ -367,7 +368,7 @@ local function RacePanel(props)
 		setNotification("Menghubungkan ke server...")
 		task.spawn(function()
 			local ok, result = pcall(function()
-				return props.raceService:startAIRace(selectedCar.Name, aiDifficulty)
+				return props.raceService:startAIRace(selectedCar, aiDifficulty)
 			end)
 			if ok and result and result.Success then
 				setNotification("")
@@ -389,7 +390,7 @@ local function RacePanel(props)
 		setNotification("Mengirim tantangan...")
 		task.spawn(function()
 			local ok, result = pcall(function()
-				return props.raceService:sendPvPChallenge(opponentName, selectedCar.Name, betNum)
+				return props.raceService:sendPvPChallenge(opponentName, selectedCar, betNum)
 			end)
 			setNotification(ok and result and (result.Message or result.Error) or "Gagal mengirim tantangan")
 		end)
@@ -399,7 +400,7 @@ local function RacePanel(props)
 		if not currentChallenge or not selectedCar then return end
 		task.spawn(function()
 			local ok, result = pcall(function()
-				return props.raceService:acceptPvPChallenge(currentChallenge.ChallengeId, selectedCar.Name)
+				return props.raceService:acceptPvPChallenge(currentChallenge.ChallengeId, selectedCar)
 			end)
 			if not (ok and result and result.Success) then
 				setNotification(result and result.Error or "Gagal menerima tantangan")
@@ -792,38 +793,12 @@ local function RacePanel(props)
 					Position = UDim2.new(0.09, 0, 0, 78),
 					BackgroundColor3 = Color3.fromRGB(14, 14, 18),
 					BorderSizePixel = 0,
-				}, {
-					Corner = e("UICorner", { CornerRadius = UDim.new(0, 14) }),
-					Stroke = e("UIStroke", { Color = Color3.fromRGB(36, 36, 44), Thickness = 1 }),
-
-					-- Oval track outline (hollow ellipse via UIStroke)
-					Oval = e("Frame", {
-						Size = UDim2.new(0.88, 0, 0.72, 0),
-						Position = UDim2.new(0.06, 0, 0.14, 0),
-						BackgroundTransparency = 1,
-					}, {
-						Corner = e("UICorner", { CornerRadius = UDim.new(0.5, 0) }),
-						Stroke = e("UIStroke", { Color = Color3.fromRGB(65, 65, 80), Thickness = 14 }),
-					}),
-
-					-- LAUNCH button (visible while not yet launched)
-					LaunchBtn = (not hasLaunched) and e("TextButton", {
-						Text = "LAUNCH",
-						Size = UDim2.new(0, 100, 0, 100),
-						Position = UDim2.new(0.5, -50, 0.5, -50),
-						BackgroundColor3 = Color3.fromRGB(0, 185, 70),
-						TextColor3 = Color3.fromRGB(255, 255, 255),
-						Font = Enum.Font.GothamBlack, TextSize = 16, BorderSizePixel = 0,
-						[React.Event.Activated] = launchCar,
-					}, {
-						Corner = e("UICorner", { CornerRadius = UDim.new(0.5, 0) }),
-						Stroke = e("UIStroke", { Color = Color3.fromRGB(255, 255, 255), Thickness = 2 }),
-					}) or nil,
-
 				}, mergeChildren(
 					{
 						Corner = e("UICorner", { CornerRadius = UDim.new(0, 14) }),
 						Stroke = e("UIStroke", { Color = Color3.fromRGB(36, 36, 44), Thickness = 1 }),
+
+						-- Oval track outline (hollow ellipse via UIStroke)
 						Oval = e("Frame", {
 							Size = UDim2.new(0.88, 0, 0.72, 0),
 							Position = UDim2.new(0.06, 0, 0.14, 0),
@@ -832,6 +807,8 @@ local function RacePanel(props)
 							Corner = e("UICorner", { CornerRadius = UDim.new(0.5, 0) }),
 							Stroke = e("UIStroke", { Color = Color3.fromRGB(65, 65, 80), Thickness = 14 }),
 						}),
+
+						-- LAUNCH button (visible while not yet launched)
 						LaunchBtn = (not hasLaunched) and e("TextButton", {
 							Text = "LAUNCH",
 							Size = UDim2.new(0, 100, 0, 100),
@@ -846,7 +823,7 @@ local function RacePanel(props)
 						}) or nil,
 					},
 					buildDots(positions, raceData, playerUid)
-					)),
+				)),
 
 				-- Live leaderboard bar
 				LiveBoard = e("Frame", {

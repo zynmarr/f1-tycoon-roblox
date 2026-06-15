@@ -12,6 +12,8 @@ local DEFAULT_DATA = {
 			Wins = 0,
 			Losses = 0,
 			CashEarned = 0,
+			WinStreak = 0,
+			PvPWins = 0,
 		},
 	},
 	Inventory = {},
@@ -222,6 +224,13 @@ function DataManager.syncData(player)
 	finalSave.Stats.Level = leaderstats:FindFirstChild("Level") and leaderstats.Level.Value or 1
 	finalSave.Stats.Rebirth = leaderstats:FindFirstChild("Rebirth") and leaderstats.Rebirth.Value or 0
 	finalSave.Stats.RebirthPoints = leaderstats:FindFirstChild("RebirthPoints") and leaderstats.RebirthPoints.Value or 0
+	finalSave.Stats.RaceStats = profile.Data.Stats and profile.Data.Stats.RaceStats or {
+		Wins = 0,
+		Losses = 0,
+		CashEarned = 0,
+		WinStreak = 0,
+		PvPWins = 0,
+	}
 
 	-- 2. Scan Seluruh Item di Backpack & Karakter (Hanya jika pemain tidak sedang keluar)
 	if not player:GetAttribute("IsLeaving") then
@@ -308,7 +317,7 @@ function DataManager.syncData(player)
 	player:SetAttribute("RebirthUpgrades", HttpService:JSONEncode(profile.Data.RebirthUpgrades or {}))
 	player:SetAttribute("DailyRewards", HttpService:JSONEncode(profile.Data.DailyRewards or {}))
 	player:SetAttribute("Quests", HttpService:JSONEncode(profile.Data.Quests or {}))
-	player:SetAttribute("RaceStats", HttpService:JSONEncode(profile.Data.Stats.RaceStats or { Wins = 0, Losses = 0, CashEarned = 0 }))
+	player:SetAttribute("RaceStats", HttpService:JSONEncode(profile.Data.Stats.RaceStats or { Wins = 0, Losses = 0, CashEarned = 0, WinStreak = 0, PvPWins = 0 }))
 
 	return true
 end
