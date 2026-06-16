@@ -31,8 +31,21 @@ local root = ReactRoblox.createRoot(screenGui)
 -- ===== STATE VARIABLES & HELPERS =====
 local uiIsOpen = false
 local adminBtnRegistered = false
-local RegisterSidebarButton = ReplicatedStorage:WaitForChild("RegisterSidebarButton")
-local UnregisterSidebarButton = ReplicatedStorage:WaitForChild("UnregisterSidebarButton")
+local RegisterSidebarButton = ReplicatedStorage:FindFirstChild("RegisterSidebarButton") :: BindableEvent
+if not RegisterSidebarButton then
+	local bindable = Instance.new("BindableEvent")
+	bindable.Name = "RegisterSidebarButton"
+	bindable.Parent = ReplicatedStorage
+	RegisterSidebarButton = bindable :: any
+end
+
+local UnregisterSidebarButton = ReplicatedStorage:FindFirstChild("UnregisterSidebarButton") :: BindableEvent
+if not UnregisterSidebarButton then
+	local bindable = Instance.new("BindableEvent")
+	bindable.Name = "UnregisterSidebarButton"
+	bindable.Parent = ReplicatedStorage
+	UnregisterSidebarButton = bindable :: any
+end
 
 local function checkAdminPermission(): boolean
 	local playerRole = (player:GetAttribute("Role") :: string?) or "Player"

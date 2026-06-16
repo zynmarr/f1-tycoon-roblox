@@ -173,7 +173,13 @@ UserInputService.InputBegan:Connect(function(input, processed)
 end)
 
 -- ===== INTEGRASI SIDEBAR DENGAN REACT HUD =====
-local RegisterSidebarButton = ReplicatedStorage:WaitForChild("RegisterSidebarButton")
+local RegisterSidebarButton = ReplicatedStorage:FindFirstChild("RegisterSidebarButton") :: BindableEvent
+if not RegisterSidebarButton then
+	local bindable = Instance.new("BindableEvent")
+	bindable.Name = "RegisterSidebarButton"
+	bindable.Parent = ReplicatedStorage
+	RegisterSidebarButton = bindable :: any
+end
 RegisterSidebarButton:Fire({
 	Name = "RebirthRewards",
 	Label = "Rebirth / Rewards",
