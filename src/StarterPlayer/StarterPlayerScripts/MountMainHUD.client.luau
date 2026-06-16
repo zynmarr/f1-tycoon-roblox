@@ -24,7 +24,7 @@ screenGui.Parent = playerGui
 local root = ReactRoblox.createRoot(screenGui)
 
 -- ===== DYNAMIC SIDEBAR REGISTRY =====
-local RegisterSidebarButton = ReplicatedStorage:FindFirstChild("RegisterSidebarButton")
+local RegisterSidebarButton: any = ReplicatedStorage:FindFirstChild("RegisterSidebarButton")
 if not RegisterSidebarButton then
 	local bindable = Instance.new("BindableEvent")
 	bindable.Name = "RegisterSidebarButton"
@@ -32,7 +32,7 @@ if not RegisterSidebarButton then
 	RegisterSidebarButton = bindable
 end
 
-local UnregisterSidebarButton = ReplicatedStorage:FindFirstChild("UnregisterSidebarButton")
+local UnregisterSidebarButton: any = ReplicatedStorage:FindFirstChild("UnregisterSidebarButton")
 if not UnregisterSidebarButton then
 	local bindable = Instance.new("BindableEvent")
 	bindable.Name = "UnregisterSidebarButton"
@@ -49,14 +49,14 @@ local function updateUIRender()
 end
 
 -- Hubungkan BindableEvents untuk update props dinamis
-(RegisterSidebarButton :: BindableEvent).Event:Connect(function(config: { Name: string, Label: string, Icon: string, Callback: () -> (), Order: number? })
+RegisterSidebarButton.Event:Connect(function(config: { Name: string, Label: string, Icon: string, Callback: () -> (), Order: number? })
 	if config and config.Name then
 		registeredButtons[config.Name] = config
 		updateUIRender()
 	end
 end)
 
-(UnregisterSidebarButton :: BindableEvent).Event:Connect(function(name: string)
+UnregisterSidebarButton.Event:Connect(function(name: string)
 	if name and registeredButtons[name] then
 		registeredButtons[name] = nil
 		updateUIRender()
