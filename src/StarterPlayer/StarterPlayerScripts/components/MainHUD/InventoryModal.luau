@@ -1,4 +1,3 @@
---!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local React = require(ReplicatedStorage.Packages.React)
@@ -280,7 +279,7 @@ local function InventoryModal(props: { OnClose: () -> () })
 					Size = UDim2.new(1, 0, 1, -80),
 					BackgroundTransparency = 1,
 					CanvasSize = UDim2.new(0, 0, 0, 0),
-					AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y,
+					AutomaticCanvasSize = Enum.AutomaticSize.Y,
 					ScrollBarThickness = 4,
 					ScrollBarImageColor3 = Color3.fromRGB(100, 50, 250),
 					LayoutOrder = 3,
