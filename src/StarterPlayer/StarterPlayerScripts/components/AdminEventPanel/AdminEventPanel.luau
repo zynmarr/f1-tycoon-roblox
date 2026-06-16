@@ -364,8 +364,8 @@ return function(props: any)
 		local buttons = {}
 		for i, variant in ipairs(variants) do
 			local isSelected = table.find(selectedVariants, variant.Name) ~= nil
-			table.insert(buttons, e("TextButton", {
-				Key = "Var_" .. variant.Name,
+			buttons["Var_" .. variant.Name] = e("TextButton", {
+				key = "Var_" .. variant.Name,
 				Text = variant.Emoji .. " " .. variant.Name,
 				Font = Enum.Font.GothamBold,
 				TextSize = 8,
@@ -386,7 +386,19 @@ return function(props: any)
 				end,
 			}, {
 				UICorner = e("UICorner", { CornerRadius = UDim.new(0, 4) })
-			}))
+			})
+		end
+
+		local buttonsChildren = {
+			Layout = e("UIListLayout", {
+				FillDirection = Enum.FillDirection.Horizontal,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 5),
+				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			}),
+		}
+		for key, button in pairs(buttons) do
+			buttonsChildren[key] = button
 		end
 
 		return e("Frame", {
@@ -404,15 +416,7 @@ return function(props: any)
 				Size = UDim2.new(1, 0, 0, 22),
 				BackgroundTransparency = 1,
 				LayoutOrder = 1,
-			}, {
-				Layout = e("UIListLayout", {
-					FillDirection = Enum.FillDirection.Horizontal,
-					SortOrder = Enum.SortOrder.LayoutOrder,
-					Padding = UDim.new(0, 5),
-					HorizontalAlignment = Enum.HorizontalAlignment.Center,
-				}),
-				React.Children.toArray(buttons)
-			}),
+			}, buttonsChildren),
 			Label = e("TextLabel", {
 				Size = UDim2.new(1, 0, 0, 12),
 				BackgroundTransparency = 1,
