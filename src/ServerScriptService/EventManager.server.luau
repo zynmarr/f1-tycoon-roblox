@@ -369,15 +369,7 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	car:SetAttribute("Name", car.Name)
 	car:SetAttribute("Type", "Car")
 	car.Name = car.Name .. "_" .. foundRarity .. "_" .. string.gsub(variantStr, ",", "_")
-	
-	-- Default stats from config
-	local stats = (GameConfig :: any).CarStats and (GameConfig :: any).CarStats[carName]
-	if stats then
-		car:SetAttribute("TopSpeed", stats.TopSpeed or 0)
-		car:SetAttribute("Acceleration", stats.Acceleration or 0)
-		car:SetAttribute("Handling", stats.Handling or 0)
-		car:SetAttribute("Value", stats.Value or 0)
-	end
+
 
 	pcall(function()
 		GameConfig.ApplyVisuals(car, foundRarity, variantStr)
