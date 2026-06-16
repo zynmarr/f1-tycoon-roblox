@@ -94,6 +94,9 @@ local function updateUIRender()
 		getAvailableCars = function()
 			return adminEventService:fetch("getAvailableCars") :: any
 		end,
+		getAdminCars = function()
+			return adminEventService:fetch("getAdminCars") :: any
+		end,
 	}))
 end
 

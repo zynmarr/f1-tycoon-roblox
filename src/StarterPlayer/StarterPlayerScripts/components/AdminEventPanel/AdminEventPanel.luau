@@ -53,11 +53,17 @@ return function(props: any)
 
 	-- Gift Box
 	local giftBoxLevel, setGiftBoxLevel = useState(12)
+	local boxExtraVariants, setBoxExtraVariants = useState({} :: {string})
 
 	-- Gift Car Search & Autocomplete
 	local carSearchText, setCarSearchText = useState("")
+	local availableCars, setAvailableCars = useState({} :: {CarData})
 	local isCarDropdownOpen, setIsCarDropdownOpen = useState(false)
-	local availableCars, setAvailableCars = useState({} :: { CarData })
+	local carExtraVariants, setCarExtraVariants = useState({} :: {string})
+
+	local adminCars, setAdminCars = useState({} :: { {Name: string} })
+	local selectedAdminCar, setSelectedAdminCar = useState("")
+	local isAdminCarDropdownOpen, setIsAdminCarDropdownOpen = useState(false)
 
 	-- 5. INITIALIZE SLIDERS FROM SERVER ON MOUNT
 	useEffect(function()
@@ -169,13 +175,21 @@ return function(props: any)
 		end
 	end, {})
 
-	-- 6. LOAD AVAILABLE CARS ON MOUNT
+	-- 6. LOAD AVAILABLE CARS & ADMIN CARS ON MOUNT
 	useEffect(function()
 		if props.getAvailableCars then
 			task.spawn(function()
 				local cars = props.getAvailableCars() :: { CarData }?
 				if cars then
 					setAvailableCars(cars)
+				end
+			end)
+		end
+		if props.getAdminCars then
+			task.spawn(function()
+				local cars = props.getAdminCars()
+				if cars then
+					setAdminCars(cars)
 				end
 			end)
 		end
@@ -335,6 +349,80 @@ return function(props: any)
 		end
 	else
 		filteredCars = availableCars :: { CarData }
+	end
+
+	local function createVariantPicker(selectedVariants: {string}, setSelectedVariants: (any) -> ())
+		local variants = {
+			{Name = "Rainbow", Emoji = "🌈"},
+			{Name = "Frostbite", Emoji = "❄️"},
+			{Name = "Galaxy", Emoji = "🌌"},
+			{Name = "Hellfire", Emoji = "🔥"},
+			{Name = "Cosmic", Emoji = "🌀"},
+			{Name = "Golden", Emoji = "🔱"},
+		}
+
+		local buttons = {}
+		for i, variant in ipairs(variants) do
+			local isSelected = table.find(selectedVariants, variant.Name) ~= nil
+			table.insert(buttons, e("TextButton", {
+				Key = "Var_" .. variant.Name,
+				Text = variant.Emoji .. " " .. variant.Name,
+				Font = Enum.Font.GothamBold,
+				TextSize = 8,
+				TextColor3 = isSelected and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 150),
+				BackgroundColor3 = isSelected and Color3.fromRGB(100, 50, 200) or Color3.fromRGB(40, 40, 45),
+				Size = UDim2.new(0, 80, 0, 22),
+				AutoButtonColor = true,
+				LayoutOrder = i,
+				[Event.Activated] = function()
+					local newVariants = table.clone(selectedVariants)
+					if isSelected then
+						local index = table.find(newVariants, variant.Name)
+						if index then table.remove(newVariants, index) end
+					else
+						table.insert(newVariants, variant.Name)
+					end
+					setSelectedVariants(newVariants)
+				end,
+			}, {
+				UICorner = e("UICorner", { CornerRadius = UDim.new(0, 4) })
+			}))
+		end
+
+		return e("Frame", {
+			Size = UDim2.new(1, 0, 0, 45),
+			BackgroundTransparency = 1,
+			LayoutOrder = 10,
+		}, {
+			Layout = e("UIListLayout", {
+				FillDirection = Enum.FillDirection.Vertical,
+				SortOrder = Enum.SortOrder.LayoutOrder,
+				Padding = UDim.new(0, 3),
+				HorizontalAlignment = Enum.HorizontalAlignment.Center,
+			}),
+			ButtonsFrame = e("Frame", {
+				Size = UDim2.new(1, 0, 0, 22),
+				BackgroundTransparency = 1,
+				LayoutOrder = 1,
+			}, {
+				Layout = e("UIListLayout", {
+					FillDirection = Enum.FillDirection.Horizontal,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					Padding = UDim.new(0, 5),
+					HorizontalAlignment = Enum.HorizontalAlignment.Center,
+				}),
+				React.Children.toArray(buttons)
+			}),
+			Label = e("TextLabel", {
+				Size = UDim2.new(1, 0, 0, 12),
+				BackgroundTransparency = 1,
+				Text = "🔒 Admin variant otomatis ditambahkan",
+				TextColor3 = Color3.fromRGB(150, 150, 150),
+				TextSize = 8,
+				Font = Enum.Font.Gotham,
+				LayoutOrder = 2,
+			})
+		})
 	end
 
 	-- TAB 1 LAYOUT: MULTIPLIERS
@@ -904,7 +992,7 @@ return function(props: any)
 
 				-- Row 2: Box Gifting
 				BoxRow = e("Frame", {
-					Size = UDim2.new(1, -6, 0, 66),
+					Size = UDim2.new(1, -6, 0, 120),
 					BackgroundColor3 = Color3.fromRGB(20, 20, 25),
 					BorderSizePixel = 0,
 				}, {
@@ -914,81 +1002,95 @@ return function(props: any)
 						{ PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }
 					),
 					List = e("UIListLayout", {
-						FillDirection = Enum.FillDirection.Horizontal,
-						Padding = UDim.new(0, 10),
-						VerticalAlignment = Enum.VerticalAlignment.Center,
+						FillDirection = Enum.FillDirection.Vertical,
+						Padding = UDim.new(0, 8),
+						HorizontalAlignment = Enum.HorizontalAlignment.Center,
 					}),
 
-					Title = e("TextLabel", {
-						Text = "📦 GIFT BOX",
-						Size = UDim2.new(0.2, 0, 0, 20),
+					TopControls = e("Frame", {
+						Size = UDim2.new(1, 0, 0, 36),
 						BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(0, 170, 255),
-						Font = Enum.Font.GothamBold,
-						TextSize = 10,
-						TextXAlignment = Enum.TextXAlignment.Left,
+						LayoutOrder = 1,
+					}, {
+						Layout = e("UIListLayout", {
+							FillDirection = Enum.FillDirection.Horizontal,
+							Padding = UDim.new(0, 10),
+							VerticalAlignment = Enum.VerticalAlignment.Center,
+						}),
+
+						Title = e("TextLabel", {
+							Text = "📦 GIFT BOX",
+							Size = UDim2.new(0.2, 0, 0, 20),
+							BackgroundTransparency = 1,
+							TextColor3 = Color3.fromRGB(0, 170, 255),
+							Font = Enum.Font.GothamBold,
+							TextSize = 10,
+							TextXAlignment = Enum.TextXAlignment.Left,
+						}),
+
+						LabelLvl = e("TextLabel", {
+							Text = "Lv (1-30):",
+							Size = UDim2.new(0.12, 0, 0, 20),
+							BackgroundTransparency = 1,
+							TextColor3 = Color3.fromRGB(200, 200, 200),
+							Font = Enum.Font.GothamBold,
+							TextSize = 10,
+						}),
+
+						Input = e("TextBox", {
+							Text = tostring(giftBoxLevel),
+							Size = UDim2.new(0.12, 0, 0, 30),
+							BackgroundColor3 = Color3.fromRGB(30, 30, 38),
+							TextColor3 = Color3.fromRGB(255, 255, 255),
+							Font = Enum.Font.GothamBold,
+							TextSize = 11,
+							BorderSizePixel = 0,
+							ClearTextOnFocus = false,
+							[Change.Text] = function(box: TextBox)
+								local val = tonumber(box.Text) or 12
+								setGiftBoxLevel(math.clamp(val, 1, 30))
+							end,
+						}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
+
+						SendBtn = e("TextButton", {
+							Text = "GIFT BOX",
+							Size = UDim2.new(0.2, 0, 0, 30),
+							BackgroundColor3 = Color3.fromRGB(0, 120, 200),
+							TextColor3 = Color3.fromRGB(255, 255, 255),
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+							BorderSizePixel = 0,
+							[Event.Activated] = function()
+								local target = targetType == "All" and "All" or targetPlayerName
+								if target ~= "" and props.onGiftReward then
+									props.onGiftReward("Box", target, isGlobalGift, { Level = giftBoxLevel, ExtraVariants = boxExtraVariants })
+								end
+							end,
+						}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
+
+						InstantBtn = e("TextButton", {
+							Text = "⚡ INSTAN LV.30 ADMIN BOX",
+							Size = UDim2.new(0.28, 0, 0, 30),
+							BackgroundColor3 = Color3.fromRGB(150, 40, 200),
+							TextColor3 = Color3.fromRGB(255, 255, 255),
+							Font = Enum.Font.GothamBold,
+							TextSize = 8,
+							BorderSizePixel = 0,
+							[Event.Activated] = function()
+								local target = targetType == "All" and "All" or targetPlayerName
+								if target ~= "" and props.onGiftReward then
+									props.onGiftReward("Box", target, isGlobalGift, { Level = 30, ExtraVariants = {} })
+								end
+							end,
+						}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
 					}),
 
-					LabelLvl = e("TextLabel", {
-						Text = "Lv (1-30):",
-						Size = UDim2.new(0.12, 0, 0, 20),
-						BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(200, 200, 200),
-						Font = Enum.Font.GothamBold,
-						TextSize = 10,
-					}),
-
-					Input = e("TextBox", {
-						Text = tostring(giftBoxLevel),
-						Size = UDim2.new(0.12, 0, 0, 30),
-						BackgroundColor3 = Color3.fromRGB(30, 30, 38),
-						TextColor3 = Color3.fromRGB(255, 255, 255),
-						Font = Enum.Font.GothamBold,
-						TextSize = 11,
-						BorderSizePixel = 0,
-						ClearTextOnFocus = false,
-						[Change.Text] = function(box: TextBox)
-							local val = tonumber(box.Text) or 12
-							setGiftBoxLevel(math.clamp(val, 1, 30))
-						end,
-					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
-
-					SendBtn = e("TextButton", {
-						Text = "GIFT BOX",
-						Size = UDim2.new(0.2, 0, 0, 30),
-						BackgroundColor3 = Color3.fromRGB(0, 120, 200),
-						TextColor3 = Color3.fromRGB(255, 255, 255),
-						Font = Enum.Font.GothamBold,
-						TextSize = 9,
-						BorderSizePixel = 0,
-						[Event.Activated] = function()
-							local target = targetType == "All" and "All" or targetPlayerName
-							if target ~= "" and props.onGiftReward then
-								props.onGiftReward("Box", target, isGlobalGift, { Level = giftBoxLevel })
-							end
-						end,
-					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
-
-					FastBoxBtn = e("TextButton", {
-						Text = "🎁 FAST LEVEL 12 BOX",
-						Size = UDim2.new(0.28, 0, 0, 30),
-						BackgroundColor3 = Color3.fromRGB(150, 40, 200),
-						TextColor3 = Color3.fromRGB(255, 255, 255),
-						Font = Enum.Font.GothamBold,
-						TextSize = 8,
-						BorderSizePixel = 0,
-						[Event.Activated] = function()
-							local target = targetType == "All" and "All" or targetPlayerName
-							if target ~= "" and props.onGiftReward then
-								props.onGiftReward("Box", target, isGlobalGift, { Level = 12 })
-							end
-						end,
-					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
+					VariantPicker = createVariantPicker(boxExtraVariants, setBoxExtraVariants)
 				}),
 
 				-- Row 3: Car Gifting (Dropdown search autocompletion)
 				CarRow = e("Frame", {
-					Size = UDim2.new(1, -6, 0, 80),
+					Size = UDim2.new(1, -6, 0, 210),
 					BackgroundColor3 = Color3.fromRGB(20, 20, 25),
 					BorderSizePixel = 0,
 				}, {
@@ -997,127 +1099,243 @@ return function(props: any)
 						"UIPadding",
 						{ PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }
 					),
+					List = e("UIListLayout", {
+						FillDirection = Enum.FillDirection.Vertical,
+						Padding = UDim.new(0, 8),
+						HorizontalAlignment = Enum.HorizontalAlignment.Center,
+					}),
 
 					Title = e("TextLabel", {
-						Text = "🏎️ GIFT CAR INSTAN",
-						Size = UDim2.new(0.25, 0, 0, 20),
+						Text = "🏎️ GIFT CAR & ADMIN CAR INSTAN",
+						Size = UDim2.new(1, 0, 0, 18),
 						BackgroundTransparency = 1,
 						TextColor3 = Color3.fromRGB(255, 100, 100),
 						Font = Enum.Font.GothamBold,
 						TextSize = 10,
 						TextXAlignment = Enum.TextXAlignment.Left,
+						LayoutOrder = 1,
 					}),
 
-					-- Search Input field
-					SearchBox = e("TextBox", {
-						Text = carSearchText,
-						PlaceholderText = "Ketik/Cari Nama Mobil...",
-						Size = UDim2.new(0.42, 0, 0, 30),
-						Position = UDim2.new(0.27, 0, 0, 0),
-						BackgroundColor3 = Color3.fromRGB(30, 30, 38),
-						TextColor3 = Color3.fromRGB(255, 255, 255),
-						PlaceholderColor3 = Color3.fromRGB(120, 120, 130),
-						Font = Enum.Font.GothamBold,
-						TextSize = 10,
-						BorderSizePixel = 0,
-						ClearTextOnFocus = false,
-						[Change.Text] = function(box: TextBox)
-							setCarSearchText(box.Text)
-							setIsCarDropdownOpen(true)
-						end,
-						[Event.Focused] = function()
-							setIsCarDropdownOpen(true)
-						end,
-					}, {
-						Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
-					}),
-
-					SendBtn = e("TextButton", {
-						Text = "GIFT MOBIL",
-						Size = UDim2.new(0.25, 0, 0, 30),
-						Position = UDim2.new(0.72, 0, 0, 0),
-						BackgroundColor3 = Color3.fromRGB(170, 35, 35),
-						TextColor3 = Color3.fromRGB(255, 255, 255),
-						Font = Enum.Font.GothamBold,
-						TextSize = 9,
-						BorderSizePixel = 0,
-						[Event.Activated] = function()
-							local target = targetType == "All" and "All" or targetPlayerName
-							if target ~= "" and carSearchText ~= "" and props.onGiftReward then
-								props.onGiftReward("Car", target, isGlobalGift, { CarName = carSearchText })
-							end
-						end,
-					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
-
-					-- Floating Dropdown Autocomplete menu
-					DropdownList = isCarDropdownOpen and e(
-						"ScrollingFrame",
-						{
-							Size = UDim2.new(0.42, 0, 0, 100),
-							Position = UDim2.new(0.27, 0, 0, 32),
-							BackgroundColor3 = Color3.fromRGB(25, 25, 30),
-							BorderSizePixel = 1,
-							BorderColor3 = Color3.fromRGB(55, 55, 65),
-							CanvasSize = UDim2.new(0, 0, 0, 0),
-							AutomaticCanvasSize = Enum.AutomaticSize.Y,
-							ZIndex = 10,
-							ScrollBarThickness = 3,
-						},
-						(function()
-							local childrenTable = {
-								Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical }),
-							}
-
-							for index, car in ipairs(filteredCars) do
-								if index > 20 then
-									break
-								end -- Limit to 20 search results for performance
-
-								childrenTable[car.Name] = e("TextButton", {
-									Text = string.format(" %s [%s]", car.Name, car.Rarity),
-									Size = UDim2.new(1, 0, 0, 20),
-									BackgroundColor3 = Color3.fromRGB(25, 25, 30),
-									TextColor3 = Color3.fromRGB(220, 220, 220),
-									Font = Enum.Font.GothamMedium,
-									TextSize = 8,
-									TextXAlignment = Enum.TextXAlignment.Left,
-									BorderSizePixel = 0,
-									ZIndex = 11,
-									[Event.Activated] = function()
-										setCarSearchText(car.Name)
-										setIsCarDropdownOpen(false)
-									end,
-								})
-							end
-
-							if #filteredCars == 0 then
-								childrenTable.NoCarsFound = e("TextLabel", {
-									Text = " Mobil tidak ditemukan",
-									Size = UDim2.new(1, 0, 0, 20),
-									BackgroundTransparency = 1,
-									TextColor3 = Color3.fromRGB(150, 150, 150),
-									Font = Enum.Font.GothamMedium,
-									TextSize = 8,
-									TextXAlignment = Enum.TextXAlignment.Left,
-									ZIndex = 11,
-								})
-							end
-
-							return childrenTable
-						end)()
-					) or nil,
-
-					-- Info Text
-					InfoLabel = e("TextLabel", {
-						Text = "Pilih mobil dari daftar dropdown atau ketik nama template mobil secara presisi.",
-						Size = UDim2.new(1, 0, 0, 16),
-						Position = UDim2.new(0, 0, 0, 48),
+					-- Section 1: Admin Car Selection Dropdown
+					AdminSection = e("Frame", {
+						Size = UDim2.new(1, 0, 0, 32),
 						BackgroundTransparency = 1,
-						TextColor3 = Color3.fromRGB(140, 140, 150),
-						Font = Enum.Font.GothamMedium,
-						TextSize = 8,
-						TextXAlignment = Enum.TextXAlignment.Left,
+						LayoutOrder = 2,
+					}, {
+						Layout = e("UIListLayout", {
+							FillDirection = Enum.FillDirection.Horizontal,
+							Padding = UDim.new(0, 10),
+							VerticalAlignment = Enum.VerticalAlignment.Center,
+						}),
+						Label = e("TextLabel", {
+							Text = "Pilih Admin Car:",
+							Size = UDim2.new(0.2, 0, 1, 0),
+							BackgroundTransparency = 1,
+							TextColor3 = Color3.fromRGB(200, 200, 200),
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+							TextXAlignment = Enum.TextXAlignment.Left,
+						}),
+						DropdownBtn = e("TextButton", {
+							Text = selectedAdminCar == "" and "Pilih Admin Car..." or selectedAdminCar,
+							Size = UDim2.new(0.42, 0, 0, 30),
+							BackgroundColor3 = Color3.fromRGB(30, 30, 38),
+							TextColor3 = Color3.fromRGB(255, 255, 255),
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+							BorderSizePixel = 0,
+							[Event.Activated] = function()
+								setIsAdminCarDropdownOpen(not isAdminCarDropdownOpen)
+							end,
+						}, {
+							Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
+						}),
+						GiftAdminBtn = e("TextButton", {
+							Text = "GIFT ADMIN CAR",
+							Size = UDim2.new(0.25, 0, 0, 30),
+							BackgroundColor3 = Color3.fromRGB(150, 35, 150),
+							TextColor3 = Color3.fromRGB(255, 255, 255),
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+							BorderSizePixel = 0,
+							[Event.Activated] = function()
+								local target = targetType == "All" and "All" or targetPlayerName
+								if target ~= "" and selectedAdminCar ~= "" and props.onGiftReward then
+									props.onGiftReward("Car", target, isGlobalGift, { CarName = selectedAdminCar, ExtraVariants = {} })
+								end
+							end,
+						}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
+
+						DropdownList = isAdminCarDropdownOpen and e(
+							"ScrollingFrame",
+							{
+								Size = UDim2.new(0.42, 0, 0, 100),
+								Position = UDim2.new(0.2, 10, 0, 32),
+								BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+								BorderSizePixel = 1,
+								BorderColor3 = Color3.fromRGB(55, 55, 65),
+								CanvasSize = UDim2.new(0, 0, 0, 0),
+								AutomaticCanvasSize = Enum.AutomaticSize.Y,
+								ZIndex = 12,
+								ScrollBarThickness = 3,
+							},
+							(function()
+								local childrenTable = {
+									Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical }),
+								}
+
+								for _, car in ipairs(adminCars) do
+									childrenTable[car.Name] = e("TextButton", {
+										Text = " " .. car.Name,
+										Size = UDim2.new(1, 0, 0, 20),
+										BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+										TextColor3 = Color3.fromRGB(220, 220, 220),
+										Font = Enum.Font.GothamMedium,
+										TextSize = 8,
+										TextXAlignment = Enum.TextXAlignment.Left,
+										BorderSizePixel = 0,
+										ZIndex = 13,
+										[Event.Activated] = function()
+											setSelectedAdminCar(car.Name)
+											setIsAdminCarDropdownOpen(false)
+										end,
+									})
+								end
+
+								if #adminCars == 0 then
+									childrenTable.None = e("TextLabel", {
+										Text = " Tidak ada admin car",
+										Size = UDim2.new(1, 0, 0, 20),
+										BackgroundTransparency = 1,
+										TextColor3 = Color3.fromRGB(150, 150, 150),
+										Font = Enum.Font.GothamMedium,
+										TextSize = 8,
+										TextXAlignment = Enum.TextXAlignment.Left,
+										ZIndex = 13,
+									})
+								end
+
+								return childrenTable
+							end)()
+						) or nil,
 					}),
+
+					-- Section 2: Gift Car by Name search + variant picker
+					SearchSection = e("Frame", {
+						Size = UDim2.new(1, 0, 0, 32),
+						BackgroundTransparency = 1,
+						LayoutOrder = 3,
+					}, {
+						Layout = e("UIListLayout", {
+							FillDirection = Enum.FillDirection.Horizontal,
+							Padding = UDim.new(0, 10),
+							VerticalAlignment = Enum.VerticalAlignment.Center,
+						}),
+						Label = e("TextLabel", {
+							Text = "Cari Mobil:",
+							Size = UDim2.new(0.2, 0, 1, 0),
+							BackgroundTransparency = 1,
+							TextColor3 = Color3.fromRGB(200, 200, 200),
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+							TextXAlignment = Enum.TextXAlignment.Left,
+						}),
+						SearchBox = e("TextBox", {
+							Text = carSearchText,
+							PlaceholderText = "Ketik/Cari Nama Mobil...",
+							Size = UDim2.new(0.42, 0, 0, 30),
+							BackgroundColor3 = Color3.fromRGB(30, 30, 38),
+							TextColor3 = Color3.fromRGB(255, 255, 255),
+							PlaceholderColor3 = Color3.fromRGB(120, 120, 130),
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+							BorderSizePixel = 0,
+							ClearTextOnFocus = false,
+							[Change.Text] = function(box: TextBox)
+								setCarSearchText(box.Text)
+								setIsCarDropdownOpen(true)
+							end,
+							[Event.Focused] = function()
+								setIsCarDropdownOpen(true)
+							end,
+						}, {
+							Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
+						}),
+						GiftCarBtn = e("TextButton", {
+							Text = "GIFT MOBIL",
+							Size = UDim2.new(0.25, 0, 0, 30),
+							BackgroundColor3 = Color3.fromRGB(170, 35, 35),
+							TextColor3 = Color3.fromRGB(255, 255, 255),
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+							BorderSizePixel = 0,
+							[Event.Activated] = function()
+								local target = targetType == "All" and "All" or targetPlayerName
+								if target ~= "" and carSearchText ~= "" and props.onGiftReward then
+									props.onGiftReward("Car", target, isGlobalGift, { CarName = carSearchText, ExtraVariants = carExtraVariants })
+								end
+							end,
+						}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
+
+						DropdownList = isCarDropdownOpen and e(
+							"ScrollingFrame",
+							{
+								Size = UDim2.new(0.42, 0, 0, 100),
+								Position = UDim2.new(0.2, 10, 0, 32),
+								BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+								BorderSizePixel = 1,
+								BorderColor3 = Color3.fromRGB(55, 55, 65),
+								CanvasSize = UDim2.new(0, 0, 0, 0),
+								AutomaticCanvasSize = Enum.AutomaticSize.Y,
+								ZIndex = 10,
+								ScrollBarThickness = 3,
+							},
+							(function()
+								local childrenTable = {
+									Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical }),
+								}
+
+								for index, car in ipairs(filteredCars) do
+									if index > 20 then
+										break
+									end -- Limit to 20 search results for performance
+
+									childrenTable[car.Name] = e("TextButton", {
+										Text = string.format(" %s [%s]", car.Name, car.Rarity),
+										Size = UDim2.new(1, 0, 0, 20),
+										BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+										TextColor3 = Color3.fromRGB(220, 220, 220),
+										Font = Enum.Font.GothamMedium,
+										TextSize = 8,
+										TextXAlignment = Enum.TextXAlignment.Left,
+										BorderSizePixel = 0,
+										ZIndex = 11,
+										[Event.Activated] = function()
+											setCarSearchText(car.Name)
+											setIsCarDropdownOpen(false)
+										end,
+									})
+								end
+
+								if #filteredCars == 0 then
+									childrenTable.NoCarsFound = e("TextLabel", {
+										Text = " Mobil tidak ditemukan",
+										Size = UDim2.new(1, 0, 0, 20),
+										BackgroundTransparency = 1,
+										TextColor3 = Color3.fromRGB(150, 150, 150),
+										Font = Enum.Font.GothamMedium,
+										TextSize = 8,
+										TextXAlignment = Enum.TextXAlignment.Left,
+										ZIndex = 11,
+									})
+								end
+
+								return childrenTable
+							end)()
+						) or nil,
+					}),
+
+					VariantPicker = createVariantPicker(carExtraVariants, setCarExtraVariants),
 				}),
 			}),
 		})

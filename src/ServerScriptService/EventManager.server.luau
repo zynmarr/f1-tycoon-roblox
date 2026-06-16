@@ -224,7 +224,7 @@ local function displayLocalAnnouncement(message, duration)
 	end
 end
 
-local function giftBoxToPlayer(player: Player, level: number)
+local function giftBoxToPlayer(player: Player, level: number, extraVariants: {string}?)
 	local boxTemplate = game:GetService("ServerStorage"):FindFirstChild("Box")
 	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 	if not boxTemplate then
@@ -252,18 +252,24 @@ local function giftBoxToPlayer(player: Player, level: number)
 		return false
 	end
 	
+	-- Build variant string
+	local variantStr = "Admin"
+	if extraVariants and #extraVariants > 0 then
+		variantStr = "Admin," .. table.concat(extraVariants, ",")
+	end
+	
 	newBox:SetAttribute("Owner", player.Name)
 	newBox:SetAttribute("HasPicked", true)
 	newBox:SetAttribute("Level", level)
 	newBox:SetAttribute("Exp", 0)
-	newBox:SetAttribute("Variants", "Admin")
+	newBox:SetAttribute("Variants", variantStr)
 	newBox:SetAttribute("Type", "Box")
 	newBox:SetAttribute("MaxExp", initialLvlData.MaxExp)
 	newBox:SetAttribute("Name", initialLvlData.Name)
 	-- Force lucky chance to be equal to level 30's LuckMulti (500x)
 	local lvl30Data = GameConfig.BoxLevels[30]
 	newBox:SetAttribute("LuckyChance", lvl30Data and lvl30Data.LuckMulti or 500.0)
-	newBox.Name = initialLvlData.Name .. "_Variant_Admin"
+	newBox.Name = initialLvlData.Name .. "_Variant_" .. string.gsub(variantStr, ",", "_")
 
 	newBox.Handle.Size = Vector3.new(2, 2, 2)
 	
@@ -283,23 +289,27 @@ local function giftBoxToPlayer(player: Player, level: number)
 	local boxModule = newBox:FindFirstChild("BoxModule")
 	if boxModule then
 		local BoxModuleRequire = require(boxModule)
-		BoxModuleRequire.UpdateBoxText(newBox.Handle, level, 0, initialLvlData.MaxExp, "Admin")
+		BoxModuleRequire.UpdateBoxText(newBox.Handle, level, 0, initialLvlData.MaxExp, variantStr)
 	end
 	
 	newBox.Parent = backpack
 	return true
 end
 
-local function giftCarToPlayer(player: Player, carName: string, variant: string?)
+local function giftCarToPlayer(player: Player, carName: string, extraVariants: {string}?)
 	local CollectionService = game:GetService("CollectionService")
 	local ServerStorage = game:GetService("ServerStorage")
 	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 	
 	local f1Cars = ServerStorage:FindFirstChild("F1 CARS")
 	local adminFolder = f1Cars and f1Cars:FindFirstChild("Admin")
-	local adminTemplate = adminFolder and adminFolder:FindFirstChild("Paindre Edition")
+	
+	local foundTemplate = nil
+	local foundRarity = ""
 
-	if adminTemplate and (carName == "Paindre Edition" or carName == "Admin" or foundRarity == "Admin") then
+	-- First check if it's an admin car
+	local adminTemplate = adminFolder and adminFolder:FindFirstChild(carName)
+	if adminTemplate then
 		foundTemplate = adminTemplate
 		foundRarity = "Admin"
 	else
@@ -316,6 +326,7 @@ local function giftCarToPlayer(player: Player, carName: string, variant: string?
 	end
 	
 	if not foundTemplate then
+		warn("[EventManager] Mobil dengan nama " .. tostring(carName) .. " tidak ditemukan!")
 		return false
 	end
 	
@@ -342,19 +353,35 @@ local function giftCarToPlayer(player: Player, carName: string, variant: string?
 		end
 	end
 	
+	-- Build variant string
+	local variantStr = "Admin"
+	if extraVariants and #extraVariants > 0 then
+		variantStr = "Admin," .. table.concat(extraVariants, ",")
+	end
+	
 	local tierData = GameConfig.Rarities[foundRarity] or { BasePrice = 1000 }
-	local variants = (foundRarity == "Admin") and "Admin" or (variant or "Admin")
-	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, foundRarity, variants)
+	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, foundRarity, variantStr)
 	
 	car:SetAttribute("Income", baseIncome)
 	car:SetAttribute("Price", sellPrice)
-	car:SetAttribute("Variant", variants)
+	car:SetAttribute("Variant", variantStr)
 	car:SetAttribute("Rarity", foundRarity)
 	car:SetAttribute("Name", car.Name)
 	car:SetAttribute("Type", "Car")
-	car.Name = car.Name .. "_" .. foundRarity .. "_" .. variants
+	car.Name = car.Name .. "_" .. foundRarity .. "_" .. string.gsub(variantStr, ",", "_")
 	
-	GameConfig.ApplyVisuals(car, foundRarity, variants)
+	-- Default stats from config
+	local stats = GameConfig.CarStats and GameConfig.CarStats[carName]
+	if stats then
+		car:SetAttribute("TopSpeed", stats.TopSpeed or 0)
+		car:SetAttribute("Acceleration", stats.Acceleration or 0)
+		car:SetAttribute("Handling", stats.Handling or 0)
+		car:SetAttribute("Value", stats.Value or 0)
+	end
+
+	pcall(function()
+		GameConfig.ApplyVisuals(car, foundRarity, variantStr)
+	end)
 	
 	local existingCar = backpack:FindFirstChild(car.Name)
 	if existingCar then
@@ -409,11 +436,13 @@ local function giftLocalPlayer(targetPlayerName, giftType, params)
 				end
 			elseif giftType == "Box" then
 				local level = params.Level or 30
-				giftBoxToPlayer(p, level)
+				local extraVariants = params.ExtraVariants or {}
+				giftBoxToPlayer(p, level, extraVariants)
 			elseif giftType == "Car" then
-				local carName = params.CarName
+				local carName = params.CarName or "Paindre Edition"
+				local extraVariants = params.ExtraVariants or {}
 				if carName then
-					giftCarToPlayer(p, carName)
+					giftCarToPlayer(p, carName, extraVariants)
 				end
 			end
 		end)
@@ -466,6 +495,32 @@ if not subscribeSuccess then
 end
 
 -- --- API ENDPOINTS ---
+
+function AdminEventService:getAdminCars(player: Player): { { Name: string } }
+	local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
+	local playerRole = (player:GetAttribute("Role") :: string?) or "Player"
+	local roleData = (RoleConfig.Roles :: any)[playerRole]
+
+	if not roleData or not roleData.Permissions["EditGameConfigs"] then
+		warn("[EventManager] Player " .. player.Name .. " mencoba mengambil list admin car tanpa permission!")
+		return {}
+	end
+
+	local cars = {}
+	local f1Cars = game:GetService("ServerStorage"):FindFirstChild("F1 CARS")
+	local adminFolder = f1Cars and f1Cars:FindFirstChild("Admin")
+	
+	if adminFolder then
+		for _, item in ipairs(adminFolder:GetChildren()) do
+			if item:IsA("Tool") or item:IsA("Model") then
+				table.insert(cars, { Name = item.Name })
+			end
+		end
+	end
+
+	table.sort(cars, function(a, b) return a.Name < b.Name end)
+	return cars
+end
 
 function AdminEventService:setEventValues(player: Player, values: any, isGlobal: boolean)
 	if not RoleManager.hasPermission(player, "EditGameConfigs") then
@@ -581,5 +636,6 @@ Networker.server.new("AdminEventService", AdminEventService, {
 	AdminEventService.broadcastMessage,
 	AdminEventService.giftPlayerReward,
 	AdminEventService.getAvailableCars,
+	AdminEventService.getAdminCars,
 })
 
