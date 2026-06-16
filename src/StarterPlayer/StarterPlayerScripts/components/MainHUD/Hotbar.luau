@@ -25,11 +25,11 @@ local function Hotbar(props: { IsMobile: boolean, InventoryOpen: boolean })
 	end
 
 	-- State untuk melacak item yang sedang dipegang & item di tas
-	local [heldTool, setHeldTool] = useState(nil :: Tool?)
-	local [toolsList, setToolsList] = useState({} :: {Tool})
+	local heldTool, setHeldTool = useState(nil :: any)
+	local _toolsList, setToolsList = useState({} :: {any})
 
 	-- State slot mapping: [slotIndex] = Tool
-	local [slotMapping, setSlotMapping] = useState({} :: { [number]: Tool })
+	local slotMapping, setSlotMapping = useState({} :: { [number]: any })
 
 	-- ===== 1. DETEKSI TOOLS DI CHARACTER DAN BACKPACK =====
 	local function refreshTools()
@@ -216,7 +216,7 @@ local function Hotbar(props: { IsMobile: boolean, InventoryOpen: boolean })
 				Position = UDim2.fromScale(0.5, 0.5),
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				BackgroundTransparency = 1,
-				ref = function(rbx: ViewportFrame?)
+				ref = function(rbx: any)
 					if rbx then
 						ViewportManager.setupViewport(cache.current, rbx, tool, { bgTransparency = 1 })
 					end

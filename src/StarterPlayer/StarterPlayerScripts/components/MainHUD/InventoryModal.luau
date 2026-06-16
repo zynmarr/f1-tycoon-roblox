@@ -28,7 +28,7 @@ local function InventoryModal(props: { OnClose: () -> () })
 
 	-- State tools
 	local heldTool, setHeldTool = useState(nil :: any)
-	local toolsList, setToolsList = useState({} :: {any})
+	local toolsList, setToolsList = useState({} :: { any })
 
 	-- Refresh daftar tool di tas dan karakter
 	local function refreshTools()
@@ -274,22 +274,26 @@ local function InventoryModal(props: { OnClose: () -> () })
 			}),
 
 			-- Grid Scroll Frame
-			GridScroll = e("ScrollingFrame", {
-				Size = UDim2.new(1, 0, 1, -80),
-				BackgroundTransparency = 1,
-				CanvasSize = UDim2.new(0, 0, 0, 0),
-				AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y,
-				ScrollBarThickness = 4,
-				ScrollBarImageColor3 = Color3.fromRGB(100, 50, 250),
-				LayoutOrder = 3,
-			}, {
-				GridLayout = e("UIGridLayout", {
-					CellSize = UDim2.fromOffset(70, 70),
-					CellPadding = UDim2.fromOffset(10, 10),
-					SortOrder = Enum.SortOrder.LayoutOrder,
-				}),
-				React.Children.toArray(slotElements :: any) :: any
-			} :: any),
+			GridScroll = e(
+				"ScrollingFrame",
+				{
+					Size = UDim2.new(1, 0, 1, -80),
+					BackgroundTransparency = 1,
+					CanvasSize = UDim2.new(0, 0, 0, 0),
+					AutomaticCanvasSize = Enum.AutomaticCanvasSize.Y,
+					ScrollBarThickness = 4,
+					ScrollBarImageColor3 = Color3.fromRGB(100, 50, 250),
+					LayoutOrder = 3,
+				},
+				{
+					GridLayout = e("UIGridLayout", {
+						CellSize = UDim2.fromOffset(70, 70),
+						CellPadding = UDim2.fromOffset(10, 10),
+						SortOrder = Enum.SortOrder.LayoutOrder,
+					}),
+					React.Children.toArray(slotElements :: any) :: any,
+				} :: any
+			),
 		}),
 	})
 end
