@@ -172,18 +172,17 @@ UserInputService.InputBegan:Connect(function(input, processed)
 	end
 end)
 
--- ===== SIDEBAR MENU LINK (FALLBACK IN-CASE BUTTON EXISTS IN SIDEMENU) =====
-task.spawn(function()
-	local sideMenu = playerGui:WaitForChild("SideMenuGui", 10)
-	local container = sideMenu and sideMenu:WaitForChild("MainContainer", 5)
-	-- Cari tombol "RewardsBtn" atau "RebirthBtn" jika ada
-	local rewardsBtn = container and (container:FindFirstChild("RewardsBtn") or container:FindFirstChild("RebirthBtn"))
-	if rewardsBtn then
-		rewardsBtn.Activated:Connect(function()
-			uiIsOpen = not uiIsOpen
-			updateUIRender()
-		end)
-	end
-end)
+-- ===== INTEGRASI SIDEBAR DENGAN REACT HUD =====
+local RegisterSidebarButton = ReplicatedStorage:WaitForChild("RegisterSidebarButton")
+RegisterSidebarButton:Fire({
+	Name = "RebirthRewards",
+	Label = "Rebirth / Rewards",
+	Icon = "🎁",
+	Order = 2,
+	Callback = function()
+		uiIsOpen = not uiIsOpen
+		updateUIRender()
+	end,
+})
 
-print("[Client] React MountMainGuiHub sukses diinisialisasi! Tekan F3 untuk membuka menu.")
+print("[Client] React MountMainGuiHub sukses diinisialisasi! Tekan F3 atau klik tombol di Sidebar untuk membuka menu.")

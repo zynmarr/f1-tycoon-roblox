@@ -12,8 +12,7 @@ local CARS_STORAGE = ServerStorage:WaitForChild("F1 CARS")
 local BoxModels = ReplicatedStorage:WaitForChild("BoxModels") -- Gudang Model Box
 
 -- Variables untuk menyimpan status UI
-local openBtn = nil
-local buttonConnection = nil
+
 
 -- ==========================================
 -- 0. FUNGSI UPDATE VISUAL (SWAP LEVEL)
@@ -224,12 +223,7 @@ local function openBox(player)
 	else
 		box:SetAttribute("IsDestroying", true)
 
-		if openBtn then
-			openBtn.Visible = false
-		end
-		if buttonConnection then
-			buttonConnection:Disconnect()
-		end
+
 
 		box.Parent = nil
 		Debris:AddItem(box, 0.1)
@@ -271,29 +265,11 @@ box.Equipped:Connect(function()
 	--	processPickup(player)
 	--end
 
-	local playerGui = player:FindFirstChild("PlayerGui")
-	if not playerGui then
-		return
-	end
-
-	local ui = playerGui:FindFirstChild("OpenBoxGui")
-	openBtn = ui and ui:FindFirstChild("OpenBtn")
-
-	if openBtn then
-		openBtn.Visible = true
-	end
-
 	box.Grip = CFrame.new(0, 0, 2)
 end)
 
 box.Unequipped:Connect(function()
-	if openBtn then
-		openBtn.Visible = false
-	end
-	--if buttonConnection then
-	--	buttonConnection:Disconnect()
-	--	buttonConnection = nil
-	--end
+	-- Handled client side
 end)
 
 -- ==========================================

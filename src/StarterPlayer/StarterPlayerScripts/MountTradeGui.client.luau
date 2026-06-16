@@ -39,7 +39,9 @@ local root = ReactRoblox.createRoot(screenGui)
 local activeInvitation: string? = nil
 local tradeState: any = nil
 local playerListIsOpen = false
-local tradeBtn: GuiButton? = nil
+local tradeBtnRegistered = false
+local RegisterSidebarButton = ReplicatedStorage:WaitForChild("RegisterSidebarButton")
+local UnregisterSidebarButton = ReplicatedStorage:WaitForChild("UnregisterSidebarButton")
 
 -- ===== NOTIFICATION HELPER =====
 local function showNotification(title: string, text: string)
@@ -155,101 +157,25 @@ end)
 
 -- ===== DYNAMIC SIDEBAR BUTTON MANAGEMENT =====
 local function destroyTradeButton()
-	local btn = tradeBtn
-	if btn then
-		btn:Destroy()
-		tradeBtn = nil
+	if tradeBtnRegistered then
+		UnregisterSidebarButton:Fire("Trade")
+		tradeBtnRegistered = false
 	end
 end
 
 local function createTradeButton()
-	if tradeBtn then return end -- Already created
-
-	local sideMenuGui = playerGui:WaitForChild("SideMenuGui", 10)
-	if not sideMenuGui then return end
-
-	local container = sideMenuGui:WaitForChild("MainContainer", 10)
-	if not container then return end
-
-	-- Find a button template for consistent design
-	local template = container:FindFirstChild("BackpackBtn")
-		or container:FindFirstChild("ShopBtn")
-		or container:FindFirstChild("SettingBtn")
-		or container:FindFirstChildOfClass("ImageButton")
-		or container:FindFirstChildOfClass("TextButton")
-
-	if template and template:IsA("GuiButton") then
-		local clone = (template :: Instance):Clone() :: GuiButton
-		clone.Name = "TradeBtn"
-
-		if clone:IsA("TextButton") then
-			clone.Text = "🤝 Trade"
-		end
-
-		local textLabel = clone:FindFirstChildOfClass("TextLabel") :: TextLabel?
-		if textLabel then
-			textLabel.Text = "🤝 Trade"
-		end
-
-		local imageLabel = clone:FindFirstChildOfClass("ImageLabel") :: ImageLabel?
-		if imageLabel then
-			imageLabel.Image = "rbxassetid://10609355799" -- Modern shake hands icon
-		end
-		
-		tradeBtn = clone
-	else
-		-- Fallback modern rounded button
-		local manualBtn = Instance.new("TextButton")
-		manualBtn.Name = "TradeBtn"
-		manualBtn.Size = UDim2.new(1, -10, 0, 40)
-		manualBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-		manualBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
-		manualBtn.Font = Enum.Font.GothamBold
-		manualBtn.TextSize = 12
-		manualBtn.Text = "🤝 Trade"
-
-		local corner = Instance.new("UICorner")
-		corner.CornerRadius = UDim.new(0, 8)
-		corner.Parent = manualBtn
-
-		local stroke = Instance.new("UIStroke")
-		stroke.Color = Color3.fromRGB(60, 60, 75)
-		stroke.Thickness = 1
-		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Parent = manualBtn
-
-		tradeBtn = manualBtn
-	end
-
-	local btn = tradeBtn :: GuiButton
-	btn.Parent = container
-
-	-- Setup Hover & Click Animations
-	local tweenInfo = TweenInfo.new(0.10, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local originalSize = btn.Size
-	local hoverSize = UDim2.new(originalSize.X.Scale, originalSize.X.Offset + 10, originalSize.Y.Scale, originalSize.Y.Offset + 10)
-
-	btn.MouseEnter:Connect(function()
-		TweenService:Create(btn, tweenInfo, { Size = hoverSize }):Play()
-	end)
-
-	btn.MouseLeave:Connect(function()
-		TweenService:Create(btn, tweenInfo, { Size = originalSize }):Play()
-	end)
-
-	btn.MouseButton1Down:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.1), { Size = originalSize }):Play()
-	end)
-
-	btn.MouseButton1Up:Connect(function()
-		TweenService:Create(btn, tweenInfo, { Size = hoverSize }):Play()
-	end)
-
-	-- Click Action
-	btn.Activated:Connect(function()
-		playerListIsOpen = not playerListIsOpen
-		updateRender()
-	end)
+	if tradeBtnRegistered then return end
+	RegisterSidebarButton:Fire({
+		Name = "Trade",
+		Label = "Trade",
+		Icon = "🤝",
+		Order = 4,
+		Callback = function()
+			playerListIsOpen = not playerListIsOpen
+			updateRender()
+		end,
+	})
+	tradeBtnRegistered = true
 end
 
 local function onRebirthsChanged()

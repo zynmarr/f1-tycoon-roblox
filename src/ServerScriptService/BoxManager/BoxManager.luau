@@ -19,7 +19,7 @@ local CARS_STORAGE = ServerStorage:WaitForChild("F1 CARS")
 local BoxModels = ReplicatedStorage:WaitForChild("BoxModels")
 
 local BOX_TAG = "Box"
-local openBtn = nil
+
 
 -- ========== RATE LIMITING ==========
 local BOX_OPEN_COOLDOWN = 3 -- seconds
@@ -420,29 +420,12 @@ local function setupBox(box: Tool)
 		--	processPickup(player)
 		--end
 
-		local playerGui = player:FindFirstChild("PlayerGui")
-		if not playerGui then
-			return
-		end
-
-		local ui = playerGui:FindFirstChild("OpenBoxGui")
-		openBtn = ui and ui:FindFirstChild("OpenBtn")
-
-		if openBtn then
-			openBtn.Visible = true
-		end
 		local boxSize = handle.Size or Vector3.new(1, 1, 1)
 		box.Grip = CFrame.new(0, 0, boxSize.Z / 2 + 0.5)
 	end)
 
 	box.Unequipped:Connect(function()
-		if openBtn then
-			openBtn.Visible = false
-		end
-		--if buttonConnection then
-		--	buttonConnection:Disconnect()
-		--	buttonConnection = nil
-		--end
+		-- Handled client side
 	end)
 
 	table.insert(

@@ -30,7 +30,9 @@ local root = ReactRoblox.createRoot(screenGui)
 
 -- ===== STATE VARIABLES & HELPERS =====
 local uiIsOpen = false
-local adminBtn: GuiButton? = nil
+local adminBtnRegistered = false
+local RegisterSidebarButton = ReplicatedStorage:WaitForChild("RegisterSidebarButton")
+local UnregisterSidebarButton = ReplicatedStorage:WaitForChild("UnregisterSidebarButton")
 
 local function checkAdminPermission(): boolean
 	local playerRole = (player:GetAttribute("Role") :: string?) or "Player"
@@ -102,110 +104,25 @@ end
 
 -- ===== DYNAMIC SIDEBAR BUTTON MANAGEMENT =====
 local function destroyAdminButton()
-	local btn = adminBtn
-	if btn then
-		btn:Destroy()
-		adminBtn = nil
+	if adminBtnRegistered then
+		UnregisterSidebarButton:Fire("AdminEvent")
+		adminBtnRegistered = false
 	end
 end
 
 local function createAdminButton()
-	if adminBtn then return end -- Sudah dibuat
-
-	local sideMenuGui = playerGui:WaitForChild("SideMenuGui", 10)
-	if not sideMenuGui then
-		warn("[AdminEventPanel] SideMenuGui tidak ditemukan!")
-		return
-	end
-
-	local sideMenuGuiInstance = sideMenuGui :: Instance
-	local container = sideMenuGuiInstance:WaitForChild("MainContainer", 10)
-	if not container then
-		warn("[AdminEventPanel] MainContainer tidak ditemukan di SideMenuGui!")
-		return
-	end
-
-	local containerInstance = container :: Instance
-
-	-- Mencari template tombol samping yang ada agar visualisasi seragam
-	local template = containerInstance:FindFirstChild("RebirthBtn")
-		or containerInstance:FindFirstChild("RewardsBtn")
-		or containerInstance:FindFirstChildOfClass("ImageButton")
-		or containerInstance:FindFirstChildOfClass("TextButton")
-
-	if template and template:IsA("GuiButton") then
-		local clone = (template :: Instance):Clone() :: GuiButton
-		clone.Name = "AdminEventBtn"
-
-		-- Konfigurasi teks / ikon
-		if clone:IsA("TextButton") then
-			clone.Text = "⚙️ Event"
-		end
-
-		local textLabel = clone:FindFirstChildOfClass("TextLabel") :: TextLabel?
-		if textLabel then
-			textLabel.Text = "⚙️ Event"
-		end
-
-		local imageLabel = clone:FindFirstChildOfClass("ImageLabel") :: ImageLabel?
-		if imageLabel then
-			imageLabel.Image = "rbxassetid://10617937307" -- Gear icon
-		end
-		
-		adminBtn = clone
-	else
-		-- Fallback: buat tombol manual bergaya dark modern rounded jika template tidak ada
-		local manualBtn = Instance.new("TextButton")
-		manualBtn.Name = "AdminEventBtn"
-		manualBtn.Size = UDim2.new(1, -10, 0, 40)
-		manualBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
-		manualBtn.TextColor3 = Color3.fromRGB(240, 240, 240)
-		manualBtn.Font = Enum.Font.GothamBold
-		manualBtn.TextSize = 12
-		manualBtn.Text = "⚙️ Event"
-
-		local corner = Instance.new("UICorner")
-		corner.CornerRadius = UDim.new(0, 8)
-		corner.Parent = manualBtn
-
-		local stroke = Instance.new("UIStroke")
-		stroke.Color = Color3.fromRGB(60, 60, 75)
-		stroke.Thickness = 1
-		stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-		stroke.Parent = manualBtn
-
-		adminBtn = manualBtn
-	end
-
-	local btn = adminBtn :: GuiButton
-	btn.Parent = containerInstance
-
-	-- Setup Animasi Hover & Click sesuai SideMenuGui.client.luau
-	local tweenInfo = TweenInfo.new(0.10, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-	local ukuranAsli = btn.Size
-	local ukuranHover = UDim2.new(ukuranAsli.X.Scale, ukuranAsli.X.Offset + 10, ukuranAsli.Y.Scale, ukuranAsli.Y.Offset + 10)
-
-	btn.MouseEnter:Connect(function()
-		TweenService:Create(btn, tweenInfo, { Size = ukuranHover }):Play()
-	end)
-
-	btn.MouseLeave:Connect(function()
-		TweenService:Create(btn, tweenInfo, { Size = ukuranAsli }):Play()
-	end)
-
-	btn.MouseButton1Down:Connect(function()
-		TweenService:Create(btn, TweenInfo.new(0.1), { Size = ukuranAsli }):Play()
-	end)
-
-	btn.MouseButton1Up:Connect(function()
-		TweenService:Create(btn, tweenInfo, { Size = ukuranHover }):Play()
-	end)
-
-	-- Aktifkan Klik Toggle Panel
-	btn.Activated:Connect(function()
-		uiIsOpen = not uiIsOpen
-		updateUIRender()
-	end)
+	if adminBtnRegistered then return end
+	RegisterSidebarButton:Fire({
+		Name = "AdminEvent",
+		Label = "Admin Event",
+		Icon = "⚙️",
+		Order = 5,
+		Callback = function()
+			uiIsOpen = not uiIsOpen
+			updateUIRender()
+		end,
+	})
+	adminBtnRegistered = true
 end
 
 local function onRoleChanged()
