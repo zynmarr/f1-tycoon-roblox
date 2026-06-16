@@ -255,14 +255,7 @@ local function Hotbar(props: { IsMobile: boolean, InventoryOpen: boolean })
 		return nil
 	end
 
-	return e("Frame", {
-		Size = UDim2.new(0, maxSlots * (props.IsMobile and 50 or 60) + (maxSlots - 1) * 8, 0, props.IsMobile and 45 or 55),
-		Position = UDim2.new(0.5, 0, 1, -10),
-		AnchorPoint = Vector2.new(0.5, 1),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		ZIndex = 5,
-	}, {
+	local children = {
 		Layout = e("UIListLayout", {
 			FillDirection = Enum.FillDirection.Horizontal,
 			SortOrder = Enum.SortOrder.LayoutOrder,
@@ -270,8 +263,19 @@ local function Hotbar(props: { IsMobile: boolean, InventoryOpen: boolean })
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 		}),
-		React.Children.toArray(slotElements)
-	})
+	}
+	for name, element in pairs(slotElements) do
+		children[name] = element
+	end
+
+	return e("Frame", {
+		Size = UDim2.new(0, maxSlots * (props.IsMobile and 50 or 60) + (maxSlots - 1) * 8, 0, props.IsMobile and 45 or 55),
+		Position = UDim2.new(0.5, 0, 1, -10),
+		AnchorPoint = Vector2.new(0.5, 1),
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ZIndex = 5,
+	}, children)
 end
 
 return Hotbar

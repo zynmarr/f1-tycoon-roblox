@@ -284,14 +284,19 @@ local function InventoryModal(props: { OnClose: () -> () })
 					ScrollBarImageColor3 = Color3.fromRGB(100, 50, 250),
 					LayoutOrder = 3,
 				},
-				{
-					GridLayout = e("UIGridLayout", {
-						CellSize = UDim2.fromOffset(70, 70),
-						CellPadding = UDim2.fromOffset(10, 10),
-						SortOrder = Enum.SortOrder.LayoutOrder,
-					}),
-					React.Children.toArray(slotElements :: any) :: any,
-				} :: any
+				(function()
+					local scrollChildren = {
+						GridLayout = e("UIGridLayout", {
+							CellSize = UDim2.fromOffset(70, 70),
+							CellPadding = UDim2.fromOffset(10, 10),
+							SortOrder = Enum.SortOrder.LayoutOrder,
+						}),
+					}
+					for name, element in pairs(slotElements) do
+						scrollChildren[name] = element
+					end
+					return scrollChildren
+				end)() :: any
 			),
 		}),
 	})

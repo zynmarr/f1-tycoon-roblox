@@ -78,14 +78,7 @@ local function Sidebar(props: {
 		fillDirection = Enum.FillDirection.Vertical
 	end
 
-	return e("Frame", {
-		Size = containerSize,
-		Position = containerPos,
-		AnchorPoint = anchorPoint,
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
-		ZIndex = 10,
-	}, {
+	local children = {
 		Layout = e("UIListLayout", {
 			FillDirection = fillDirection,
 			SortOrder = Enum.SortOrder.LayoutOrder,
@@ -93,8 +86,19 @@ local function Sidebar(props: {
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 		}),
-		React.Children.toArray(buttonElements)
-	})
+	}
+	for name, element in pairs(buttonElements) do
+		children[name] = element
+	end
+
+	return e("Frame", {
+		Size = containerSize,
+		Position = containerPos,
+		AnchorPoint = anchorPoint,
+		BackgroundTransparency = 1,
+		BorderSizePixel = 0,
+		ZIndex = 10,
+	}, children)
 end
 
 return Sidebar

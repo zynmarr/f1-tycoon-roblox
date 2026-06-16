@@ -296,16 +296,21 @@ local function CustomStats(props: { IsMobile: boolean })
 			Size = UDim2.new(1, 0, 0, 42),
 			BackgroundTransparency = 1,
 			LayoutOrder = 2,
-		}, {
-			List = e("UIListLayout", {
-				FillDirection = Enum.FillDirection.Horizontal,
-				SortOrder = Enum.SortOrder.LayoutOrder,
-				Padding = UDim.new(0, 8),
-				HorizontalAlignment = Enum.HorizontalAlignment.Right,
-			}),
-			React.Children.toArray(activeBuffElements),
-			TooltipOverlay = tooltipElement,
-		}) or nil,
+		}, (function()
+			local buffsChildren = {
+				List = e("UIListLayout", {
+					FillDirection = Enum.FillDirection.Horizontal,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					Padding = UDim.new(0, 8),
+					HorizontalAlignment = Enum.HorizontalAlignment.Right,
+				}),
+				TooltipOverlay = tooltipElement,
+			}
+			for name, element in pairs(activeBuffElements) do
+				buffsChildren[name] = element
+			end
+			return buffsChildren
+		end)()) or nil,
 	})
 end
 

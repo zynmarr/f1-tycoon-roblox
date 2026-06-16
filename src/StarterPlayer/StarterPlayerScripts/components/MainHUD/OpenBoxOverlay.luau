@@ -1,4 +1,3 @@
---!strict
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local CollectionService = game:GetService("CollectionService")
@@ -23,7 +22,9 @@ local function OpenBoxOverlay(props: { IsMobile: boolean })
 
 	-- Deteksi apakah tool yang di-equip adalah box
 	local function checkIfBox(tool: any): boolean
-		if not tool then return false end
+		if not tool then
+			return false
+		end
 		return CollectionService:HasTag(tool, "Box")
 			or tool:GetAttribute("Type") == "Box"
 			or string.find(tool.Name:lower(), "box") ~= nil
@@ -71,7 +72,9 @@ local function OpenBoxOverlay(props: { IsMobile: boolean })
 
 	-- Handler klik Buka Box
 	local function handleOpenBox()
-		if isOpening or not heldBox then return end
+		if isOpening or not heldBox then
+			return
+		end
 		setIsOpening(true)
 
 		task.spawn(function()
@@ -139,7 +142,7 @@ local function OpenBoxOverlay(props: { IsMobile: boolean })
 					-- Bikin tween denyut baru
 					local tweenInfo = TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut, -1, true)
 					local tween = TweenService:Create(rbx, tweenInfo, {
-						Size = targetSize
+						Size = targetSize,
 					})
 					tweenRef.current = tween
 					tween:Play()
@@ -156,7 +159,7 @@ local function OpenBoxOverlay(props: { IsMobile: boolean })
 				Color = Color3.fromRGB(200, 80, 255),
 				Thickness = 1.5,
 			}),
-		})
+		}),
 	})
 end
 
