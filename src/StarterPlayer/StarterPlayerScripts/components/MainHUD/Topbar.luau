@@ -4,21 +4,22 @@ local React = require(ReplicatedStorage.Packages.React)
 
 local e = React.createElement
 local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
-local teleportEvent = ReplicatedStorage:WaitForChild("TeleportEvent", 10)
 
 local function Topbar(props: { IsMobile: boolean })
 	-- Fungsi teleport
 	local function teleport(target: string)
+		local teleportEvent = ReplicatedStorage:FindFirstChild("TeleportEvent")
 		if teleportEvent then
 			teleportEvent:FireServer(target)
+		else
+			warn("[Topbar] TeleportEvent tidak ditemukan di ReplicatedStorage!")
 		end
 	end
 
 	-- Fungsi toggle ShopGui
 	local function toggleShop()
-		local shopGui = playerGui:FindFirstChild("ShopGui") :: ScreenGui?
+		local playerGui = player:FindFirstChild("PlayerGui")
+		local shopGui = playerGui and playerGui:FindFirstChild("ShopGui") :: ScreenGui?
 		if shopGui then
 			shopGui.Enabled = not shopGui.Enabled
 		else

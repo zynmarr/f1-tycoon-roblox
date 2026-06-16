@@ -10,9 +10,14 @@ local useEffect = React.useEffect
 local useRef = React.useRef
 
 local player = Players.LocalPlayer
-local backpack = player:WaitForChild("Backpack")
 
 local function Hotbar(props: { IsMobile: boolean, InventoryOpen: boolean })
+	local backpack = player:FindFirstChild("Backpack") or player:WaitForChild("Backpack", 5)
+	if not backpack then
+		warn("[Hotbar] Backpack tidak ditemukan!")
+		return nil
+	end
+
 	local maxSlots = props.IsMobile and 5 or 9
 	local cache = useRef(nil)
 	if not cache.current then

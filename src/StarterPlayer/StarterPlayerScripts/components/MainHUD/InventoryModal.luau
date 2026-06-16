@@ -10,9 +10,14 @@ local useEffect = React.useEffect
 local useRef = React.useRef
 
 local player = Players.LocalPlayer
-local backpack = player:WaitForChild("Backpack")
 
 local function InventoryModal(props: { OnClose: () -> () })
+	local backpack = player:FindFirstChild("Backpack") or player:WaitForChild("Backpack", 5)
+	if not backpack then
+		warn("[InventoryModal] Backpack tidak ditemukan!")
+		return nil
+	end
+
 	local cache = useRef(nil)
 	if not cache.current then
 		cache.current = ViewportManager.new()

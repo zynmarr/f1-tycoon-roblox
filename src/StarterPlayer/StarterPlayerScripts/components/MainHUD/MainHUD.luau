@@ -14,19 +14,36 @@ local OpenBoxOverlay = require(script.Parent.OpenBoxOverlay)
 
 local function MainHUD(props: { Buttons: any })
 	local inventoryOpen, setInventoryOpen = useState(false)
-	local viewportSize, setViewportSize = useState(workspace.CurrentCamera.ViewportSize)
+	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
 
 	-- Pantau perubahan ukuran layar secara real-time untuk responsivitas
 	useEffect(function()
-		local camera = workspace.CurrentCamera
-		if not camera then return end
+		local connection: RBXScriptConnection? = nil
 
-		local connection = camera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-			setViewportSize(camera.ViewportSize)
+		local function setupCamera(cam: Camera?)
+			if connection then
+				connection:Disconnect()
+				connection = nil
+			end
+			if cam then
+				connection = cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+					setViewportSize(cam.ViewportSize)
+				end)
+				setViewportSize(cam.ViewportSize)
+			end
+		end
+
+		setupCamera(workspace.CurrentCamera)
+
+		local camConnection = workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+			setupCamera(workspace.CurrentCamera)
 		end)
 
 		return function()
-			connection:Disconnect()
+			if connection then
+				connection:Disconnect()
+			end
+			camConnection:Disconnect()
 		end
 	end, {})
 
