@@ -180,7 +180,7 @@ return function(props: PlayerListPanelProps)
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
 			CloseBtn = e("TextButton", {
-				Text = "✕",
+				Text = "X",
 				Size = UDim2.fromOffset(24, 24),
 				Position = UDim2.new(1, -15, 0.5, 0),
 				AnchorPoint = Vector2.new(1, 0.5),

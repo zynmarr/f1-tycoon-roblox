@@ -891,7 +891,7 @@ local function RacePanel(props)
 	-- Render
 	-- =========================================================
 	local mainContainer = e("Frame", {
-		Size = isMobile and UDim2.new(0.96, 0, 0.94, 0) or UDim2.new(0, 800, 0, 530),
+		Size = isMobile and UDim2.new(0.82, 0, 0.82, 0) or UDim2.new(0, 800, 0, 530),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		BackgroundColor3 = Color3.fromRGB(18, 18, 24),
@@ -934,7 +934,7 @@ local function RacePanel(props)
 			Spacer = e("Frame", { Size = UDim2.new(1, 0, 1, -220), BackgroundTransparency = 1 }),
 
 			CloseBtn = e("TextButton", {
-				Text = "✕  TUTUP",
+				Text = "X  TUTUP",
 				Size = UDim2.new(1, 0, 0, 36),
 				BackgroundColor3 = Color3.fromRGB(255, 35, 85),
 				BackgroundTransparency = 0.1,

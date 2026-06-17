@@ -2064,7 +2064,7 @@ return function(props: any)
 		-- ZIndex = 20,
 	}, {
 		Container = e("Frame", {
-			Size = isMobile and UDim2.new(0.96, 0, 0.94, 0) or UDim2.new(0.9, 0, 0.9, 0),
+			Size = isMobile and UDim2.new(0.82, 0, 0.82, 0) or UDim2.new(0.9, 0, 0.9, 0),
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.new(0.5, 0, 0.5, 0),
 			BackgroundColor3 = Color3.fromRGB(15, 15, 20),
@@ -2111,7 +2111,7 @@ return function(props: any)
 				}),
 
 				CloseBtn = e("TextButton", {
-					Text = "✕",
+					Text = "X",
 					Size = UDim2.fromOffset(24, 24),
 					Position = UDim2.new(1, -15, 0.5, 0),
 					AnchorPoint = Vector2.new(1, 0.5),

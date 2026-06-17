@@ -589,7 +589,7 @@ local function SellGui(props)
 
 	-- Responsive styling: Scale on mobile, locked max size on PC/Tablet
 	local MainFrame = e("Frame", {
-		Size = isStorybook and UDim2.new(1, 0, 1, 0) or (isMobile and UDim2.new(0.88, 0, 0.88, 0) or UDim2.new(0.9, 0, 0.8, 0)),
+		Size = isStorybook and UDim2.new(1, 0, 1, 0) or (isMobile and UDim2.new(0.82, 0, 0.82, 0) or UDim2.new(0.9, 0, 0.8, 0)),
 		Position = not isStorybook and UDim2.new(0.5, 0, 0.5, 0) or nil,
 		AnchorPoint = not isStorybook and Vector2.new(0.5, 0.5) or nil,
 		BackgroundColor3 = Color3.fromRGB(15, 15, 20),
@@ -654,7 +654,7 @@ local function SellGui(props)
 
 			-- Close Button (X)
 			CloseButton = not isStorybook and e("TextButton", {
-				Text = "✕",
+				Text = "X",
 				Size = UDim2.fromOffset(24, 24),
 				Position = UDim2.new(1, -15, 0.5, 0),
 				AnchorPoint = Vector2.new(1, 0.5),

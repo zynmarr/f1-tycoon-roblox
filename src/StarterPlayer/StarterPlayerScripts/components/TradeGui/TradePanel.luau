@@ -283,7 +283,7 @@ return function(props: any)
 
 	-- 4. MAIN LAYOUT
 	local mainContainer = e("Frame", {
-		Size = isMobile and UDim2.new(0.96, 0, 0.94, 0) or UDim2.new(0.85, 0, 0.85, 0),
+		Size = isMobile and UDim2.new(0.82, 0, 0.82, 0) or UDim2.new(0.85, 0, 0.85, 0),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		BackgroundColor3 = Color3.fromRGB(15, 15, 20),
@@ -314,7 +314,7 @@ return function(props: any)
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
 			CancelBtn = e("TextButton", {
-				Text = "✕ BATAL",
+				Text = "X BATAL",
 				Size = UDim2.new(0, 80, 0, 26),
 				Position = UDim2.new(1, -15, 0.5, 0),
 				AnchorPoint = Vector2.new(1, 0.5),

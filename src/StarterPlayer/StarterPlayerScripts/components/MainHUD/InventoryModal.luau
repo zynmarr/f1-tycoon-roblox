@@ -234,7 +234,7 @@ local function InventoryModal(props: {
 
 		-- Kontainer Modal (Responsive Size & Position)
 		ModalContainer = e("Frame", {
-			Size = props.IsMobile and UDim2.new(0.96, 0, 0.92, 0) or UDim2.fromOffset(450, 320),
+			Size = props.IsMobile and UDim2.new(0.82, 0, 0.82, 0) or UDim2.fromOffset(450, 320),
 			Position = UDim2.new(0.5, 0, 0.5, 0),
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			BackgroundColor3 = Color3.fromRGB(15, 15, 18),
@@ -300,7 +300,7 @@ local function InventoryModal(props: {
 				}),
 
 				CloseBtn = e("TextButton", {
-					Text = "✕",
+					Text = "X",
 					Size = UDim2.fromOffset(24, 24),
 					Position = UDim2.new(1, 0, 0.5, 0),
 					AnchorPoint = Vector2.new(1, 0.5),

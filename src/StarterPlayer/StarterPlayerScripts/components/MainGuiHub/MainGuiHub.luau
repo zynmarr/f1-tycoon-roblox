@@ -78,7 +78,7 @@ return function(props)
 	local mainContent
 	if isMobile then
 		mainContent = e("Frame", {
-			Size = UDim2.new(0.96, 0, 0.94, 0),
+			Size = UDim2.new(0.82, 0, 0.82, 0),
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.new(0.5, 0, 0.5, 0),
 			BackgroundColor3 = Color3.fromRGB(18, 18, 24),
@@ -147,7 +147,7 @@ return function(props)
 				}),
 
 				CloseBtn = e("TextButton", {
-					Text = "✕",
+					Text = "X",
 					Size = UDim2.fromOffset(24, 24),
 					Position = UDim2.new(1, -10, 0.5, 0),
 					AnchorPoint = Vector2.new(1, 0.5),
@@ -311,7 +311,7 @@ return function(props)
 			}),
 
 			CloseBtn = e("TextButton", {
-				Text = "✕",
+				Text = "X",
 				Size = UDim2.fromOffset(24, 24),
 				Position = UDim2.new(1, -15, 0.5, 0),
 				AnchorPoint = Vector2.new(1, 0.5),
