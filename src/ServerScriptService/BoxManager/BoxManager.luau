@@ -420,7 +420,21 @@ function BoxManager:openBox(player: Player, boxName: string)
 			-- Siarkan ke TextChatService (Roblox Modern Chat)
 			local TextChatService = game:GetService("TextChatService")
 			if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-				TextChatService:BroadcastSystemMessage(richText)
+				local textChannels = TextChatService:FindFirstChild("TextChannels")
+				local generalChannel = textChannels and textChannels:FindFirstChild("RBXGeneral")
+				if generalChannel then
+					pcall(function()
+						(generalChannel :: any):SendSystemMessage(richText)
+					end)
+				else
+					for _, channel in ipairs(TextChatService:GetDescendants()) do
+						if channel:IsA("TextChannel") then
+							pcall(function()
+								(channel :: any):SendSystemMessage(richText)
+							end)
+						end
+					end
+				end
 			end
 
 			-- Cadangan untuk Legacy ChatService
