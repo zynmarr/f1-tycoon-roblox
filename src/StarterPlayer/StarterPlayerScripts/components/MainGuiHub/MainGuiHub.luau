@@ -398,6 +398,7 @@ return function(props)
 		}, {
 			Content = activeComponent
 		})
+	})
 	end
 
 	return e("Frame", {
