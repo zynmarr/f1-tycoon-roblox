@@ -211,7 +211,7 @@ local function InventoryModal(props: {
 	end
 
 	return e("Frame", {
-		Size = props.IsMobile and UDim2.new(1, 0, 1, -80) or UDim2.new(1, 0, 1, -100),
+		Size = UDim2.new(1, 0, 1, 0),
 		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 0.55,
 		BackgroundColor3 = Color3.fromRGB(10, 10, 12),
