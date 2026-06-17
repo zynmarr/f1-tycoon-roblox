@@ -85,12 +85,22 @@ local function InventoryModal(props: {
 		end
 	end, {})
 
-	-- Filter tool berdasarkan pencarian
+	-- Filter tool berdasarkan pencarian dan sembunyikan yang sudah terpasang di Hotbar
 	local filteredTools = {}
 	for _, tool in ipairs(toolsList) do
-		local name = tool:GetAttribute("Name") or tool.Name
-		if string.find(name:lower(), searchText:lower(), 1, true) then
-			table.insert(filteredTools, tool)
+		local isMappedToHotbar = false
+		for _, hotbarTool in pairs(props.SlotMapping) do
+			if hotbarTool == tool then
+				isMappedToHotbar = true
+				break
+			end
+		end
+
+		if not isMappedToHotbar then
+			local name = tool:GetAttribute("Name") or tool.Name
+			if string.find(name:lower(), searchText:lower(), 1, true) then
+				table.insert(filteredTools, tool)
+			end
 		end
 	end
 

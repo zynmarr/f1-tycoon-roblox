@@ -31,6 +31,7 @@ local function MainHUD(props: { Buttons: any })
 
 	-- ===== DRAG & DROP STATE =====
 	local slotMapping, setSlotMapping = useState({} :: { [number]: Tool })
+	local manuallyUnmapped = useRef({} :: { [Tool]: boolean })
 	local heldTool, setHeldTool = useState(nil :: Tool?)
 	
 	local draggedItem, setDraggedItem = useState(nil :: { Tool: Tool, Source: string, SlotIndex: number? }?)
@@ -72,52 +73,58 @@ local function MainHUD(props: { Buttons: any })
 	end, {})
 
 	-- ===== 1. DETEKSI TOOLS DI BACKPACK DAN CHARACTER (SHARED SOURCE OF TRUTH) =====
+	local refreshScheduled = false
 	local function refreshTools()
-		if not backpack then return end
-		local char = player.Character
-		local currentHeld = char and char:FindFirstChildOfClass("Tool")
-		setHeldTool(currentHeld)
+		if refreshScheduled then return end
+		refreshScheduled = true
+		task.defer(function()
+			refreshScheduled = false
+			if not backpack then return end
+			local char = player.Character
+			local currentHeld = char and char:FindFirstChildOfClass("Tool")
+			setHeldTool(currentHeld)
 
-		local list = {}
-		for _, item in ipairs(backpack:GetChildren()) do
-			if item:IsA("Tool") then
-				table.insert(list, item)
-			end
-		end
-		if currentHeld then
-			table.insert(list, currentHeld)
-		end
-
-		setSlotMapping(function(oldMapping)
-			local newMapping = table.clone(oldMapping)
-			-- Hapus mapping jika tool tidak lagi dimiliki
-			for i = 1, 10 do
-				local tool = newMapping[i]
-				if tool then
-					if not tool.Parent or (tool.Parent ~= backpack and tool.Parent ~= char) then
-						newMapping[i] = nil
-					end
+			local list = {}
+			for _, item in ipairs(backpack:GetChildren()) do
+				if item:IsA("Tool") then
+					table.insert(list, item)
 				end
 			end
-			-- Masukkan tool baru yang belum ter-map ke slot kosong
-			for _, tool in ipairs(list) do
-				local alreadyMapped = false
+			if currentHeld then
+				table.insert(list, currentHeld)
+			end
+
+			setSlotMapping(function(oldMapping)
+				local newMapping = table.clone(oldMapping)
+				-- Hapus mapping jika tool tidak lagi dimiliki
 				for i = 1, 10 do
-					if newMapping[i] == tool then
-						alreadyMapped = true
-						break
-					end
-				end
-				if not alreadyMapped then
-					for i = 1, 10 do
-						if not newMapping[i] then
-							newMapping[i] = tool
-							break
+					local tool = newMapping[i]
+					if tool then
+						if not tool.Parent or (tool.Parent ~= backpack and tool.Parent ~= char) then
+							newMapping[i] = nil
 						end
 					end
 				end
-			end
-			return newMapping
+				-- Masukkan tool baru yang belum ter-map ke slot kosong
+				for _, tool in ipairs(list) do
+					local alreadyMapped = false
+					for i = 1, 10 do
+						if newMapping[i] == tool then
+							alreadyMapped = true
+							break
+						end
+					end
+					if not alreadyMapped and not manuallyUnmapped.current[tool] then
+						for i = 1, 10 do
+							if not newMapping[i] then
+								newMapping[i] = tool
+								break
+							end
+						end
+					end
+				end
+				return newMapping
+			end)
 		end)
 	end
 
@@ -207,6 +214,8 @@ local function MainHUD(props: { Buttons: any })
 									end
 								end
 
+								manuallyUnmapped.current[tool] = nil
+
 								setSlotMapping(function(old)
 									local new = table.clone(old)
 									if existingSlot then
@@ -222,6 +231,10 @@ local function MainHUD(props: { Buttons: any })
 							local source = draggedItem.Source
 							local sourceSlot = draggedItem.SlotIndex
 							if source == "Hotbar" and sourceSlot then
+								local tool = slotMapping[sourceSlot]
+								if tool then
+									manuallyUnmapped.current[tool] = true
+								end
 								setSlotMapping(function(old)
 									local new = table.clone(old)
 									new[sourceSlot] = nil
