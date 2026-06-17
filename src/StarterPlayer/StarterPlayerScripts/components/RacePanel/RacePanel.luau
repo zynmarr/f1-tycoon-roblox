@@ -890,7 +890,7 @@ local function RacePanel(props)
 	-- =========================================================
 	-- Render
 	-- =========================================================
-	return e("Frame", {
+	local mainContainer = e("Frame", {
 		Size = isMobile and UDim2.new(0.96, 0, 0.94, 0) or UDim2.new(0, 800, 0, 530),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		AnchorPoint = Vector2.new(0.5, 0.5),
@@ -1527,6 +1527,16 @@ local function RacePanel(props)
 				}),
 			}),
 		}) or nil,
+	})
+
+	return e("Frame", {
+		Size = props.IsMobile and UDim2.new(1, 0, 1, 0) or UDim2.new(1, 0, 1, 0),
+		Position = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = 0.55,
+		BackgroundColor3 = Color3.fromRGB(10, 10, 12),
+		Active = true,
+	}, {
+		MainContainer = mainContainer
 	})
 end
 

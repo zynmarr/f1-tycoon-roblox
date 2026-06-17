@@ -49,6 +49,7 @@ local function ShopGui(props)
 	return e("ScreenGui", {
 		Name = "ShopGui",
 		ResetOnSpawn = false,
+		ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets,
 	}, {
 		MainContent = MainContent,
 	})

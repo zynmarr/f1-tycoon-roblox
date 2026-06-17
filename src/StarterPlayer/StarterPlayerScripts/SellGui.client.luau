@@ -27,6 +27,7 @@ screenGui.Name = "SellGui"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
+screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 
 -- ===== TOAST STATE MANAGEMENT =====
 local function ToastComponent(props)

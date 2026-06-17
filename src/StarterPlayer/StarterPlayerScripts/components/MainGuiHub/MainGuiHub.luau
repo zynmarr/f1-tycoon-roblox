@@ -75,8 +75,9 @@ return function(props)
 		})
 	end
 
+	local mainContent
 	if isMobile then
-		return e("Frame", {
+		mainContent = e("Frame", {
 			Size = UDim2.new(0.96, 0, 0.94, 0),
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			Position = UDim2.new(0.5, 0, 0.5, 0),
@@ -233,13 +234,12 @@ return function(props)
 				Content = activeComponent
 			})
 		})
-	end
-
-	return e("Frame", {
-		Size = UDim2.new(0.85, 0, 0.85, 0),
-		AnchorPoint = Vector2.new(0.5, 0.5),
-		Position = UDim2.new(0.5, 0, 0.5, 0),
-		BackgroundColor3 = Color3.fromRGB(18, 18, 24),
+	else
+		mainContent = e("Frame", {
+			Size = UDim2.new(0.85, 0, 0.85, 0),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			Position = UDim2.new(0.5, 0, 0.5, 0),
+			BackgroundColor3 = Color3.fromRGB(18, 18, 24),
 		BorderSizePixel = 1,
 		BorderColor3 = Color3.fromRGB(45, 45, 55),
 	}, {
@@ -398,5 +398,15 @@ return function(props)
 		}, {
 			Content = activeComponent
 		})
+	end
+
+	return e("Frame", {
+		Size = props.IsMobile and UDim2.new(1, 0, 1, 0) or UDim2.new(1, 0, 1, 0),
+		Position = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = 0.55,
+		BackgroundColor3 = Color3.fromRGB(10, 10, 12),
+		Active = true,
+	}, {
+		MainContainer = mainContent
 	})
 end

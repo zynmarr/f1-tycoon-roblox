@@ -687,7 +687,19 @@ local function SellGui(props)
 		}, buildListChildren()),
 	})
 
-	return MainFrame
+	if isStorybook then
+		return MainFrame
+	end
+
+	return e("Frame", {
+		Size = props.IsMobile and UDim2.new(1, 0, 1, 0) or UDim2.new(1, 0, 1, 0),
+		Position = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = 0.55,
+		BackgroundColor3 = Color3.fromRGB(10, 10, 12),
+		Active = true,
+	}, {
+		MainContainer = MainFrame
+	})
 end
 
 return SellGui
