@@ -315,22 +315,22 @@ function RoleManager.Init()
 			-- Ikon global 🌐 dengan warna emas khas VIP (#ffc800) untuk badan pesan
 			local richText = string.format("🌐 %s%s<font color='#ffc800'>%s</font>", prefixText, playerText, messageBody)
 
+			print("[RoleManager] Menyiarkan pengumuman global gamepass: " .. playerName .. " membeli " .. gamePassName)
+
 			-- Siarkan ke TextChatService lokal
 			local TextChatService = game:GetService("TextChatService")
-			if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-				local textChannels = TextChatService:FindFirstChild("TextChannels")
-				local generalChannel = textChannels and textChannels:FindFirstChild("RBXGeneral")
-				if generalChannel then
-					pcall(function()
-						(generalChannel :: any):SendSystemMessage(richText)
-					end)
-				else
-					for _, channel in ipairs(TextChatService:GetDescendants()) do
-						if channel:IsA("TextChannel") then
-							pcall(function()
-								(channel :: any):SendSystemMessage(richText)
-							end)
-						end
+			local textChannels = TextChatService:FindFirstChild("TextChannels")
+			local generalChannel = textChannels and textChannels:FindFirstChild("RBXGeneral")
+			if generalChannel then
+				pcall(function()
+					(generalChannel :: any):SendSystemMessage(richText)
+				end)
+			else
+				for _, channel in ipairs(TextChatService:GetDescendants()) do
+					if channel:IsA("TextChannel") then
+						pcall(function()
+							(channel :: any):SendSystemMessage(richText)
+						end)
 					end
 				end
 			end

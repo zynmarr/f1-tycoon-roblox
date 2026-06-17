@@ -417,22 +417,22 @@ function BoxManager:openBox(player: Player, boxName: string)
 			local messageBody = string.format(": telah mendapatkan mobil <b>%s</b> dari <b>%s</b>", carDisplayName, boxDisplayName)
 			local richText = string.format("%s%s<font color='#%s'>%s</font>", prefixText, playerText, rarityColorHex, messageBody)
 
+			print("[BoxManager] Menyiarkan pengumuman gacha mobil Epic+: " .. player.Name .. " mendapatkan " .. carDisplayName)
+
 			-- Siarkan ke TextChatService (Roblox Modern Chat)
 			local TextChatService = game:GetService("TextChatService")
-			if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
-				local textChannels = TextChatService:FindFirstChild("TextChannels")
-				local generalChannel = textChannels and textChannels:FindFirstChild("RBXGeneral")
-				if generalChannel then
-					pcall(function()
-						(generalChannel :: any):SendSystemMessage(richText)
-					end)
-				else
-					for _, channel in ipairs(TextChatService:GetDescendants()) do
-						if channel:IsA("TextChannel") then
-							pcall(function()
-								(channel :: any):SendSystemMessage(richText)
-							end)
-						end
+			local textChannels = TextChatService:FindFirstChild("TextChannels")
+			local generalChannel = textChannels and textChannels:FindFirstChild("RBXGeneral")
+			if generalChannel then
+				pcall(function()
+					(generalChannel :: any):SendSystemMessage(richText)
+				end)
+			else
+				for _, channel in ipairs(TextChatService:GetDescendants()) do
+					if channel:IsA("TextChannel") then
+						pcall(function()
+							(channel :: any):SendSystemMessage(richText)
+						end)
 					end
 				end
 			end
