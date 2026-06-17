@@ -5,6 +5,7 @@ local DataStoreService = game:GetService("DataStoreService")
 local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local MessagingService = game:GetService("MessagingService")
 
 local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
 
@@ -175,6 +176,39 @@ function RoleManager.demote(executor: Player, targetUserId: number): (boolean, s
 	return true, "Berhasil menurunkan pangkat UserID " .. targetUserId
 end
 
+-- Memproses pembelian gamepass dan memicu pengumuman global
+function RoleManager.handleGamePassPurchase(player: Player, gamePassId: number)
+	-- Update instan role VIP di server jika membeli VIP gamepass
+	if gamePassId == VIP_GAMEPASS_ID then
+		playerRoles[player] = "VIP"
+		player:SetAttribute("Role", "VIP")
+		print(`[RoleManager] {player.Name} membeli VIP gamepass. Role diupdate secara instan!`)
+	end
+
+	-- Dapatkan info gamepass secara dinamis
+	local success, info = pcall(function()
+		return MarketplaceService:GetProductInfoAsync(gamePassId, Enum.InfoType.GamePass)
+	end)
+
+	local gamePassName = success and info and info.Name or "Gamepass #" .. tostring(gamePassId)
+	local roleName = RoleManager.getPlayerRole(player)
+
+	local payload = {
+		PlayerName = player.Name,
+		GamePassName = gamePassName,
+		RoleName = roleName,
+	}
+
+	-- Kirim siaran global
+	local publishSuccess, err = pcall(function()
+		MessagingService:PublishAsync("GlobalGamePassPurchase", payload)
+	end)
+
+	if not publishSuccess then
+		warn("[RoleManager] Gagal mengirim siaran global gamepass: " .. tostring(err))
+	end
+end
+
 -- Inisialisasi Server
 function RoleManager.Init()
 	print("[RoleManager] Memulai inisialisasi...")
@@ -241,6 +275,65 @@ function RoleManager.Init()
 
 	Players.PlayerRemoving:Connect(function(player)
 		playerRoles[player] = nil
+	end)
+
+	-- Hubungkan listener pembelian gamepass
+	MarketplaceService.PromptGamePassPurchaseFinished:Connect(function(player, gamePassId, wasPurchased)
+		if wasPurchased then
+			task.spawn(function()
+				RoleManager.handleGamePassPurchase(player, gamePassId)
+			end)
+		end
+	end)
+
+	-- Berlangganan ke siaran gamepass global lintas server
+	pcall(function()
+		MessagingService:SubscribeAsync("GlobalGamePassPurchase", function(message)
+			local data = message.Data
+			if not data or type(data) ~= "table" then
+				return
+			end
+
+			local playerName = data.PlayerName
+			local gamePassName = data.GamePassName
+			local roleName = data.RoleName or "Player"
+
+			-- Dapatkan role info untuk mewarnai prefix
+			local roleData = RoleConfig.Roles[roleName]
+			local roleColorHex = roleData and roleData.Color:ToHex() or "AFAFAF"
+			local roleEmoji = roleData and roleData.Emoji or ""
+			local roleDisplayName = roleData and roleData.DisplayName or "Player"
+
+			-- Bangun teks rich text
+			local prefixText = ""
+			if roleName ~= "Player" and roleData then
+				prefixText = string.format("<font color='#%s'><b>[%s %s]</b></font> ", roleColorHex, roleEmoji, string.upper(roleDisplayName))
+			end
+
+			local playerText = string.format("<font color='#%s'><b>%s</b></font>", roleColorHex, playerName)
+			local messageBody = string.format(": baru saja membeli Gamepass <b>%s</b>!", gamePassName)
+			-- Ikon global 🌐 dengan warna emas khas VIP (#ffc800) untuk badan pesan
+			local richText = string.format("🌐 %s%s<font color='#ffc800'>%s</font>", prefixText, playerText, messageBody)
+
+			-- Siarkan ke TextChatService lokal
+			local TextChatService = game:GetService("TextChatService")
+			if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+				TextChatService:BroadcastSystemMessage(richText)
+			end
+
+			-- Cadangan ke Legacy ChatService lokal
+			local chatServiceRunner = game:GetService("ServerScriptService"):FindFirstChild("ChatServiceRunner")
+			if chatServiceRunner then
+				local successChat, ChatService = pcall(require, chatServiceRunner:WaitForChild("ChatService", 2) :: any)
+				if successChat and ChatService then
+					local channel = ChatService:GetChannel("All")
+					if channel then
+						local plainText = string.gsub(richText, "<[^>]+>", "")
+						channel:SendSystemMessage(plainText, "System", { ChatColor = Color3.fromRGB(255, 200, 0) })
+					end
+				end
+			end
+		end)
 	end)
 end
 

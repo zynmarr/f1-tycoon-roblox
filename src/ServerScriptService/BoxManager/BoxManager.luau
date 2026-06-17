@@ -13,6 +13,7 @@ local RoleManager = require(ServerScriptService.RoleManager.RoleManager)
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
+local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
 
 local CARS_STORAGE = ServerStorage:WaitForChild("F1 CARS")
@@ -292,6 +293,7 @@ function BoxManager:openBox(player: Player, boxName: string)
 		}
 	end
 
+	local currentLevel = targetBox:GetAttribute("Level") or 1
 	local currentAmount: number = targetBox:GetAttribute("Amount") :: number or 1
 	local boxBaseLuck = targetBox:GetAttribute("LuckyChance") or 1
 	local variants: string = targetBox:GetAttribute("Variants") :: string or "Normal"
@@ -385,6 +387,56 @@ function BoxManager:openBox(player: Player, boxName: string)
 
 	local RebirthManager = require(game.ServerScriptService.RebirthManager.RebirthManager)
 	RebirthManager.incrementQuestProgress(player, "OpenBoxes", 1)
+
+	-- ===== CHAT ANNOUNCEMENT FOR EPIC+ CARS =====
+	local announcementTiers = { "Epic", "Legendary", "Mythic", "God", "Celestial", "Admin" }
+	if table.find(announcementTiers, tier) then
+		task.spawn(function()
+			local roleName = RoleManager.getPlayerRole(player)
+			local roleData = RoleConfig.Roles[roleName]
+			local roleColorHex = roleData and roleData.Color:ToHex() or "AFAFAF"
+			local roleEmoji = roleData and roleData.Emoji or ""
+			local roleDisplayName = roleData and roleData.DisplayName or "Player"
+
+			-- Dapatkan nama box dasar secara rapi dari level box
+			local boxLevelConfig = GameConfig.BoxLevels[currentLevel]
+			local boxDisplayName = boxLevelConfig and boxLevelConfig.Name or targetBox.Name
+
+			-- Dapatkan nama mobil dasar (tanpa varian)
+			local carDisplayName = chosenCarTemplate.Name
+			local rarityColor = tierData.Color or Color3.fromRGB(255, 255, 255)
+			local rarityColorHex = rarityColor:ToHex()
+
+			-- Bangun teks dengan format rich text
+			local prefixText = ""
+			if roleName ~= "Player" and roleData then
+				prefixText = string.format("<font color='#%s'><b>[%s %s]</b></font> ", roleColorHex, roleEmoji, string.upper(roleDisplayName))
+			end
+
+			local playerText = string.format("<font color='#%s'><b>%s</b></font>", roleColorHex, player.Name)
+			local messageBody = string.format(": telah mendapatkan mobil <b>%s</b> dari <b>%s</b>", carDisplayName, boxDisplayName)
+			local richText = string.format("%s%s<font color='#%s'>%s</font>", prefixText, playerText, rarityColorHex, messageBody)
+
+			-- Siarkan ke TextChatService (Roblox Modern Chat)
+			local TextChatService = game:GetService("TextChatService")
+			if TextChatService.ChatVersion == Enum.ChatVersion.TextChatService then
+				TextChatService:BroadcastSystemMessage(richText)
+			end
+
+			-- Cadangan untuk Legacy ChatService
+			local chatServiceRunner = ServerScriptService:FindFirstChild("ChatServiceRunner")
+			if chatServiceRunner then
+				local successChat, ChatService = pcall(require, chatServiceRunner:WaitForChild("ChatService", 2) :: any)
+				if successChat and ChatService then
+					local channel = ChatService:GetChannel("All")
+					if channel then
+						local plainText = string.gsub(richText, "<[^>]+>", "")
+						channel:SendSystemMessage(plainText, "System", { ChatColor = rarityColor })
+					end
+				end
+			end
+		end)
+	end
 
 	return {
 		Success = true,

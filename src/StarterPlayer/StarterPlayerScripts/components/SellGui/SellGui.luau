@@ -24,6 +24,7 @@ local function SubCarItem(props)
 	local car = props.car
 	local stackChildName = props.stackChildName
 	local onSell = props.onSell
+	local isMobile = props.isMobile
 
 	local _ = props.name or "Unknown"
 	local carPrice = props.price or 0
@@ -125,6 +126,7 @@ local function CarItem(props)
 	local onSell = props.onSell
 	local isExpanded = props.isExpanded
 	local onToggleExpand = props.onToggleExpand
+	local isMobile = props.isMobile
 
 	local carName = "Unknown"
 	local carPrice = 0
@@ -166,6 +168,7 @@ local function CarItem(props)
 				rarity = carRarity,
 				onSell = onSell,
 				layoutOrder = 1,
+				isMobile = isMobile,
 			})
 		)
 
@@ -187,6 +190,7 @@ local function CarItem(props)
 								rarity = configNode:GetAttribute("Rarity") or "Common",
 								onSell = onSell,
 								layoutOrder = index,
+								isMobile = isMobile,
 							})
 						)
 						index = index + 1
@@ -207,6 +211,7 @@ local function CarItem(props)
 						rarity = carRarity,
 						onSell = onSell,
 						layoutOrder = i,
+						isMobile = isMobile,
 					})
 				)
 			end
@@ -561,6 +566,7 @@ local function SellGui(props)
 					layoutOrder = i,
 					isStorybook = isStorybook,
 					isExpanded = expandedStacks[car] or false,
+					isMobile = isMobile,
 					onToggleExpand = function()
 						local newExpanded = table.clone(expandedStacks)
 						newExpanded[car] = not (expandedStacks[car] or false)
