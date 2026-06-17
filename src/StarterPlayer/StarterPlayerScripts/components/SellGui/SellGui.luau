@@ -405,6 +405,34 @@ local function SellGui(props)
 	local cars, setCars = useState({})
 	local expandedStacks, setExpandedStacks = useState({})
 
+	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
+	useEffect(function()
+		local connection: RBXScriptConnection? = nil
+		local function setupCamera(cam: Camera?)
+			if connection then
+				connection:Disconnect()
+				connection = nil
+			end
+			if cam then
+				connection = cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+					setViewportSize(cam.ViewportSize)
+				end)
+				setViewportSize(cam.ViewportSize)
+			end
+		end
+		setupCamera(workspace.CurrentCamera)
+		local camConnection = workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+			setupCamera(workspace.CurrentCamera)
+		end)
+		return function()
+			if connection then
+				connection:Disconnect()
+			end
+			camConnection:Disconnect()
+		end
+	end, {})
+	local isMobile = viewportSize.X < 650 or viewportSize.Y < 500
+
 	useEffect(function()
 		local activeBackpack = player:WaitForChild("Backpack", 5) or player:FindFirstChild("Backpack")
 		if not activeBackpack then
@@ -563,7 +591,7 @@ local function SellGui(props)
 
 	-- Responsive styling: Scale on mobile, locked max size on PC/Tablet
 	local MainFrame = e("Frame", {
-		Size = isStorybook and UDim2.new(1, 0, 1, 0) or UDim2.new(0.9, 0, 0.8, 0),
+		Size = isStorybook and UDim2.new(1, 0, 1, 0) or (isMobile and UDim2.new(0.96, 0, 0.94, 0) or UDim2.new(0.9, 0, 0.8, 0)),
 		Position = not isStorybook and UDim2.new(0.5, 0, 0.5, 0) or nil,
 		AnchorPoint = not isStorybook and Vector2.new(0.5, 0.5) or nil,
 		BackgroundColor3 = Color3.fromRGB(15, 15, 20),
@@ -574,8 +602,8 @@ local function SellGui(props)
 
 		-- Max / Min constraint for responsiveness across device types
 		UISizeConstraint = not isStorybook and e("UISizeConstraint", {
-			MinSize = Vector2.new(320, 420),
-			MaxSize = Vector2.new(520, 680),
+			MinSize = Vector2.new(280, 220),
+			MaxSize = isMobile and Vector2.new(9999, 9999) or Vector2.new(520, 680),
 		}) or nil,
 
 		-- Header Section

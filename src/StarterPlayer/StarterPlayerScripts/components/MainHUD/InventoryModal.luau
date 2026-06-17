@@ -10,7 +10,15 @@ local useRef = React.useRef
 
 local player = Players.LocalPlayer
 
-local function InventoryModal(props: { OnClose: () -> () })
+local function InventoryModal(props: {
+	IsMobile: boolean,
+	OnClose: () -> (),
+	SlotMapping: { [number]: Tool },
+	HeldTool: Tool?,
+	IsHovered: boolean,
+	SetIsHovered: (boolean) -> (),
+	OnSlotInputBegan: (tool: Tool, input: InputObject) -> (),
+})
 	local backpack = player:FindFirstChild("Backpack") or player:WaitForChild("Backpack", 5)
 	if not backpack then
 		warn("[InventoryModal] Backpack tidak ditemukan!")
@@ -86,19 +94,6 @@ local function InventoryModal(props: { OnClose: () -> () })
 		end
 	end
 
-	-- Handler klik item untuk equip/unequip
-	local function handleItemClick(tool: any)
-		local char = player.Character
-		local hum = char and char:FindFirstChildOfClass("Humanoid")
-		if hum then
-			if tool.Parent == char then
-				hum:UnequipTools()
-			else
-				hum:EquipTool(tool)
-			end
-		end
-	end
-
 	-- Render slots
 	local slotElements = {}
 	for i, tool in ipairs(filteredTools) do
@@ -106,27 +101,45 @@ local function InventoryModal(props: { OnClose: () -> () })
 		local toolName = tool:GetAttribute("Name") or tool.Name
 		local amount = tool:GetAttribute("Amount") or 1
 
+		-- Desain slot yang serasi dengan HotbarSlot
 		slotElements[tool.Name .. "_" .. i] = e("TextButton", {
 			Size = UDim2.fromScale(1, 1),
-			BackgroundColor3 = isEquipped and Color3.fromRGB(80, 40, 180) or Color3.fromRGB(25, 25, 30),
-			BackgroundTransparency = 0.35,
+			BackgroundColor3 = isEquipped and Color3.fromRGB(35, 25, 28) or Color3.fromRGB(20, 20, 24),
+			BackgroundTransparency = isEquipped and 0.15 or 0.4,
 			Text = "",
-			AutoButtonColor = true,
+			AutoButtonColor = false,
 			LayoutOrder = i,
-			[React.Event.Activated] = function()
-				handleItemClick(tool)
+			[React.Event.InputBegan] = function(_, input)
+				props.OnSlotInputBegan(tool, input)
 			end,
 		}, {
 			Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
 			Stroke = e("UIStroke", {
-				Color = isEquipped and Color3.fromRGB(150, 80, 255) or Color3.fromRGB(70, 70, 85),
-				Thickness = 1,
+				Color = isEquipped and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(55, 55, 65),
+				Thickness = isEquipped and 1.5 or 1,
+			}, {
+				Gradient = e("UIGradient", {
+					Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, isEquipped and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(70, 70, 80)),
+						ColorSequenceKeypoint.new(1, isEquipped and Color3.fromRGB(180, 20, 50) or Color3.fromRGB(40, 40, 45)),
+					}),
+					Rotation = 45,
+				})
+			}),
+
+			-- Carbon fiber background gradient
+			BackgroundGradient = e("UIGradient", {
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, isEquipped and Color3.fromRGB(50, 15, 20) or Color3.fromRGB(24, 24, 28)),
+					ColorSequenceKeypoint.new(1, isEquipped and Color3.fromRGB(20, 5, 8) or Color3.fromRGB(12, 12, 14)),
+				}),
+				Rotation = 45,
 			}),
 
 			-- Render 3D Model
 			CarView = e("ViewportFrame", {
-				Size = UDim2.fromScale(0.9, 0.9),
-				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.fromScale(0.85, 0.85),
+				Position = UDim2.fromScale(0.5, 0.45),
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				BackgroundTransparency = 1,
 				ref = function(rbx: any)
@@ -136,39 +149,71 @@ local function InventoryModal(props: { OnClose: () -> () })
 				end,
 			}),
 
-			-- Nama Item
+			-- Nama Item (Lebih bersih di bagian bawah)
 			ItemName = e("TextLabel", {
 				Text = toolName,
-				Size = UDim2.new(1, -6, 0, 10),
-				Position = UDim2.new(0.5, 0, 1, -12),
+				Size = UDim2.new(1, -8, 0, 12),
+				Position = UDim2.new(0.5, 0, 1, -14),
 				AnchorPoint = Vector2.new(0.5, 0),
 				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextSize = 6,
-				Font = Enum.Font.GothamMedium,
+				TextColor3 = Color3.fromRGB(240, 240, 240),
+				TextSize = 7,
+				Font = Enum.Font.GothamBold,
 				TextWrapped = true,
 			}),
 
-			-- Jumlah Item
-			ItemAmount = e("TextLabel", {
-				Text = "x" .. tostring(amount),
-				Size = UDim2.fromOffset(25, 12),
-				Position = UDim2.new(1, -27, 0, 4),
-				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(0, 255, 204),
-				TextSize = 8,
-				Font = Enum.Font.GothamBold,
-				TextXAlignment = Enum.TextXAlignment.Right,
-			}),
+			-- Jumlah Item (Badge Pojok Kanan Atas)
+			ItemAmount = (amount > 1) and e("Frame", {
+				Size = UDim2.fromOffset(24, 12),
+				Position = UDim2.new(1, -4, 0, 4),
+				AnchorPoint = Vector2.new(1, 0),
+				BackgroundColor3 = Color3.fromRGB(15, 15, 18),
+				ZIndex = 5,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
+				Stroke = e("UIStroke", {
+					Color = Color3.fromRGB(0, 255, 204),
+					Thickness = 0.8,
+				}),
+				Text = e("TextLabel", {
+					Text = "x" .. tostring(amount),
+					Size = UDim2.fromScale(1, 1),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(0, 255, 204),
+					TextSize = 7,
+					Font = Enum.Font.GothamBold,
+					TextXAlignment = Enum.TextXAlignment.Center,
+					TextYAlignment = Enum.TextYAlignment.Center,
+				})
+			}) or nil,
+
+			-- Aksen Neon Merah untuk item aktif
+			ActiveIndicator = isEquipped and e("Frame", {
+				Size = UDim2.new(0.4, 0, 0, 2),
+				Position = UDim2.new(0.5, 0, 1, -3),
+				AnchorPoint = Vector2.new(0.5, 1),
+				BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+				BorderSizePixel = 0,
+				ZIndex = 4,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 1) })
+			}) or nil,
 		})
 	end
 
 	return e("Frame", {
-		Size = UDim2.fromScale(1, 1),
-		BackgroundTransparency = 0.5,
-		BackgroundColor3 = Color3.fromRGB(10, 10, 15),
+		Size = props.IsMobile and UDim2.new(1, 0, 1, -80) or UDim2.new(1, 0, 1, -100),
+		Position = UDim2.new(0, 0, 0, 0),
+		BackgroundTransparency = 0.55,
+		BackgroundColor3 = Color3.fromRGB(10, 10, 12),
 		Active = true,
 		ZIndex = 20,
+		[React.Event.MouseEnter] = function()
+			props.SetIsHovered(true)
+		end,
+		[React.Event.MouseLeave] = function()
+			props.SetIsHovered(false)
+		end,
 	}, {
 		-- Deteksi klik luar untuk menutup modal
 		BackdropBtn = e("TextButton", {
@@ -178,19 +223,40 @@ local function InventoryModal(props: { OnClose: () -> () })
 			[React.Event.Activated] = props.OnClose,
 		}),
 
-		-- Kontainer Modal
+		-- Kontainer Modal (Responsive Size & Position)
 		ModalContainer = e("Frame", {
-			Size = UDim2.fromOffset(450, 350),
+			Size = props.IsMobile and UDim2.new(0.96, 0, 0.92, 0) or UDim2.fromOffset(450, 320),
 			Position = UDim2.new(0.5, 0, 0.5, 0),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			BackgroundColor3 = Color3.fromRGB(20, 20, 25),
-			BackgroundTransparency = 0.25,
+			BackgroundColor3 = Color3.fromRGB(15, 15, 18),
+			BackgroundTransparency = 0.2,
 			BorderSizePixel = 0,
 		}, {
 			Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
 			Stroke = e("UIStroke", {
-				Color = Color3.fromRGB(100, 50, 250),
-				Thickness = 1.5,
+				Color = Color3.fromRGB(55, 55, 65),
+				Thickness = 1.2,
+			}, {
+				Gradient = e("UIGradient", {
+					Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 35, 85)), -- Red highlight on border
+						ColorSequenceKeypoint.new(0.3, Color3.fromRGB(55, 55, 65)),
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 35)),
+					}),
+					Rotation = -45,
+				})
+			}),
+
+			-- Aksen LED Shift stripe di tengah atas modal
+			RacingStripe = e("Frame", {
+				Size = UDim2.new(0.25, 0, 0, 2),
+				Position = UDim2.new(0.5, 0, 0, 1),
+				AnchorPoint = Vector2.new(0.5, 0),
+				BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+				BorderSizePixel = 0,
+				ZIndex = 6,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 1) })
 			}),
 
 			-- Layout & Padding
@@ -214,12 +280,12 @@ local function InventoryModal(props: { OnClose: () -> () })
 				LayoutOrder = 1,
 			}, {
 				Title = e("TextLabel", {
-					Text = "🎒 BACKPACK",
+					Text = "🏁 GARASI INVENTORY",
 					Size = UDim2.new(0.5, 0, 1, 0),
 					Position = UDim2.new(0, 0, 0, 0),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextSize = 16,
+					TextSize = 14,
 					Font = Enum.Font.GothamBold,
 					TextXAlignment = Enum.TextXAlignment.Left,
 				}),
@@ -229,28 +295,32 @@ local function InventoryModal(props: { OnClose: () -> () })
 					Size = UDim2.fromOffset(24, 24),
 					Position = UDim2.new(1, 0, 0.5, 0),
 					AnchorPoint = Vector2.new(1, 0.5),
-					BackgroundColor3 = Color3.fromRGB(40, 40, 45),
-					BackgroundTransparency = 0.5,
-					TextColor3 = Color3.fromRGB(255, 100, 100),
+					BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+					BackgroundTransparency = 0.1,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
 					Font = Enum.Font.GothamBold,
-					TextSize = 14,
+					TextSize = 12,
 					AutoButtonColor = true,
 					[React.Event.Activated] = props.OnClose,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+					Stroke = e("UIStroke", {
+						Color = Color3.fromRGB(255, 100, 120),
+						Thickness = 0.8,
+					})
 				}),
 			}),
 
 			-- Search Bar
 			SearchBarFrame = e("Frame", {
 				Size = UDim2.new(1, 0, 0, 32),
-				BackgroundColor3 = Color3.fromRGB(30, 30, 35),
-				BackgroundTransparency = 0.5,
+				BackgroundColor3 = Color3.fromRGB(25, 25, 30),
+				BackgroundTransparency = 0.3,
 				LayoutOrder = 2,
 			}, {
 				Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
 				Stroke = e("UIStroke", {
-					Color = Color3.fromRGB(60, 60, 70),
+					Color = Color3.fromRGB(55, 55, 65),
 					Thickness = 1,
 				}),
 
@@ -259,11 +329,11 @@ local function InventoryModal(props: { OnClose: () -> () })
 					Position = UDim2.new(0, 10, 0, 0),
 					BackgroundTransparency = 1,
 					Text = searchText,
-					PlaceholderText = "Cari item...",
+					PlaceholderText = "Cari mobil atau perkakas...",
 					Font = Enum.Font.Gotham,
 					TextSize = 12,
 					TextColor3 = Color3.fromRGB(240, 240, 240),
-					PlaceholderColor3 = Color3.fromRGB(120, 120, 130),
+					PlaceholderColor3 = Color3.fromRGB(110, 110, 120),
 					TextXAlignment = Enum.TextXAlignment.Left,
 					ClearTextOnFocus = false,
 					[React.Change.Text] = function(rbx: any)
@@ -276,19 +346,19 @@ local function InventoryModal(props: { OnClose: () -> () })
 			GridScroll = e(
 				"ScrollingFrame",
 				{
-					Size = UDim2.new(1, 0, 1, -80),
+					Size = UDim2.new(1, 0, 1, -95),
 					BackgroundTransparency = 1,
 					CanvasSize = UDim2.new(0, 0, 0, 0),
-					AutomaticCanvasSize = Enum.AutomaticSize.Y,
+					AutomaticCanvasSize = Enum.AutomaticSize.Y :: any, -- Casted to any to prevent Luau type errors
 					ScrollBarThickness = 4,
-					ScrollBarImageColor3 = Color3.fromRGB(100, 50, 250),
+					ScrollBarImageColor3 = Color3.fromRGB(255, 35, 85), -- Red scrollbar
 					LayoutOrder = 3,
 				},
 				(function()
 					local scrollChildren = {
 						GridLayout = e("UIGridLayout", {
-							CellSize = UDim2.fromOffset(70, 70),
-							CellPadding = UDim2.fromOffset(10, 10),
+							CellSize = props.IsMobile and UDim2.fromOffset(60, 60) or UDim2.fromOffset(70, 70),
+							CellPadding = props.IsMobile and UDim2.fromOffset(6, 6) or UDim2.fromOffset(10, 10),
 							SortOrder = Enum.SortOrder.LayoutOrder,
 						}),
 					}

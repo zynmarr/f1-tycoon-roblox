@@ -61,6 +61,34 @@ return function(props: any)
 
 	local otherPlayer = isP1 and state.Player2 or state.Player1
 
+	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
+	useEffect(function()
+		local connection: RBXScriptConnection? = nil
+		local function setupCamera(cam: Camera?)
+			if connection then
+				connection:Disconnect()
+				connection = nil
+			end
+			if cam then
+				connection = cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+					setViewportSize(cam.ViewportSize)
+				end)
+				setViewportSize(cam.ViewportSize)
+			end
+		end
+		setupCamera(workspace.CurrentCamera)
+		local camConnection = workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+			setupCamera(workspace.CurrentCamera)
+		end)
+		return function()
+			if connection then
+				connection:Disconnect()
+			end
+			camConnection:Disconnect()
+		end
+	end, {})
+	local isMobile = viewportSize.X < 650 or viewportSize.Y < 500
+
 	-- 1. STATE FOR INVENTORY & FILTER
 	local carSearchText, setCarSearchText = useState("")
 	local ownedCars, setOwnedCars = useState(getOwnedCars(localPlayer))
@@ -255,7 +283,7 @@ return function(props: any)
 
 	-- 4. MAIN LAYOUT
 	return e("Frame", {
-		Size = UDim2.new(0.85, 0, 0.85, 0),
+		Size = isMobile and UDim2.new(0.96, 0, 0.94, 0) or UDim2.new(0.85, 0, 0.85, 0),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		BackgroundColor3 = Color3.fromRGB(15, 15, 20),
@@ -263,7 +291,10 @@ return function(props: any)
 		BorderColor3 = Color3.fromRGB(45, 45, 55),
 	}, {
 		Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
-		SizeConstraint = e("UISizeConstraint", { MaxSize = Vector2.new(820, 480) }),
+		SizeConstraint = e("UISizeConstraint", {
+			MinSize = Vector2.new(300, 200),
+			MaxSize = isMobile and Vector2.new(9999, 9999) or Vector2.new(820, 480),
+		}),
 
 		-- HEADER
 		Header = e("Frame", {
@@ -301,8 +332,8 @@ return function(props: any)
 
 		-- WORKSPACE (OFFERS AREA)
 		TradeArea = e("Frame", {
-			Size = UDim2.new(1, -30, 0.5, 0),
-			Position = UDim2.new(0, 15, 0, 50),
+			Size = UDim2.new(1, -30, 0.4, 0),
+			Position = UDim2.new(0, 15, 0, 45),
 			BackgroundTransparency = 1,
 		}, {
 			-- Player 1 Offer (Mine)
@@ -387,8 +418,8 @@ return function(props: any)
 
 		-- INVENTORY DRAWER (BOTTOM)
 		InventoryDrawer = e("Frame", {
-			Size = UDim2.new(1, -30, 0.35, 0),
-			Position = UDim2.new(0, 15, 0, 280),
+			Size = UDim2.new(1, -30, 0.36, 0),
+			Position = UDim2.new(0, 15, 0.54, 0),
 			BackgroundTransparency = 1,
 		}, {
 			Header = e("Frame", {

@@ -327,6 +327,34 @@ local function RacePanel(props)
 
 	local playerUid = tostring(player.UserId)
 
+	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
+	useEffect(function()
+		local connection: RBXScriptConnection? = nil
+		local function setupCamera(cam: Camera?)
+			if connection then
+				connection:Disconnect()
+				connection = nil
+			end
+			if cam then
+				connection = cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+					setViewportSize(cam.ViewportSize)
+				end)
+				setViewportSize(cam.ViewportSize)
+			end
+		end
+		setupCamera(workspace.CurrentCamera)
+		local camConnection = workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+			setupCamera(workspace.CurrentCamera)
+		end)
+		return function()
+			if connection then
+				connection:Disconnect()
+			end
+			camConnection:Disconnect()
+		end
+	end, {})
+	local isMobile = viewportSize.X < 650 or viewportSize.Y < 500
+
 	-- Sync RaceStats attribute
 	useEffect(function()
 		local function update()
@@ -609,10 +637,261 @@ local function RacePanel(props)
 	end
 
 	-- =========================================================
+	-- Layout helper for mobile responsiveness
+	-- =========================================================
+	local garageCol = e("Frame", {
+		Size = isMobile and UDim2.new(1, 0, 0, 180) or UDim2.new(0.54, -7, 1, 0),
+		BackgroundColor3 = Color3.fromRGB(14, 14, 20),
+		BorderSizePixel = 0,
+		LayoutOrder = 1,
+	}, {
+		Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
+		Pad = e(
+			"UIPadding",
+			{
+				PaddingTop = UDim.new(0, 10),
+				PaddingBottom = UDim.new(0, 10),
+				PaddingLeft = UDim.new(0, 10),
+				PaddingRight = UDim.new(0, 10),
+			}
+		),
+
+		GarageHeader = e("TextLabel", {
+			Text = "PILIH MOBIL AKTIF (" .. #ownedCars .. ")",
+			Size = UDim2.new(1, 0, 0, 18),
+			BackgroundTransparency = 1,
+			TextColor3 = Color3.fromRGB(0, 170, 255),
+			Font = Enum.Font.GothamBold,
+			TextSize = 10,
+			TextXAlignment = Enum.TextXAlignment.Left,
+		}),
+
+		CarScroll = e(
+			"ScrollingFrame",
+			{
+				Size = UDim2.new(1, 0, 1, -22),
+				Position = UDim2.new(0, 0, 0, 22),
+				BackgroundTransparency = 1,
+				CanvasSize = UDim2.new(0, 0, 0, math.max(1, #ownedCars) * 52),
+				ScrollBarThickness = 4,
+				BorderSizePixel = 0,
+			},
+			mergeChildren(
+				{
+					List = e(
+						"UIListLayout",
+						{ FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 5) }
+					),
+				},
+				buildCarList(ownedCars, selectedCar, setSelectedCar)
+			)
+		),
+	})
+
+	local modeCol = e("Frame", {
+		Size = isMobile and UDim2.new(1, 0, 0, 310) or UDim2.new(0.46, -7, 1, 0),
+		BackgroundTransparency = 1,
+		LayoutOrder = 2,
+	}, {
+		List = e(
+			"UIListLayout",
+			{ FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 14) }
+		),
+
+		AICard = e("Frame", {
+			Size = isMobile and UDim2.new(1, 0, 0, 140) or UDim2.new(1, 0, 0.52, -7),
+			BackgroundColor3 = Color3.fromRGB(14, 14, 20),
+			BorderSizePixel = 0,
+			LayoutOrder = 1,
+		}, {
+			Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
+			Pad = e(
+				"UIPadding",
+				{
+					PaddingTop = UDim.new(0, 12),
+					PaddingBottom = UDim.new(0, 12),
+					PaddingLeft = UDim.new(0, 12),
+					PaddingRight = UDim.new(0, 12),
+				}
+			),
+			List = e(
+				"UIListLayout",
+				{ FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 8) }
+			),
+
+			AIHdr = e(
+				"TextLabel",
+				{
+					Text = "🤖 BALAPAN AI",
+					Size = UDim2.new(1, 0, 0, 14),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(0, 220, 80),
+					Font = Enum.Font.GothamBold,
+					TextSize = 10,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}
+			),
+
+			DiffRow = e(
+				"Frame",
+				{ Size = UDim2.new(1, 0, 0, 28), BackgroundTransparency = 1 },
+				{
+					List = e(
+						"UIListLayout",
+						{
+							FillDirection = Enum.FillDirection.Horizontal,
+							Padding = UDim.new(0, 6),
+						}
+					),
+					Easy = diffBtn("EASY", "Easy", Color3.fromRGB(0, 140, 55)),
+					Med = diffBtn("MEDIUM", "Medium", Color3.fromRGB(190, 110, 0)),
+					Hard = diffBtn("HARD", "Hard", Color3.fromRGB(190, 25, 35)),
+				}
+			),
+
+			RewardLbl = e(
+				"TextLabel",
+				{
+					Text = aiRewardText,
+					Size = UDim2.new(1, 0, 0, 13),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(170, 170, 170),
+					Font = Enum.Font.GothamMedium,
+					TextSize = 9,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}
+			),
+
+			StartBtn = e("TextButton", {
+				Text = "▶  MULAI BALAP AI",
+				Size = UDim2.new(1, 0, 0, 34),
+				BackgroundColor3 = Color3.fromRGB(0, 110, 240),
+				TextColor3 = Color3.fromRGB(255, 255, 255),
+				Font = Enum.Font.GothamBold,
+				TextSize = 11,
+				BorderSizePixel = 0,
+				[React.Event.Activated] = startAIRace,
+			}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
+		}),
+
+		PvPCard = e("Frame", {
+			Size = isMobile and UDim2.new(1, 0, 0, 150) or UDim2.new(1, 0, 0.48, -7),
+			BackgroundColor3 = Color3.fromRGB(14, 14, 20),
+			BorderSizePixel = 0,
+			LayoutOrder = 2,
+		}, {
+			Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
+			Pad = e(
+				"UIPadding",
+				{
+					PaddingTop = UDim.new(0, 12),
+					PaddingBottom = UDim.new(0, 12),
+					PaddingLeft = UDim.new(0, 12),
+					PaddingRight = UDim.new(0, 12),
+				}
+			),
+			List = e(
+				"UIListLayout",
+				{ FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 8) }
+			),
+
+			PvPHdr = e(
+				"TextLabel",
+				{
+					Text = "⚔️  TANTANG PEMAIN (PvP)",
+					Size = UDim2.new(1, 0, 0, 14),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(220, 20, 50),
+					Font = Enum.Font.GothamBold,
+					TextSize = 10,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}
+			),
+
+			OppInput = e("TextBox", {
+				Text = opponentName,
+				PlaceholderText = "Nama Player Lawan...",
+				Size = UDim2.new(1, 0, 0, 24),
+				BackgroundColor3 = Color3.fromRGB(24, 24, 30),
+				TextColor3 = Color3.fromRGB(255, 255, 255),
+				PlaceholderColor3 = Color3.fromRGB(90, 90, 90),
+				Font = Enum.Font.GothamMedium,
+				TextSize = 10,
+				BorderSizePixel = 0,
+				ClearTextOnFocus = false,
+				[React.Change.Text] = function(box)
+					setOpponentName(box.Text)
+				end,
+			}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
+
+			BetInput = e("TextBox", {
+				Text = betAmount,
+				PlaceholderText = "Jumlah taruhan Cash...",
+				Size = UDim2.new(1, 0, 0, 24),
+				BackgroundColor3 = Color3.fromRGB(24, 24, 30),
+				TextColor3 = Color3.fromRGB(255, 215, 0),
+				PlaceholderColor3 = Color3.fromRGB(90, 90, 90),
+				Font = Enum.Font.GothamBold,
+				TextSize = 10,
+				BorderSizePixel = 0,
+				ClearTextOnFocus = false,
+				[React.Change.Text] = function(box)
+					setBetAmount(box.Text)
+				end,
+			}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
+
+			ChalBtn = e("TextButton", {
+				Text = "⚔  KIRIM TANTANGAN",
+				Size = UDim2.new(1, 0, 0, 28),
+				BackgroundColor3 = Color3.fromRGB(140, 15, 40),
+				TextColor3 = Color3.fromRGB(255, 255, 255),
+				Font = Enum.Font.GothamBold,
+				TextSize = 10,
+				BorderSizePixel = 0,
+				[React.Event.Activated] = sendChallenge,
+			}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
+		}),
+	})
+
+	local columnsFrame
+	if isMobile then
+		columnsFrame = e("ScrollingFrame", {
+			Size = UDim2.new(1, 0, 1, (notification ~= "") and -54 or -36),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
+			CanvasSize = UDim2.new(0, 0, 0, 510),
+			ScrollingDirection = Enum.ScrollingDirection.Y,
+			ScrollBarThickness = 4,
+			ScrollBarImageColor3 = Color3.fromRGB(80, 80, 95),
+		}, {
+			List = e("UIListLayout", {
+				FillDirection = Enum.FillDirection.Vertical,
+				Padding = UDim.new(0, 10),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}),
+			Garage = garageCol,
+			Mode = modeCol,
+		})
+	else
+		columnsFrame = e("Frame", {
+			Size = UDim2.new(1, 0, 1, (notification ~= "") and -54 or -36),
+			BackgroundTransparency = 1,
+		}, {
+			List = e("UIListLayout", {
+				FillDirection = Enum.FillDirection.Horizontal,
+				Padding = UDim.new(0, 14),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}),
+			Garage = garageCol,
+			Mode = modeCol,
+		})
+	end
+
+	-- =========================================================
 	-- Render
 	-- =========================================================
 	return e("Frame", {
-		Size = UDim2.new(0, 800, 0, 530),
+		Size = isMobile and UDim2.new(0.96, 0, 0.94, 0) or UDim2.new(0, 800, 0, 530),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		BackgroundColor3 = Color3.fromRGB(18, 18, 24),
@@ -623,7 +902,7 @@ local function RacePanel(props)
 
 		-- ===== SIDEBAR =====
 		Sidebar = e("Frame", {
-			Size = UDim2.new(0, 175, 1, 0),
+			Size = isMobile and UDim2.new(0, 130, 1, 0) or UDim2.new(0, 175, 1, 0),
 			BackgroundColor3 = Color3.fromRGB(12, 12, 16),
 			BorderSizePixel = 0,
 		}, {
@@ -645,7 +924,7 @@ local function RacePanel(props)
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(220, 20, 50),
 				Font = Enum.Font.GothamBlack,
-				TextSize = 14,
+				TextSize = isMobile and 10 or 14,
 			}),
 			Sep = e("Frame", { Size = UDim2.new(1, 0, 0, 1), BackgroundColor3 = Color3.fromRGB(40, 40, 48) }),
 
@@ -668,8 +947,8 @@ local function RacePanel(props)
 
 		-- ===== MAIN CONTENT =====
 		Content = e("Frame", {
-			Size = UDim2.new(1, -175, 1, 0),
-			Position = UDim2.new(0, 175, 0, 0),
+			Size = isMobile and UDim2.new(1, -130, 1, 0) or UDim2.new(1, -175, 1, 0),
+			Position = isMobile and UDim2.new(0, 130, 0, 0) or UDim2.new(0, 175, 0, 0),
 			BackgroundTransparency = 1,
 		}, {
 			Pad = e(
@@ -721,235 +1000,19 @@ local function RacePanel(props)
 							}),
 						}) or nil,
 
-						Columns = e("Frame", {
-							Size = UDim2.new(1, 0, 1, (notification ~= "") and -54 or -36),
-							BackgroundTransparency = 1,
-						}, {
-							List = e(
-								"UIListLayout",
-								{ FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 14) }
-							),
-
-							-- Left: Garage
-							GarageCol = e("Frame", {
-								Size = UDim2.new(0.54, -7, 1, 0),
-								BackgroundColor3 = Color3.fromRGB(14, 14, 20),
-								BorderSizePixel = 0,
-							}, {
-								Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
-								Pad = e(
-									"UIPadding",
-									{
-										PaddingTop = UDim.new(0, 10),
-										PaddingBottom = UDim.new(0, 10),
-										PaddingLeft = UDim.new(0, 10),
-										PaddingRight = UDim.new(0, 10),
-									}
-								),
-
-								GarageHeader = e("TextLabel", {
-									Text = "PILIH MOBIL AKTIF (" .. #ownedCars .. ")",
-									Size = UDim2.new(1, 0, 0, 18),
-									BackgroundTransparency = 1,
-									TextColor3 = Color3.fromRGB(0, 170, 255),
-									Font = Enum.Font.GothamBold,
-									TextSize = 10,
-									TextXAlignment = Enum.TextXAlignment.Left,
-								}),
-
-								CarScroll = e(
-									"ScrollingFrame",
-									{
-										Size = UDim2.new(1, 0, 1, -22),
-										Position = UDim2.new(0, 0, 0, 22),
-										BackgroundTransparency = 1,
-										CanvasSize = UDim2.new(0, 0, 0, math.max(1, #ownedCars) * 52),
-										ScrollBarThickness = 4,
-										BorderSizePixel = 0,
-									},
-									mergeChildren(
-										{
-											List = e(
-												"UIListLayout",
-												{ FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 5) }
-											),
-										},
-										buildCarList(ownedCars, selectedCar, setSelectedCar)
-									)
-								),
-							}),
-
-							-- Right: Mode selectors
-							ModeCol = e("Frame", {
-								Size = UDim2.new(0.46, -7, 1, 0),
-								BackgroundTransparency = 1,
-							}, {
-								List = e(
-									"UIListLayout",
-									{ FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 14) }
-								),
-
-								AICard = e("Frame", {
-									Size = UDim2.new(1, 0, 0.52, -7),
-									BackgroundColor3 = Color3.fromRGB(14, 14, 20),
-									BorderSizePixel = 0,
-								}, {
-									Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
-									Pad = e(
-										"UIPadding",
-										{
-											PaddingTop = UDim.new(0, 12),
-											PaddingBottom = UDim.new(0, 12),
-											PaddingLeft = UDim.new(0, 12),
-											PaddingRight = UDim.new(0, 12),
-										}
-									),
-									List = e(
-										"UIListLayout",
-										{ FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 8) }
-									),
-
-									AIHdr = e(
-										"TextLabel",
-										{
-											Text = "🤖 BALAPAN AI",
-											Size = UDim2.new(1, 0, 0, 14),
-											BackgroundTransparency = 1,
-											TextColor3 = Color3.fromRGB(0, 220, 80),
-											Font = Enum.Font.GothamBold,
-											TextSize = 10,
-											TextXAlignment = Enum.TextXAlignment.Left,
-										}
-									),
-
-									DiffRow = e(
-										"Frame",
-										{ Size = UDim2.new(1, 0, 0, 28), BackgroundTransparency = 1 },
-										{
-											List = e(
-												"UIListLayout",
-												{
-													FillDirection = Enum.FillDirection.Horizontal,
-													Padding = UDim.new(0, 6),
-												}
-											),
-											Easy = diffBtn("EASY", "Easy", Color3.fromRGB(0, 140, 55)),
-											Med = diffBtn("MEDIUM", "Medium", Color3.fromRGB(190, 110, 0)),
-											Hard = diffBtn("HARD", "Hard", Color3.fromRGB(190, 25, 35)),
-										}
-									),
-
-									RewardLbl = e(
-										"TextLabel",
-										{
-											Text = aiRewardText,
-											Size = UDim2.new(1, 0, 0, 13),
-											BackgroundTransparency = 1,
-											TextColor3 = Color3.fromRGB(170, 170, 170),
-											Font = Enum.Font.GothamMedium,
-											TextSize = 9,
-											TextXAlignment = Enum.TextXAlignment.Left,
-										}
-									),
-
-									StartBtn = e("TextButton", {
-										Text = "▶  MULAI BALAP AI",
-										Size = UDim2.new(1, 0, 0, 34),
-										BackgroundColor3 = Color3.fromRGB(0, 110, 240),
-										TextColor3 = Color3.fromRGB(255, 255, 255),
-										Font = Enum.Font.GothamBold,
-										TextSize = 11,
-										BorderSizePixel = 0,
-										[React.Event.Activated] = startAIRace,
-									}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
-								}),
-
-								PvPCard = e("Frame", {
-									Size = UDim2.new(1, 0, 0.48, -7),
-									BackgroundColor3 = Color3.fromRGB(14, 14, 20),
-									BorderSizePixel = 0,
-								}, {
-									Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
-									Pad = e(
-										"UIPadding",
-										{
-											PaddingTop = UDim.new(0, 12),
-											PaddingBottom = UDim.new(0, 12),
-											PaddingLeft = UDim.new(0, 12),
-											PaddingRight = UDim.new(0, 12),
-										}
-									),
-									List = e(
-										"UIListLayout",
-										{ FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 8) }
-									),
-
-									PvPHdr = e(
-										"TextLabel",
-										{
-											Text = "⚔️  TANTANG PEMAIN (PvP)",
-											Size = UDim2.new(1, 0, 0, 14),
-											BackgroundTransparency = 1,
-											TextColor3 = Color3.fromRGB(220, 20, 50),
-											Font = Enum.Font.GothamBold,
-											TextSize = 10,
-											TextXAlignment = Enum.TextXAlignment.Left,
-										}
-									),
-
-									OppInput = e("TextBox", {
-										Text = opponentName,
-										PlaceholderText = "Nama Player Lawan...",
-										Size = UDim2.new(1, 0, 0, 24),
-										BackgroundColor3 = Color3.fromRGB(24, 24, 30),
-										TextColor3 = Color3.fromRGB(255, 255, 255),
-										PlaceholderColor3 = Color3.fromRGB(90, 90, 90),
-										Font = Enum.Font.GothamMedium,
-										TextSize = 10,
-										BorderSizePixel = 0,
-										ClearTextOnFocus = false,
-										[React.Change.Text] = function(box)
-											setOpponentName(box.Text)
-										end,
-									}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
-
-									BetInput = e("TextBox", {
-										Text = betAmount,
-										PlaceholderText = "Jumlah taruhan Cash...",
-										Size = UDim2.new(1, 0, 0, 24),
-										BackgroundColor3 = Color3.fromRGB(24, 24, 30),
-										TextColor3 = Color3.fromRGB(255, 215, 0),
-										PlaceholderColor3 = Color3.fromRGB(90, 90, 90),
-										Font = Enum.Font.GothamBold,
-										TextSize = 10,
-										BorderSizePixel = 0,
-										ClearTextOnFocus = false,
-										[React.Change.Text] = function(box)
-											setBetAmount(box.Text)
-										end,
-									}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }),
-
-									ChalBtn = e("TextButton", {
-										Text = "⚔  KIRIM TANTANGAN",
-										Size = UDim2.new(1, 0, 0, 28),
-										BackgroundColor3 = Color3.fromRGB(140, 15, 40),
-										TextColor3 = Color3.fromRGB(255, 255, 255),
-										Font = Enum.Font.GothamBold,
-										TextSize = 10,
-										BorderSizePixel = 0,
-										[React.Event.Activated] = sendChallenge,
-									}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
-								}),
-							}),
-						}),
+						Columns = columnsFrame,
 					})
 				or nil,
 
 			-- ===== STATS =====
 			Stats = (screen == "Stats")
-					and e("Frame", {
+					and e(isMobile and "ScrollingFrame" or "Frame", {
 						Size = UDim2.new(1, 0, 1, 0),
 						BackgroundTransparency = 1,
+						BorderSizePixel = 0,
+						CanvasSize = isMobile and UDim2.new(0, 0, 0, 320) or nil,
+						ScrollingDirection = isMobile and Enum.ScrollingDirection.Y or nil,
+						ScrollBarThickness = isMobile and 4 or nil,
 					}, {
 						List = e(
 							"UIListLayout",
@@ -969,10 +1032,14 @@ local function RacePanel(props)
 							}
 						),
 
-						CardGrid = e("Frame", { Size = UDim2.new(1, 0, 0, 220), BackgroundTransparency = 1 }, {
+						CardGrid = e("Frame", { Size = UDim2.new(1, 0, 0, isMobile and 190 or 220), BackgroundTransparency = 1 }, {
 							GridLayout = e(
 								"UIGridLayout",
-								{ CellSize = UDim2.new(0.22, 0, 0, 100), CellPadding = UDim2.new(0.04, 0, 0, 0) }
+								{
+									CellSize = isMobile and UDim2.new(0.46, 0, 0, 85) or UDim2.new(0.22, 0, 0, 100),
+									CellPadding = isMobile and UDim2.new(0.08, 0, 0, 10) or UDim2.new(0.04, 0, 0, 0),
+									SortOrder = Enum.SortOrder.LayoutOrder,
+								}
 							),
 
 							CardWins = e(
@@ -1107,9 +1174,13 @@ local function RacePanel(props)
 				or nil,
 
 			-- ===== ACTIVE RACE =====
-			Race = (screen == "Race" and raceData ~= nil) and e("Frame", {
+			Race = (screen == "Race" and raceData ~= nil) and e(isMobile and "ScrollingFrame" or "Frame", {
 				Size = UDim2.new(1, 0, 1, 0),
 				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				CanvasSize = isMobile and UDim2.new(0, 0, 0, 520) or nil,
+				ScrollingDirection = isMobile and Enum.ScrollingDirection.Y or nil,
+				ScrollBarThickness = isMobile and 4 or nil,
 			}, {
 				-- Start lights bar
 				LightsBar = e("Frame", {
@@ -1271,9 +1342,13 @@ local function RacePanel(props)
 			}) or nil,
 
 			-- ===== OUTCOME =====
-			Outcome = (screen == "Outcome") and e("Frame", {
+			Outcome = (screen == "Outcome") and e(isMobile and "ScrollingFrame" or "Frame", {
 				Size = UDim2.new(1, 0, 1, 0),
 				BackgroundTransparency = 1,
+				BorderSizePixel = 0,
+				CanvasSize = isMobile and UDim2.new(0, 0, 0, 420) or nil,
+				ScrollingDirection = isMobile and Enum.ScrollingDirection.Y or nil,
+				ScrollBarThickness = isMobile and 4 or nil,
 			}, {
 				List = e(
 					"UIListLayout",
