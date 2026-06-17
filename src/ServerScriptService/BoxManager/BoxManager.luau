@@ -419,36 +419,15 @@ function BoxManager:openBox(player: Player, boxName: string)
 
 			print("[BoxManager] Menyiarkan pengumuman gacha mobil Epic+: " .. player.Name .. " mendapatkan " .. carDisplayName)
 
-			-- Siarkan ke TextChatService (Roblox Modern Chat)
-			local TextChatService = game:GetService("TextChatService")
-			local textChannels = TextChatService:FindFirstChild("TextChannels")
-			local generalChannel = textChannels and textChannels:FindFirstChild("RBXGeneral")
-			if generalChannel then
-				pcall(function()
-					(generalChannel :: any):SendSystemMessage(richText)
-				end)
-			else
-				for _, channel in ipairs(TextChatService:GetDescendants()) do
-					if channel:IsA("TextChannel") then
-						pcall(function()
-							(channel :: any):SendSystemMessage(richText)
-						end)
-					end
-				end
+			-- Siarkan ke Client untuk ditampilkan di Chat UI
+			local chatAnnounceEvent = ReplicatedStorage:FindFirstChild("ChatAnnounceEvent") :: RemoteEvent?
+			if not chatAnnounceEvent then
+				local newEvent = Instance.new("RemoteEvent")
+				newEvent.Name = "ChatAnnounceEvent"
+				newEvent.Parent = ReplicatedStorage
+				chatAnnounceEvent = newEvent
 			end
-
-			-- Cadangan untuk Legacy ChatService
-			local chatServiceRunner = ServerScriptService:FindFirstChild("ChatServiceRunner")
-			if chatServiceRunner then
-				local successChat, ChatService = pcall(require, chatServiceRunner:WaitForChild("ChatService", 2) :: any)
-				if successChat and ChatService then
-					local channel = ChatService:GetChannel("All")
-					if channel then
-						local plainText = string.gsub(richText, "<[^>]+>", "")
-						channel:SendSystemMessage(plainText, "System", { ChatColor = rarityColor })
-					end
-				end
-			end
+			chatAnnounceEvent:FireAllClients(richText, rarityColor)
 		end)
 	end
 
