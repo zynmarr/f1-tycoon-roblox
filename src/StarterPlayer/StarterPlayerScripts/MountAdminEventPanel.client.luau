@@ -23,6 +23,7 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "AdminEventGui"
 screenGui.ResetOnSpawn = false
 screenGui.Enabled = false
+screenGui.DisplayOrder = 15
 screenGui.Parent = playerGui
 screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 

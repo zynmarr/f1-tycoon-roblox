@@ -24,6 +24,7 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "RacePanelGui"
 screenGui.ResetOnSpawn = false
 screenGui.Enabled = false
+screenGui.DisplayOrder = 15
 screenGui.Parent = playerGui
 screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 

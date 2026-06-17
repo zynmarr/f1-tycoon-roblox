@@ -2111,21 +2111,27 @@ return function(props: any)
 				}),
 
 				CloseBtn = e("TextButton", {
-					Text = "X",
-					Size = UDim2.new(0, 26, 0, 26),
-					Position = UDim2.new(1, isMobile and -10 or -36, 0.5, -13),
-					BackgroundColor3 = Color3.fromRGB(45, 45, 55),
+					Text = "✕",
+					Size = UDim2.fromOffset(24, 24),
+					Position = UDim2.new(1, -15, 0.5, 0),
+					AnchorPoint = Vector2.new(1, 0.5),
+					BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+					BackgroundTransparency = 0.1,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
 					Font = Enum.Font.GothamBold,
 					TextSize = 11,
-					BorderSizePixel = 0,
+					AutoButtonColor = true,
 					[Event.Activated] = function()
 						if props.onClose then
 							props.onClose()
 						end
 					end,
 				}, {
-					Corner = e("UICorner", { CornerRadius = UDim.new(0, 13) }),
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+					Stroke = e("UIStroke", {
+						Color = Color3.fromRGB(255, 100, 120),
+						Thickness = 0.8,
+					}),
 				}),
 			}),
 

@@ -314,20 +314,28 @@ return function(props: any)
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
 			CancelBtn = e("TextButton", {
-				Text = "X BATAL",
+				Text = "✕ BATAL",
 				Size = UDim2.new(0, 80, 0, 26),
-				Position = UDim2.new(1, -95, 0.5, -13),
-				BackgroundColor3 = Color3.fromRGB(55, 30, 30),
-				TextColor3 = Color3.fromRGB(255, 100, 100),
+				Position = UDim2.new(1, -15, 0.5, 0),
+				AnchorPoint = Vector2.new(1, 0.5),
+				BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+				BackgroundTransparency = 0.1,
+				TextColor3 = Color3.fromRGB(255, 255, 255),
 				Font = Enum.Font.GothamBold,
-				TextSize = 9,
-				BorderSizePixel = 0,
+				TextSize = 10,
+				AutoButtonColor = true,
 				[Event.Activated] = function()
 					if props.onCancel then
 						props.onCancel()
 					end
 				end,
-			}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+				Stroke = e("UIStroke", {
+					Color = Color3.fromRGB(255, 100, 120),
+					Thickness = 0.8,
+				}),
+			}),
 		}),
 
 		-- WORKSPACE (OFFERS AREA)

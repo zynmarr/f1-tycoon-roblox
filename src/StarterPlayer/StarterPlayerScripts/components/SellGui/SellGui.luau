@@ -70,7 +70,7 @@ local function SubCarItem(props)
 				Size = UDim2.new(1, 0, 0, 18),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(240, 240, 240),
-				TextScaled = true,
+				TextSize = isMobile and 11 or 13,
 				RichText = true,
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -86,7 +86,7 @@ local function SubCarItem(props)
 				Size = UDim2.new(1, 0, 0, 18),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(180, 180, 180),
-				TextScaled = true,
+				TextSize = isMobile and 10 or 12,
 				RichText = true,
 				Font = Enum.Font.GothamMedium,
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -105,7 +105,7 @@ local function SubCarItem(props)
 				BackgroundColor3 = Color3.fromRGB(185, 45, 45),
 				BorderSizePixel = 0,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextScaled = true,
+				TextSize = isMobile and 11 or 13,
 				Font = Enum.Font.GothamBold,
 				[React.Event.Activated] = function()
 					if onSell then
@@ -283,7 +283,7 @@ local function CarItem(props)
 					BorderColor3 = isStack and Color3.fromRGB(0, 200, 255) or Color3.fromRGB(70, 70, 80),
 					BorderSizePixel = 1,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextScaled = true,
+					TextSize = isMobile and 9 or 11,
 					Font = Enum.Font.GothamBold,
 				}, {
 					UICorner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
@@ -311,7 +311,7 @@ local function CarItem(props)
 					Position = UDim2.new(0, 10, 0, 10),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextScaled = true,
+					TextSize = isMobile and 12 or 14,
 					Font = Enum.Font.GothamBold,
 					TextXAlignment = Enum.TextXAlignment.Left,
 				}),
@@ -322,7 +322,7 @@ local function CarItem(props)
 					Position = UDim2.new(0, 10, 0, 36),
 					BackgroundTransparency = 1,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextScaled = true,
+					TextSize = isMobile and 10 or 12,
 					RichText = true,
 					Font = Enum.Font.GothamMedium,
 					TextXAlignment = Enum.TextXAlignment.Left,
@@ -335,7 +335,7 @@ local function CarItem(props)
 					BackgroundColor3 = rarityColor,
 					BorderSizePixel = 0,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextScaled = true,
+					TextSize = isMobile and 9 or 10,
 					Font = Enum.Font.GothamBold,
 				}, {
 					UICorner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
@@ -347,7 +347,7 @@ local function CarItem(props)
 					Position = UDim2.new(0, 10, 1, -26),
 					BackgroundTransparency = 1,
 					TextColor3 = isStack and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(90, 240, 90),
-					TextScaled = true,
+					TextSize = isMobile and 11 or 13,
 					Font = Enum.Font.GothamBold,
 					TextXAlignment = Enum.TextXAlignment.Left,
 				}),
@@ -358,15 +358,14 @@ local function CarItem(props)
 				Position = UDim2.new(1, -110, 0, 0),
 				BackgroundTransparency = 1,
 			}, {
-				-- Show SELL button if it is a single car
 				SellButton = not isStack and e("TextButton", {
 					Text = "SELL",
 					Size = UDim2.new(1, 0, 0, 44),
 					Position = UDim2.new(0, 0, 0.5, -22),
-					BackgroundColor3 = Color3.fromRGB(185, 45, 45),
+					BackgroundColor3 = Color3.fromRGB(255, 0, 60),
 					BorderSizePixel = 0,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextScaled = true,
+					TextSize = isMobile and 11 or 13,
 					Font = Enum.Font.GothamBold,
 					[React.Event.Activated] = function()
 						if onSell then
@@ -377,7 +376,6 @@ local function CarItem(props)
 					UICorner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 				}) or nil,
 
-				-- Show EXPAND/COLLAPSE toggle button if it is a stack
 				ExpandButton = isStack and e("TextButton", {
 					Text = isExpanded and "COLLAPSE" or "VIEW STACK",
 					Size = UDim2.new(1, 0, 0, 44),
@@ -385,7 +383,7 @@ local function CarItem(props)
 					BackgroundColor3 = isExpanded and Color3.fromRGB(50, 60, 75) or Color3.fromRGB(0, 110, 180),
 					BorderSizePixel = 0,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
-					TextScaled = true,
+					TextSize = isMobile and 10 or 12,
 					Font = Enum.Font.GothamBold,
 					[React.Event.Activated] = onToggleExpand,
 				}, {
@@ -581,7 +579,7 @@ local function SellGui(props)
 				Size = UDim2.new(1, 0, 1, 0),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(150, 150, 150),
-				TextScaled = true,
+				TextSize = isMobile and 12 or 16,
 				Font = Enum.Font.Gotham,
 			})
 		end
@@ -591,7 +589,7 @@ local function SellGui(props)
 
 	-- Responsive styling: Scale on mobile, locked max size on PC/Tablet
 	local MainFrame = e("Frame", {
-		Size = isStorybook and UDim2.new(1, 0, 1, 0) or (isMobile and UDim2.new(0.96, 0, 0.94, 0) or UDim2.new(0.9, 0, 0.8, 0)),
+		Size = isStorybook and UDim2.new(1, 0, 1, 0) or (isMobile and UDim2.new(0.88, 0, 0.88, 0) or UDim2.new(0.9, 0, 0.8, 0)),
 		Position = not isStorybook and UDim2.new(0.5, 0, 0.5, 0) or nil,
 		AnchorPoint = not isStorybook and Vector2.new(0.5, 0.5) or nil,
 		BackgroundColor3 = Color3.fromRGB(15, 15, 20),
@@ -630,19 +628,20 @@ local function SellGui(props)
 				Position = UDim2.new(0, 15, 0, 0),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextScaled = true,
+				TextSize = isMobile and 13 or 16,
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
 
 			SellAllButton = e("TextButton", {
 				Text = "SELL ALL",
-				Size = UDim2.new(0, 95, 0, 36),
-				Position = UDim2.new(1, -155, 0.5, -18),
+				Size = UDim2.new(0, 95, 0, 24),
+				Position = UDim2.new(1, -50, 0.5, 0),
+				AnchorPoint = Vector2.new(1, 0.5),
 				BackgroundColor3 = Color3.fromRGB(40, 160, 80),
 				BorderSizePixel = 0,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextScaled = true,
+				TextSize = isMobile and 10 or 12,
 				Font = Enum.Font.GothamBold,
 				[React.Event.Activated] = function()
 					if props.onSellAll then
@@ -655,14 +654,16 @@ local function SellGui(props)
 
 			-- Close Button (X)
 			CloseButton = not isStorybook and e("TextButton", {
-				Text = "X",
-				Size = UDim2.new(0, 36, 0, 36),
-				Position = UDim2.new(1, -50, 0.5, -18),
-				BackgroundColor3 = Color3.fromRGB(180, 50, 50),
-				BorderSizePixel = 0,
+				Text = "✕",
+				Size = UDim2.fromOffset(24, 24),
+				Position = UDim2.new(1, -15, 0.5, 0),
+				AnchorPoint = Vector2.new(1, 0.5),
+				BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+				BackgroundTransparency = 0.1,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextScaled = true,
 				Font = Enum.Font.GothamBold,
+				TextSize = 11,
+				AutoButtonColor = true,
 				[React.Event.Activated] = function()
 					if props.onClose then
 						props.onClose()
@@ -670,6 +671,10 @@ local function SellGui(props)
 				end,
 			}, {
 				UICorner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+				Stroke = e("UIStroke", {
+					Color = Color3.fromRGB(255, 100, 120),
+					Thickness = 0.8,
+				}),
 			}) or nil,
 		}),
 

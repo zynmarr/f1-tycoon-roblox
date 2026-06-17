@@ -148,14 +148,15 @@ return function(props)
 
 				CloseBtn = e("TextButton", {
 					Text = "✕",
-					Size = UDim2.new(0, 26, 0, 26),
+					Size = UDim2.fromOffset(24, 24),
 					Position = UDim2.new(1, -10, 0.5, 0),
 					AnchorPoint = Vector2.new(1, 0.5),
-					BackgroundColor3 = Color3.fromRGB(50, 50, 60),
+					BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+					BackgroundTransparency = 0.1,
 					TextColor3 = Color3.fromRGB(255, 255, 255),
 					Font = Enum.Font.GothamBold,
 					TextSize = 11,
-					BorderSizePixel = 0,
+					AutoButtonColor = true,
 					[React.Event.Activated] = function()
 						if props.onClose then
 							props.onClose()
@@ -163,7 +164,11 @@ return function(props)
 					end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-				})
+					Stroke = e("UIStroke", {
+						Color = Color3.fromRGB(255, 100, 120),
+						Thickness = 0.8,
+					}),
+				}),
 			}),
 
 			-- HORIZONTAL TAB NAVIGATION
@@ -306,21 +311,27 @@ return function(props)
 			}),
 
 			CloseBtn = e("TextButton", {
-				Text = "X",
-				Size = UDim2.new(0, 35, 0, 35),
-				Position = UDim2.new(1, -45, 0.5, -17),
-				BackgroundColor3 = Color3.fromRGB(50, 50, 60),
+				Text = "✕",
+				Size = UDim2.fromOffset(24, 24),
+				Position = UDim2.new(1, -15, 0.5, 0),
+				AnchorPoint = Vector2.new(1, 0.5),
+				BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+				BackgroundTransparency = 0.1,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				Font = Enum.Font.GothamBold,
-				TextSize = 14,
-				BorderSizePixel = 0,
+				TextSize = 11,
+				AutoButtonColor = true,
 				[React.Event.Activated] = function()
 					if props.onClose then
 						props.onClose()
 					end
 				end,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 18) }),
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+				Stroke = e("UIStroke", {
+					Color = Color3.fromRGB(255, 100, 120),
+					Thickness = 0.8,
+				}),
 			})
 		}),
 

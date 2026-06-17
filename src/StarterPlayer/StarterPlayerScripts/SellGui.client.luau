@@ -26,6 +26,7 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "SellGui"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.DisplayOrder = 15
 screenGui.Parent = playerGui
 screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 
