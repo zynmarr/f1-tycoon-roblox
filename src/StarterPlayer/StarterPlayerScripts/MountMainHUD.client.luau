@@ -19,6 +19,7 @@ screenGui.ResetOnSpawn = false
 screenGui.IgnoreGuiInset = true
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = playerGui
+screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 
 -- ===== REACT ROOT =====
 local root = ReactRoblox.createRoot(screenGui)
@@ -49,12 +50,14 @@ local function updateUIRender()
 end
 
 -- Hubungkan BindableEvents untuk update props dinamis
-RegisterSidebarButton.Event:Connect(function(config: { Name: string, Label: string, Icon: string, Callback: () -> (), Order: number? })
-	if config and config.Name then
-		registeredButtons[config.Name] = config
-		updateUIRender()
+RegisterSidebarButton.Event:Connect(
+	function(config: { Name: string, Label: string, Icon: string, Callback: () -> (), Order: number? })
+		if config and config.Name then
+			registeredButtons[config.Name] = config
+			updateUIRender()
+		end
 	end
-end)
+)
 
 UnregisterSidebarButton.Event:Connect(function(name: string)
 	if name and registeredButtons[name] then

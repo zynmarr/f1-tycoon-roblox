@@ -148,7 +148,7 @@ return function(props: PlayerListPanelProps)
 	end
 
 	return e("Frame", {
-		Size = UDim2.new(0.35, 0, 0.5, 0),
+		Size = UDim2.new(0.85, 0, 0.75, 0),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0.5, 0, 0.5, 0),
 		BackgroundColor3 = Color3.fromRGB(15, 15, 20),
@@ -157,7 +157,10 @@ return function(props: PlayerListPanelProps)
 	}, {
 		Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
 		Stroke = e("UIStroke", { Color = Color3.fromRGB(45, 45, 55), Thickness = 1.5 }),
-		SizeConstraint = e("UISizeConstraint", { MaxSize = Vector2.new(380, 320) }),
+		SizeConstraint = e("UISizeConstraint", {
+			MinSize = Vector2.new(240, 180),
+			MaxSize = Vector2.new(380, 320),
+		}),
 
 		-- HEADER
 		Header = e("Frame", {

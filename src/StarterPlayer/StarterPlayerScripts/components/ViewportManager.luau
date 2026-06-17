@@ -22,20 +22,9 @@ end
 local function clearCacheEntry(cache, carTool)
 	if cache.renderCache[carTool] then
 		local entry = cache.renderCache[carTool]
-		if entry.Model then
+		if entry.ModelSource then
 			pcall(function()
-				if entry.Model.Parent then
-					entry.Model.Parent = nil
-				end
-				entry.Model:Destroy()
-			end)
-		end
-		if entry.Camera then
-			pcall(function()
-				if entry.Camera.Parent then
-					entry.Camera.Parent = nil
-				end
-				entry.Camera:Destroy()
+				entry.ModelSource:Destroy()
 			end)
 		end
 		cache.renderCache[carTool] = nil
@@ -72,11 +61,12 @@ local function setupCarViewport(cache, viewport, carTool, options)
 	viewport:SetAttribute("LastCar", toolID)
 	viewport.BackgroundTransparency = options.bgTransparency or 0.95
 
+	-- Bersihkan model dan kamera lama dengan memanggil Destroy() agar bebas memory leak
 	for _, child in pairs(viewport:GetChildren()) do
 		if child:IsA("Camera") or child:IsA("Model") then
-			if child.Parent then
-				child.Parent = nil
-			end
+			pcall(function()
+				child:Destroy()
+			end)
 		end
 	end
 
@@ -149,39 +139,30 @@ local function setupCarViewport(cache, viewport, carTool, options)
 			distMultiplier = 2 -- Further distance for boxes
 		end
 
-		local cam = Instance.new("Camera")
-		cam.FieldOfView = targetFov
-		local halfFov = cam.FieldOfView / 2
+		-- Hitung parameter kamera dan CFrame
+		local halfFov = targetFov / 2
 		local dist = (maxDim / 2) / math.tan(math.rad(halfFov)) * distMultiplier
 		local camPos = center + Vector3.new(-dist * 0.5, dist * 0.4, -dist * 0.7)
-		cam.CFrame = CFrame.new(camPos, center + Vector3.new(0, maxDim * 0.1, 0))
+		local camCFrame = CFrame.new(camPos, center + Vector3.new(0, maxDim * 0.1, 0))
 
-		cache.renderCache[carTool] = { Model = carClone, Camera = cam }
+		-- Simpan ModelSource (untuk diclone ulang) dan koordinat kamera di cache render
+		cache.renderCache[carTool] = { ModelSource = carClone, CameraCFrame = camCFrame, FieldOfView = targetFov }
 		trimCache(cache)
 	end
 
 	local entry = cache.renderCache[carTool]
 	if entry then
-		if entry.Model.Parent then
-			entry.Model.Parent = nil
-		end
+		-- Selalu kloning model segar ke dalam viewport agar tidak hilang saat viewport lama di-destroy oleh React
+		local modelClone = entry.ModelSource:Clone()
+		modelClone.Parent = viewport
 
-		local success = pcall(function()
-			entry.Model.Parent = viewport
-		end)
+		-- Buat kamera baru yang terikat langsung dengan lifetime viewport ini
+		local cam = Instance.new("Camera")
+		cam.FieldOfView = entry.FieldOfView
+		cam.CFrame = entry.CameraCFrame
+		cam.Parent = viewport
 
-		if not success then
-			warn("[ViewportManager] Failed to parent model for: " .. tostring(carTool.Name))
-			return
-		end
-
-		task.wait(0.02)
-
-		if entry.Camera.Parent then
-			entry.Camera.Parent = nil
-		end
-		entry.Camera.Parent = viewport
-		viewport.CurrentCamera = entry.Camera
+		viewport.CurrentCamera = cam
 		viewport.Ambient = options.ambientColor or Color3.fromRGB(200, 200, 200)
 		viewport.LightColor = options.lightColor or Color3.fromRGB(255, 255, 255)
 	end

@@ -1,4 +1,3 @@
---!strict
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
@@ -25,6 +24,7 @@ screenGui.Name = "AdminEventGui"
 screenGui.ResetOnSpawn = false
 screenGui.Enabled = false
 screenGui.Parent = playerGui
+screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 
 local root = ReactRoblox.createRoot(screenGui)
 
@@ -50,13 +50,13 @@ end
 local function checkAdminPermission(): boolean
 	local playerRole = (player:GetAttribute("Role") :: string?) or "Player"
 	local roleData = (RoleConfig.Roles :: any)[playerRole]
-	
+
 	if playerRole == "Owner" or playerRole == "Developer" then
 		return true
 	elseif roleData then
-		return table.find(roleData.Permissions :: {string}, "EditGameConfigs") ~= nil
+		return table.find(roleData.Permissions :: { string }, "EditGameConfigs") ~= nil
 	end
-	
+
 	return false
 end
 
@@ -79,7 +79,10 @@ local function updateUIRender()
 			if result and result.Success then
 				print("[Client] Berhasil memperbarui konfigurasi event: " .. tostring(result.Message))
 			else
-				warn("[Client] Gagal memperbarui konfigurasi event: " .. tostring(result and result.Error or "Unknown error"))
+				warn(
+					"[Client] Gagal memperbarui konfigurasi event: "
+						.. tostring(result and result.Error or "Unknown error")
+				)
 			end
 		end,
 		onStopAll = function(isGlobal: boolean)
@@ -87,7 +90,9 @@ local function updateUIRender()
 			if result and result.Success then
 				print("[Client] Berhasil menonaktifkan semua event: " .. tostring(result.Message))
 			else
-				warn("[Client] Gagal menonaktifkan semua event: " .. tostring(result and result.Error or "Unknown error"))
+				warn(
+					"[Client] Gagal menonaktifkan semua event: " .. tostring(result and result.Error or "Unknown error")
+				)
 			end
 		end,
 		onBroadcastMessage = function(message: string, isGlobal: boolean)
@@ -99,7 +104,8 @@ local function updateUIRender()
 			end
 		end,
 		onGiftReward = function(giftType: string, targetPlayerName: string, isGlobal: boolean, params: any)
-			local result = adminEventService:fetch("giftPlayerReward", giftType, targetPlayerName, isGlobal, params) :: any
+			local result =
+				adminEventService:fetch("giftPlayerReward", giftType, targetPlayerName, isGlobal, params) :: any
 			if result and result.Success then
 				print("[Client] Gift terkirim: " .. tostring(result.Message))
 			else
@@ -124,7 +130,9 @@ local function destroyAdminButton()
 end
 
 local function createAdminButton()
-	if adminBtnRegistered then return end
+	if adminBtnRegistered then
+		return
+	end
 	RegisterSidebarButton:Fire({
 		Name = "AdminEvent",
 		Label = "Admin Event",
@@ -159,7 +167,9 @@ task.defer(onRoleChanged)
 
 -- ===== SHORTCUT KEYBOARD TOGGLE (F4) =====
 UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
-	if processed then return end
+	if processed then
+		return
+	end
 	if input.KeyCode == Enum.KeyCode.F4 then
 		if checkAdminPermission() then
 			uiIsOpen = not uiIsOpen
@@ -168,4 +178,6 @@ UserInputService.InputBegan:Connect(function(input: InputObject, processed: bool
 	end
 end)
 
-print("[Client] React AdminEventPanel mounting controller siap! Tekan F4 atau klik tombol sidebar (Admin) untuk membuka.")
+print(
+	"[Client] React AdminEventPanel mounting controller siap! Tekan F4 atau klik tombol sidebar (Admin) untuk membuka."
+)

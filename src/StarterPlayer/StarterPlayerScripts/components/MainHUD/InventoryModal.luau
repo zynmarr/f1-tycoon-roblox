@@ -120,17 +120,26 @@ local function InventoryModal(props: {
 			}, {
 				Gradient = e("UIGradient", {
 					Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(0, isEquipped and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(70, 70, 80)),
-						ColorSequenceKeypoint.new(1, isEquipped and Color3.fromRGB(180, 20, 50) or Color3.fromRGB(40, 40, 45)),
+						ColorSequenceKeypoint.new(
+							0,
+							isEquipped and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(70, 70, 80)
+						),
+						ColorSequenceKeypoint.new(
+							1,
+							isEquipped and Color3.fromRGB(180, 20, 50) or Color3.fromRGB(40, 40, 45)
+						),
 					}),
 					Rotation = 45,
-				})
+				}),
 			}),
 
 			-- Carbon fiber background gradient
 			BackgroundGradient = e("UIGradient", {
 				Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, isEquipped and Color3.fromRGB(50, 15, 20) or Color3.fromRGB(24, 24, 28)),
+					ColorSequenceKeypoint.new(
+						0,
+						isEquipped and Color3.fromRGB(50, 15, 20) or Color3.fromRGB(24, 24, 28)
+					),
 					ColorSequenceKeypoint.new(1, isEquipped and Color3.fromRGB(20, 5, 8) or Color3.fromRGB(12, 12, 14)),
 				}),
 				Rotation = 45,
@@ -184,7 +193,7 @@ local function InventoryModal(props: {
 					Font = Enum.Font.GothamBold,
 					TextXAlignment = Enum.TextXAlignment.Center,
 					TextYAlignment = Enum.TextYAlignment.Center,
-				})
+				}),
 			}) or nil,
 
 			-- Aksen Neon Merah untuk item aktif
@@ -196,13 +205,14 @@ local function InventoryModal(props: {
 				BorderSizePixel = 0,
 				ZIndex = 4,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 1) })
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 1) }),
 			}) or nil,
 		})
 	end
 
 	return e("Frame", {
-		Size = props.IsMobile and UDim2.new(1, 0, 1, -80) or UDim2.new(1, 0, 1, -100),
+		Size = props.IsMobile and UDim2.new(1, 0, 1, 0) or UDim2.new(1, 0, 1, 0),
+		-- Size = props.IsMobile and UDim2.new(1, 0, 1, -80) or UDim2.new(1, 0, 1, -100),
 		Position = UDim2.new(0, 0, 0, 0),
 		BackgroundTransparency = 0.55,
 		BackgroundColor3 = Color3.fromRGB(10, 10, 12),
@@ -219,7 +229,7 @@ local function InventoryModal(props: {
 		BackdropBtn = e("TextButton", {
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
-			Text = "",
+			Text = "X",
 			[React.Event.Activated] = props.OnClose,
 		}),
 
@@ -244,7 +254,7 @@ local function InventoryModal(props: {
 						ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 35)),
 					}),
 					Rotation = -45,
-				})
+				}),
 			}),
 
 			-- Aksen LED Shift stripe di tengah atas modal
@@ -256,7 +266,7 @@ local function InventoryModal(props: {
 				BorderSizePixel = 0,
 				ZIndex = 6,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 1) })
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 1) }),
 			}),
 
 			-- Layout & Padding
@@ -307,7 +317,7 @@ local function InventoryModal(props: {
 					Stroke = e("UIStroke", {
 						Color = Color3.fromRGB(255, 100, 120),
 						Thickness = 0.8,
-					})
+					}),
 				}),
 			}),
 
@@ -355,18 +365,18 @@ local function InventoryModal(props: {
 					LayoutOrder = 3,
 				},
 				(function()
-					local scrollChildren = {
-						GridLayout = e("UIGridLayout", {
-							CellSize = props.IsMobile and UDim2.fromOffset(60, 60) or UDim2.fromOffset(70, 70),
-							CellPadding = props.IsMobile and UDim2.fromOffset(6, 6) or UDim2.fromOffset(10, 10),
-							SortOrder = Enum.SortOrder.LayoutOrder,
-						}),
-					}
-					for name, element in pairs(slotElements) do
-						scrollChildren[name] = element
-					end
-					return scrollChildren
-				end)() :: any
+						local scrollChildren = {
+							GridLayout = e("UIGridLayout", {
+								CellSize = props.IsMobile and UDim2.fromOffset(60, 60) or UDim2.fromOffset(70, 70),
+								CellPadding = props.IsMobile and UDim2.fromOffset(6, 6) or UDim2.fromOffset(10, 10),
+								SortOrder = Enum.SortOrder.LayoutOrder,
+							}),
+						}
+						for name, element in pairs(slotElements) do
+							scrollChildren[name] = element
+						end
+						return scrollChildren
+					end)() :: any
 			),
 		}),
 	})

@@ -184,8 +184,8 @@ local function CustomStats(props: { IsMobile: boolean })
 			if config.Key == activeTooltip then
 				tooltipElement = e("TextButton", {
 					Size = UDim2.new(0, 200, 0, 45),
-					Position = UDim2.new(1, 0, 1, 5),
-					AnchorPoint = Vector2.new(1, 0),
+					Position = UDim2.new(1, 10, 0, 0), -- Mengambang di sebelah kanan ikon buff
+					AnchorPoint = Vector2.new(0, 0),
 					BackgroundColor3 = Color3.fromRGB(15, 15, 20),
 					BorderSizePixel = 0,
 					ZIndex = 50,
@@ -194,7 +194,7 @@ local function CustomStats(props: { IsMobile: boolean })
 					end,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-					Stroke = e("UIStroke", { Color = Color3.fromRGB(100, 50, 250), Thickness = 1 }),
+					Stroke = e("UIStroke", { Color = Color3.fromRGB(255, 35, 85), Thickness = 1 }), -- Cohesive red border
 					Padding = e("UIPadding", {
 						PaddingTop = UDim.new(0, 5),
 						PaddingBottom = UDim.new(0, 5),
@@ -219,10 +219,13 @@ local function CustomStats(props: { IsMobile: boolean })
 		end
 	end
 
+	local containerPos = props.IsMobile and UDim2.new(0, 10, 0.45, 0) or UDim2.new(0, 15, 0.5, 0)
+	local anchorPoint = Vector2.new(0, 0.5)
+
 	return e("Frame", {
 		Size = UDim2.new(0, 220, 0, 160),
-		Position = UDim2.new(1, -10, 0, 10),
-		AnchorPoint = Vector2.new(1, 0),
+		Position = containerPos,
+		AnchorPoint = anchorPoint,
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 	}, {
@@ -230,24 +233,16 @@ local function CustomStats(props: { IsMobile: boolean })
 			FillDirection = Enum.FillDirection.Vertical,
 			SortOrder = Enum.SortOrder.LayoutOrder,
 			Padding = UDim.new(0, 8),
-			HorizontalAlignment = Enum.HorizontalAlignment.Right,
+			HorizontalAlignment = Enum.HorizontalAlignment.Left,
 		}),
 
-		-- KARTU UTAMA STATISTIK
+		-- KARTU UTAMA STATISTIK (SEKARANG POLOS TANPA CARD BACKGROUND)
 		StatsCard = e("Frame", {
-			Size = UDim2.new(1, 0, 0, 95),
-			BackgroundColor3 = Color3.fromRGB(15, 15, 20),
-			BackgroundTransparency = 0.35,
+			Size = UDim2.new(1, 0, 0, 75),
+			BackgroundTransparency = 1,
+			BorderSizePixel = 0,
 			LayoutOrder = 1,
 		}, {
-			Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-			Stroke = e("UIStroke", { Color = Color3.fromRGB(70, 70, 85), Thickness = 1 }),
-			Padding = e("UIPadding", {
-				PaddingTop = UDim.new(0, 8),
-				PaddingBottom = UDim.new(0, 8),
-				PaddingLeft = UDim.new(0, 12),
-				PaddingRight = UDim.new(0, 12),
-			}),
 			List = e("UIListLayout", {
 				FillDirection = Enum.FillDirection.Vertical,
 				SortOrder = Enum.SortOrder.LayoutOrder,
@@ -260,10 +255,12 @@ local function CustomStats(props: { IsMobile: boolean })
 				Size = UDim2.new(1, 0, 0, 20),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(0, 255, 120),
-				TextSize = 13,
+				TextSize = 14,
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				LayoutOrder = 1,
+				TextStrokeTransparency = 0.5,
+				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
 			}),
 
 			-- Row 2: Rebirth Points
@@ -272,10 +269,12 @@ local function CustomStats(props: { IsMobile: boolean })
 				Size = UDim2.new(1, 0, 0, 20),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(0, 220, 255),
-				TextSize = 12,
+				TextSize = 13,
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				LayoutOrder = 2,
+				TextStrokeTransparency = 0.5,
+				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
 			}),
 
 			-- Row 3: Rebirth Level
@@ -284,14 +283,16 @@ local function CustomStats(props: { IsMobile: boolean })
 				Size = UDim2.new(1, 0, 0, 20),
 				BackgroundTransparency = 1,
 				TextColor3 = Color3.fromRGB(240, 160, 50),
-				TextSize = 12,
+				TextSize = 13,
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				LayoutOrder = 3,
+				TextStrokeTransparency = 0.5,
+				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
 			}),
 		}),
 
-		-- KARTU BUFF AKTIF (Hanya tampil jika ada buff aktif)
+		-- KARTU BUFF AKTIF (Hanya tampil jika ada buff aktif, rata kiri di bawah statistik)
 		BuffsContainer = (activeBuffCount > 0) and e("Frame", {
 			Size = UDim2.new(1, 0, 0, 42),
 			BackgroundTransparency = 1,
@@ -302,7 +303,7 @@ local function CustomStats(props: { IsMobile: boolean })
 					FillDirection = Enum.FillDirection.Horizontal,
 					SortOrder = Enum.SortOrder.LayoutOrder,
 					Padding = UDim.new(0, 8),
-					HorizontalAlignment = Enum.HorizontalAlignment.Right,
+					HorizontalAlignment = Enum.HorizontalAlignment.Left,
 				}),
 				TooltipOverlay = tooltipElement,
 			}

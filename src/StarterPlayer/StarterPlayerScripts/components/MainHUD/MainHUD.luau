@@ -1,9 +1,12 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local React = require(ReplicatedStorage.Packages.React)
 
 local e = React.createElement
 local useState = React.useState
 local useEffect = React.useEffect
+local useRef = React.useRef
 
 local Topbar = require(script.Parent.Topbar)
 local Sidebar = require(script.Parent.Sidebar)
@@ -11,10 +14,31 @@ local CustomStats = require(script.Parent.CustomStats)
 local Hotbar = require(script.Parent.Hotbar)
 local InventoryModal = require(script.Parent.InventoryModal)
 local OpenBoxOverlay = require(script.Parent.OpenBoxOverlay)
+local ViewportManager = require(script.Parent.Parent.ViewportManager)
+
+local player = Players.LocalPlayer
 
 local function MainHUD(props: { Buttons: any })
+	local backpack = player:FindFirstChild("Backpack") or player:WaitForChild("Backpack", 5)
 	local inventoryOpen, setInventoryOpen = useState(false)
 	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
+
+	-- Cache Viewport Frame untuk preview barang saat di-drag
+	local cache = useRef(nil :: any)
+	if not cache.current then
+		cache.current = ViewportManager.new()
+	end
+
+	-- ===== DRAG & DROP STATE =====
+	local slotMapping, setSlotMapping = useState({} :: { [number]: Tool })
+	local heldTool, setHeldTool = useState(nil :: Tool?)
+	
+	local draggedItem, setDraggedItem = useState(nil :: { Tool: Tool, Source: string, SlotIndex: number? }?)
+	local dragStartInfo, setDragStartInfo = useState(nil :: { Tool: Tool, Source: string, SlotIndex: number?, StartPos: Vector2 }?)
+	local mousePos, setMousePos = useState(Vector2.new(0, 0))
+	
+	local hoveredHotbarIndex, setHoveredHotbarIndex = useState(nil :: number?)
+	local isHoveredInventory, setIsHoveredInventory = useState(false)
 
 	-- Pantau perubahan ukuran layar secara real-time untuk responsivitas
 	useEffect(function()
@@ -47,7 +71,246 @@ local function MainHUD(props: { Buttons: any })
 		end
 	end, {})
 
+	-- ===== 1. DETEKSI TOOLS DI BACKPACK DAN CHARACTER (SHARED SOURCE OF TRUTH) =====
+	local function refreshTools()
+		if not backpack then return end
+		local char = player.Character
+		local currentHeld = char and char:FindFirstChildOfClass("Tool")
+		setHeldTool(currentHeld)
+
+		local list = {}
+		for _, item in ipairs(backpack:GetChildren()) do
+			if item:IsA("Tool") then
+				table.insert(list, item)
+			end
+		end
+		if currentHeld then
+			table.insert(list, currentHeld)
+		end
+
+		setSlotMapping(function(oldMapping)
+			local newMapping = table.clone(oldMapping)
+			-- Hapus mapping jika tool tidak lagi dimiliki
+			for i = 1, 10 do
+				local tool = newMapping[i]
+				if tool then
+					if not tool.Parent or (tool.Parent ~= backpack and tool.Parent ~= char) then
+						newMapping[i] = nil
+					end
+				end
+			end
+			-- Masukkan tool baru yang belum ter-map ke slot kosong
+			for _, tool in ipairs(list) do
+				local alreadyMapped = false
+				for i = 1, 10 do
+					if newMapping[i] == tool then
+						alreadyMapped = true
+						break
+					end
+				end
+				if not alreadyMapped then
+					for i = 1, 10 do
+						if not newMapping[i] then
+							newMapping[i] = tool
+							break
+						end
+					end
+				end
+			end
+			return newMapping
+		end)
+	end
+
+	useEffect(function()
+		if not backpack then return end
+		local connections = {}
+
+		table.insert(connections, backpack.ChildAdded:Connect(refreshTools))
+		table.insert(connections, backpack.ChildRemoved:Connect(refreshTools))
+
+		local function setupChar(char)
+			table.insert(connections, char.ChildAdded:Connect(refreshTools))
+			table.insert(connections, char.ChildRemoved:Connect(refreshTools))
+			refreshTools()
+		end
+
+		table.insert(connections, player.CharacterAdded:Connect(setupChar))
+		if player.Character then
+			setupChar(player.Character)
+		end
+
+		refreshTools()
+
+		return function()
+			for _, conn in ipairs(connections) do
+				conn:Disconnect()
+			end
+		end
+	end, {})
+
+	-- ===== 2. GLOBAL MOUSE POSITION TRACKER =====
+	useEffect(function()
+		local connection = UserInputService.InputChanged:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+				setMousePos(Vector2.new(input.Position.X, input.Position.Y))
+				
+				-- Jika sedang proses click-hold, cek threshold drag
+				if dragStartInfo and not draggedItem then
+					local currentPos = Vector2.new(input.Position.X, input.Position.Y)
+					local dist = (currentPos - dragStartInfo.StartPos).Magnitude
+					if dist > 8 then
+						setDraggedItem({
+							Tool = dragStartInfo.Tool,
+							Source = dragStartInfo.Source,
+							SlotIndex = dragStartInfo.SlotIndex,
+						})
+					end
+				end
+			end
+		end)
+
+		return function()
+			connection:Disconnect()
+		end
+	end, {dragStartInfo, draggedItem} :: {any})
+
+	-- ===== 3. GLOBAL MOUSE RELEASE TRACKER (DROP HANDLER) =====
+	useEffect(function()
+		local connection = UserInputService.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				if dragStartInfo then
+					if draggedItem then
+						-- Menangani logika jatuhnya barang (Drop)
+						if hoveredHotbarIndex then
+							local targetSlot = hoveredHotbarIndex
+							local source = draggedItem.Source
+							local tool = draggedItem.Tool
+
+							if source == "Hotbar" then
+								local sourceSlot = draggedItem.SlotIndex
+								if sourceSlot and sourceSlot ~= targetSlot then
+									setSlotMapping(function(old)
+										local new = table.clone(old)
+										local temp = new[targetSlot]
+										new[targetSlot] = new[sourceSlot]
+										new[sourceSlot] = temp
+										return new
+									end)
+								end
+							elseif source == "Inventory" then
+								-- Cari apakah tool sudah dipasang di slot lain
+								local existingSlot = nil
+								for idx, t in pairs(slotMapping) do
+									if t == tool then
+										existingSlot = idx
+										break
+									end
+								end
+
+								setSlotMapping(function(old)
+									local new = table.clone(old)
+									if existingSlot then
+										-- Tukar dengan target jika ada item di target
+										new[existingSlot] = new[targetSlot]
+									end
+									new[targetSlot] = tool
+									return new
+								end)
+							end
+						elseif isHoveredInventory then
+							-- Dilepas di area inventory: Hapus dari hotbar
+							local source = draggedItem.Source
+							local sourceSlot = draggedItem.SlotIndex
+							if source == "Hotbar" and sourceSlot then
+								setSlotMapping(function(old)
+									local new = table.clone(old)
+									new[sourceSlot] = nil
+									return new
+								end)
+							end
+						end
+					else
+						-- Logika Click biasa (Equip/Unequip)
+						local tool = dragStartInfo.Tool
+						local char = player.Character
+						local hum = char and char:FindFirstChildOfClass("Humanoid")
+						if hum then
+							if tool.Parent == char then
+								hum:UnequipTools()
+							else
+								hum:EquipTool(tool)
+							end
+						end
+					end
+
+					-- Reset state drag
+					setDragStartInfo(nil)
+					setDraggedItem(nil)
+				end
+			end
+		end)
+
+		return function()
+			connection:Disconnect()
+		end
+	end, {dragStartInfo, draggedItem, hoveredHotbarIndex, isHoveredInventory, slotMapping} :: {any})
+
+	-- Input handler untuk diteruskan ke HotbarSlot
+	local function handleHotbarInputBegan(slotIndex: number, tool: Tool?, input: InputObject)
+		if not tool then return end
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			setDragStartInfo({
+				Tool = tool,
+				Source = "Hotbar",
+				SlotIndex = slotIndex,
+				StartPos = Vector2.new(input.Position.X, input.Position.Y),
+			})
+		end
+	end
+
+	-- Input handler untuk diteruskan ke InventorySlot
+	local function handleInventoryInputBegan(tool: Tool, input: InputObject)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			setDragStartInfo({
+				Tool = tool,
+				Source = "Inventory",
+				SlotIndex = nil,
+				StartPos = Vector2.new(input.Position.X, input.Position.Y),
+			})
+		end
+	end
+
 	local isMobile = viewportSize.X < 600
+
+	-- Thumbnail melayang mengikuti mouse saat menyeret (Drag Preview)
+	local dragThumbnail = nil
+	if draggedItem then
+		dragThumbnail = e("Frame", {
+			Size = UDim2.fromOffset(45, 45),
+			Position = UDim2.fromOffset(mousePos.X, mousePos.Y),
+			AnchorPoint = Vector2.new(0.5, 0.5),
+			BackgroundTransparency = 0.4,
+			BackgroundColor3 = Color3.fromRGB(15, 15, 20),
+			ZIndex = 100,
+		}, {
+			Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+			Stroke = e("UIStroke", {
+				Color = Color3.fromRGB(255, 35, 85),
+				Thickness = 1,
+			}),
+			CarView = e("ViewportFrame", {
+				Size = UDim2.fromScale(0.9, 0.9),
+				Position = UDim2.fromScale(0.5, 0.5),
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				BackgroundTransparency = 1,
+				ref = function(rbx: any)
+					if rbx then
+						ViewportManager.setupViewport(cache.current, rbx, draggedItem.Tool, { bgTransparency = 1 })
+					end
+				end,
+			})
+		})
+	end
 
 	return e("Frame", {
 		Size = UDim2.fromScale(1, 1),
@@ -72,10 +335,15 @@ local function MainHUD(props: { Buttons: any })
 			IsMobile = isMobile,
 		}),
 
-		-- 4. Hotbar
+		-- 4. Hotbar (Sekarang selalu muncul saat Inventory terbuka sesuai request)
 		Hotbar = e(Hotbar, {
-			IsMobile = isMobile,
-			InventoryOpen = inventoryOpen,
+			ViewportSize = viewportSize,
+			InventoryOpen = false, -- Dipaksa false agar Hotbar tetap muncul saat inventory dibuka
+			SlotMapping = slotMapping,
+			HeldTool = heldTool,
+			HoveredSlotIndex = hoveredHotbarIndex,
+			SetHoveredSlotIndex = setHoveredHotbarIndex,
+			OnSlotInputBegan = handleHotbarInputBegan,
 		}),
 
 		-- 5. Open Box Overlay
@@ -85,10 +353,19 @@ local function MainHUD(props: { Buttons: any })
 
 		-- 6. Inventory Pop-up Modal
 		InventoryModal = inventoryOpen and e(InventoryModal, {
+			IsMobile = isMobile,
 			OnClose = function()
 				setInventoryOpen(false)
 			end,
+			SlotMapping = slotMapping,
+			HeldTool = heldTool,
+			IsHovered = isHoveredInventory,
+			SetIsHovered = setIsHoveredInventory,
+			OnSlotInputBegan = handleInventoryInputBegan,
 		}) or nil,
+
+		-- 7. Drag Preview Thumbnail
+		DragThumbnail = dragThumbnail,
 	})
 end
 

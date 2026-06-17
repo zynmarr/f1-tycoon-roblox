@@ -24,6 +24,7 @@ screenGui.Name = "RewardsRebirthGui"
 screenGui.ResetOnSpawn = false
 screenGui.Enabled = false
 screenGui.Parent = playerGui
+screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 
 local root = ReactRoblox.createRoot(screenGui)
 

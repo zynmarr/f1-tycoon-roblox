@@ -25,6 +25,7 @@ screenGui.Name = "RacePanelGui"
 screenGui.ResetOnSpawn = false
 screenGui.Enabled = false
 screenGui.Parent = playerGui
+screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 
 local root = ReactRoblox.createRoot(screenGui)
 
@@ -58,9 +59,9 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, playerWhoTrigger
 		else
 			pcall(function()
 				StarterGui:SetCore("SendNotification", {
-					Title = "Akses Ditolak";
-					Text = "Anda hanya bisa menggunakan stasiun balap di plot Anda sendiri!";
-					Duration = 3;
+					Title = "Akses Ditolak",
+					Text = "Anda hanya bisa menggunakan stasiun balap di plot Anda sendiri!",
+					Duration = 3,
 				})
 			end)
 		end
@@ -69,7 +70,9 @@ end)
 
 -- ===== KEYBOARD TOGGLE FOR DEVELOPMENT (F5) =====
 UserInputService.InputBegan:Connect(function(input, processed)
-	if processed then return end
+	if processed then
+		return
+	end
 	if input.KeyCode == Enum.KeyCode.F5 then
 		uiIsOpen = not uiIsOpen
 		updateUIRender()

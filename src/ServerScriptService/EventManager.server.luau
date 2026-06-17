@@ -194,15 +194,15 @@ local AdminEventService = {}
 local TOPIC_NAME = "GlobalAdminEvents_V1"
 
 local function applyLocalEventValues(values)
-	variantBoost.Value = math.clamp(values.VariantBoost or 0, 0, 100)
-	luckBoost.Value = math.clamp(values.LuckBoost or 0, 0, 500)
-	expBoost.Value = math.clamp(values.ExpBoost or 0, 0, 500)
-	ReplicatedStorage:SetAttribute("SpeedBoost", math.clamp(values.SpeedBoost or 0, 0, 100))
+	variantBoost.Value = math.clamp(values.VariantBoost or values.Variant or 0, 0, 100)
+	luckBoost.Value = math.clamp(values.LuckBoost or values.Luck or 0, 0, 500)
+	expBoost.Value = math.clamp(values.ExpBoost or values.Exp or 0, 0, 500)
+	ReplicatedStorage:SetAttribute("SpeedBoost", math.clamp(values.SpeedBoost or values.Speed or 0, 0, 100))
 
-	goldenBoost.Value = math.clamp(values.VariantBoost_Golden or 0, 0, 50)
-	rainbowBoost.Value = math.clamp(values.VariantBoost_Rainbow or 0, 0, 50)
-	galaxyBoost.Value = math.clamp(values.VariantBoost_Galaxy or 0, 0, 50)
-	hellfireBoost.Value = math.clamp(values.VariantBoost_Hellfire or 0, 0, 50)
+	goldenBoost.Value = math.clamp(values.VariantBoost_Golden or values.Golden or 0, 0, 50)
+	rainbowBoost.Value = math.clamp(values.VariantBoost_Rainbow or values.Rainbow or 0, 0, 50)
+	galaxyBoost.Value = math.clamp(values.VariantBoost_Galaxy or values.Galaxy or 0, 0, 50)
+	hellfireBoost.Value = math.clamp(values.VariantBoost_Hellfire or values.Hellfire or 0, 0, 50)
 end
 
 local function stopLocalEvents()

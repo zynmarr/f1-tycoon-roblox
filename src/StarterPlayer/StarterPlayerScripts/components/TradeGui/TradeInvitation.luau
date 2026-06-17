@@ -38,7 +38,7 @@ return function(props: TradeInvitationProps)
 	end, {})
 
 	return e("Frame", {
-		Size = UDim2.new(0.3, 0, 0.25, 0),
+		Size = UDim2.new(0.85, 0, 0.45, 0),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		Position = UDim2.new(0.5, 0, 0.4, 0),
 		BackgroundColor3 = Color3.fromRGB(15, 15, 20),
@@ -47,7 +47,10 @@ return function(props: TradeInvitationProps)
 	}, {
 		Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
 		Stroke = e("UIStroke", { Color = Color3.fromRGB(0, 180, 255), Thickness = 1.5 }),
-		SizeConstraint = e("UISizeConstraint", { MaxSize = Vector2.new(350, 160) }),
+		SizeConstraint = e("UISizeConstraint", {
+			MinSize = Vector2.new(220, 120),
+			MaxSize = Vector2.new(350, 160),
+		}),
 
 		-- Title/Header
 		Header = e("Frame", {

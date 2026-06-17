@@ -41,24 +41,56 @@ local function Sidebar(props: {
 	local buttonElements = {}
 	for index, btn in ipairs(sortedButtons) do
 		local isActive = (btn.Name == "Backpack" and props.InventoryOpen)
-		local size = props.IsMobile and UDim2.fromOffset(45, 36) or UDim2.fromOffset(42, 42)
+		local size = props.IsMobile and UDim2.fromOffset(36, 36) or UDim2.fromOffset(42, 42)
 
 		buttonElements[btn.Name] = e("TextButton", {
 			Size = size,
-			BackgroundColor3 = isActive and Color3.fromRGB(100, 50, 250) or Color3.fromRGB(20, 20, 25),
+			BackgroundColor3 = isActive and Color3.fromRGB(35, 25, 28) or Color3.fromRGB(20, 20, 24),
 			BackgroundTransparency = 0.35,
 			Text = btn.Icon,
 			Font = Enum.Font.GothamBold,
-			TextSize = props.IsMobile and 16 or 18,
+			TextColor3 = isActive and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(240, 240, 240),
+			TextSize = props.IsMobile and 14 or 18,
 			LayoutOrder = index,
 			AutoButtonColor = true,
 			[React.Event.Activated] = btn.Callback,
 		}, {
 			Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
 			Stroke = e("UIStroke", {
-				Color = isActive and Color3.fromRGB(160, 100, 255) or Color3.fromRGB(70, 70, 85),
-				Thickness = 1,
+				Color = isActive and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(55, 55, 65),
+				Thickness = isActive and 1.5 or 1,
+			}, {
+				Gradient = e("UIGradient", {
+					Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(
+							0,
+							isActive and Color3.fromRGB(255, 0, 60) or Color3.fromRGB(0, 0, 255)
+						),
+						ColorSequenceKeypoint.new(
+							1,
+							isActive and Color3.fromRGB(255, 0, 60) or Color3.fromRGB(0, 0, 255)
+						),
+					}),
+					Rotation = 45,
+				}),
 			}),
+			BackgroundGradient = e("UIGradient", {
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, isActive and Color3.fromRGB(255, 0, 38) or Color3.fromRGB(0, 0, 255)),
+					ColorSequenceKeypoint.new(1, isActive and Color3.fromRGB(255, 1, 52) or Color3.fromRGB(0, 0, 255)),
+				}),
+				Rotation = 45,
+			}),
+			ActiveIndicator = isActive and e("Frame", {
+				Size = UDim2.new(0.4, 0, 0, 2),
+				Position = UDim2.new(0.5, 0, 1, -3),
+				AnchorPoint = Vector2.new(0.5, 1),
+				BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+				BorderSizePixel = 0,
+				ZIndex = 4,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 1) }),
+			}) or nil,
 		})
 	end
 
@@ -67,14 +99,14 @@ local function Sidebar(props: {
 	local fillDirection
 
 	if props.IsMobile then
-		containerSize = UDim2.new(0, #sortedButtons * 55, 0, 45)
-		containerPos = UDim2.new(0.5, 0, 1, -65) -- Berada di atas Hotbar mobile sedikit
-		anchorPoint = Vector2.new(0.5, 1)
-		fillDirection = Enum.FillDirection.Horizontal
+		containerSize = UDim2.new(0, 44, 0, #sortedButtons * 44)
+		containerPos = UDim2.new(1, -10, 0.45, 0) -- Tengah Kanan, sedikit naik untuk menghindari tombol lompat
+		anchorPoint = Vector2.new(1, 0.5)
+		fillDirection = Enum.FillDirection.Vertical
 	else
 		containerSize = UDim2.new(0, 55, 0, #sortedButtons * 55)
-		containerPos = UDim2.new(0, 10, 0.5, 0)
-		anchorPoint = Vector2.new(0, 0.5)
+		containerPos = UDim2.new(1, -15, 0.5, 0) -- Tengah Kanan!
+		anchorPoint = Vector2.new(1, 0.5)
 		fillDirection = Enum.FillDirection.Vertical
 	end
 
@@ -82,7 +114,7 @@ local function Sidebar(props: {
 		Layout = e("UIListLayout", {
 			FillDirection = fillDirection,
 			SortOrder = Enum.SortOrder.LayoutOrder,
-			Padding = UDim.new(0, 10),
+			Padding = props.IsMobile and UDim.new(0, 8) or UDim.new(0, 10),
 			HorizontalAlignment = Enum.HorizontalAlignment.Center,
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 		}),

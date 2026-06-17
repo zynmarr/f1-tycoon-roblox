@@ -115,7 +115,7 @@ local function OpenBoxOverlay(props: { IsMobile: boolean })
 
 	return e("Frame", {
 		Size = baseSize,
-		Position = UDim2.new(0.5, 0, 1, props.IsMobile and -120 or -80),
+		Position = UDim2.new(0.5, 0, 1, props.IsMobile and -160 or -180), -- Naikkan agar tidak tumpang tindih dengan Hotbar & Nameplate
 		AnchorPoint = Vector2.new(0.5, 1),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
@@ -125,8 +125,8 @@ local function OpenBoxOverlay(props: { IsMobile: boolean })
 			Size = UDim2.fromScale(1, 1),
 			Position = UDim2.fromScale(0.5, 0.5),
 			AnchorPoint = Vector2.new(0.5, 0.5),
-			BackgroundColor3 = Color3.fromRGB(110, 30, 230),
-			BackgroundTransparency = 0.25,
+			BackgroundColor3 = Color3.fromRGB(35, 25, 28),
+			BackgroundTransparency = 0.2,
 			Text = isOpening and "Membuka..." or "📦 Buka Box",
 			Font = Enum.Font.GothamBold,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
@@ -154,10 +154,25 @@ local function OpenBoxOverlay(props: { IsMobile: boolean })
 				end
 			end,
 		}, {
-			Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
+			Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
 			Stroke = e("UIStroke", {
-				Color = Color3.fromRGB(200, 80, 255),
-				Thickness = 1.5,
+				Color = Color3.fromRGB(255, 35, 85),
+				Thickness = 1.2,
+			}, {
+				Gradient = e("UIGradient", {
+					Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 35, 85)),
+						ColorSequenceKeypoint.new(1, Color3.fromRGB(180, 20, 50)),
+					}),
+					Rotation = 45,
+				})
+			}),
+			BackgroundGradient = e("UIGradient", {
+				Color = ColorSequence.new({
+					ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 15, 20)),
+					ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 5, 8)),
+				}),
+				Rotation = 45,
 			}),
 		}),
 	})

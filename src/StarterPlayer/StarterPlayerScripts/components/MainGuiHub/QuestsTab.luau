@@ -190,68 +190,144 @@ return function(props)
 	addMilestoneList(MILESTONES_CONFIG.CarsSold, milestones.TotalCarsSold, "CarsSold")
 	addMilestoneList(MILESTONES_CONFIG.BoxesOpened, milestones.TotalBoxesOpened, "BoxesOpened")
 
-	return e("Frame", {
+	local isMobile = props.IsMobile
+
+	local mainContent
+	if isMobile then
+		mainContent = {
+			Layout = e("UIListLayout", {
+				FillDirection = Enum.FillDirection.Vertical,
+				Padding = UDim.new(0, 12),
+				SortOrder = Enum.SortOrder.LayoutOrder,
+			}),
+
+			DailyPanel = e("Frame", {
+				Size = UDim2.new(1, 0, 0, 0),
+				BackgroundColor3 = Color3.fromRGB(25, 25, 33),
+				BorderSizePixel = 0,
+				AutomaticSize = Enum.AutomaticSize.Y,
+				LayoutOrder = 1,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
+				
+				Title = e("TextLabel", {
+					Text = "MISI HARIAN (24 JAM)",
+					Size = UDim2.new(1, -30, 0, 30),
+					Position = UDim2.new(0, 15, 0, 8),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					TextSize = 13,
+					Font = Enum.Font.GothamBold,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}),
+
+				ScrollArea = e("Frame", {
+					Size = UDim2.new(1, -20, 0, 0),
+					Position = UDim2.new(0, 10, 0, 42),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					AutomaticSize = Enum.AutomaticSize.Y,
+				}, dailyElements)
+			}),
+
+			MilestonePanel = e("Frame", {
+				Size = UDim2.new(1, 0, 0, 0),
+				BackgroundColor3 = Color3.fromRGB(25, 25, 33),
+				BorderSizePixel = 0,
+				AutomaticSize = Enum.AutomaticSize.Y,
+				LayoutOrder = 2,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
+				
+				Title = e("TextLabel", {
+					Text = "PENCAPAIAN LIFE-TIME",
+					Size = UDim2.new(1, -30, 0, 30),
+					Position = UDim2.new(0, 15, 0, 8),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					TextSize = 13,
+					Font = Enum.Font.GothamBold,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}),
+
+				ScrollArea = e("Frame", {
+					Size = UDim2.new(1, -20, 0, 0),
+					Position = UDim2.new(0, 10, 0, 42),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					AutomaticSize = Enum.AutomaticSize.Y,
+				}, milestoneElements)
+			})
+		}
+	else
+		-- PC layout: Side-by-side but both grow dynamically in a single scrolling frame
+		mainContent = {
+			DailyPanel = e("Frame", {
+				Size = UDim2.new(0.48, 0, 0, 0),
+				BackgroundColor3 = Color3.fromRGB(25, 25, 33),
+				BorderSizePixel = 0,
+				AutomaticSize = Enum.AutomaticSize.Y,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
+				
+				Title = e("TextLabel", {
+					Text = "MISI HARIAN (24 JAM)",
+					Size = UDim2.new(1, -30, 0, 45),
+					Position = UDim2.new(0, 15, 0, 15),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					TextSize = 16,
+					Font = Enum.Font.GothamBold,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}),
+
+				ScrollArea = e("Frame", {
+					Size = UDim2.new(1, -20, 0, 0),
+					Position = UDim2.new(0, 10, 0, 65),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					AutomaticSize = Enum.AutomaticSize.Y,
+				}, dailyElements)
+			}),
+
+			MilestonePanel = e("Frame", {
+				Size = UDim2.new(0.48, 0, 0, 0),
+				Position = UDim2.new(0.52, 0, 0, 0),
+				BackgroundColor3 = Color3.fromRGB(25, 25, 33),
+				BorderSizePixel = 0,
+				AutomaticSize = Enum.AutomaticSize.Y,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
+				
+				Title = e("TextLabel", {
+					Text = "PENCAPAIAN LIFE-TIME",
+					Size = UDim2.new(1, -30, 0, 45),
+					Position = UDim2.new(0, 15, 0, 15),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					TextSize = 16,
+					Font = Enum.Font.GothamBold,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}),
+
+				ScrollArea = e("Frame", {
+					Size = UDim2.new(1, -20, 0, 0),
+					Position = UDim2.new(0, 10, 0, 65),
+					BackgroundTransparency = 1,
+					BorderSizePixel = 0,
+					AutomaticSize = Enum.AutomaticSize.Y,
+				}, milestoneElements)
+			})
+		}
+	end
+
+	return e("ScrollingFrame", {
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
-	}, {
-		-- LEFT PANEL: DAILY QUESTS
-		DailyPanel = e("Frame", {
-			Size = UDim2.new(0.48, 0, 1, 0),
-			BackgroundColor3 = Color3.fromRGB(25, 25, 33),
-			BorderSizePixel = 0,
-		}, {
-			Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
-			
-			Title = e("TextLabel", {
-				Text = "MISI HARIAN (24 JAM)",
-				Size = UDim2.new(1, -30, 0, 45),
-				Position = UDim2.new(0, 15, 0, 15),
-				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextSize = 16,
-				Font = Enum.Font.GothamBold,
-				TextXAlignment = Enum.TextXAlignment.Left,
-			}),
-
-			ScrollArea = e("ScrollingFrame", {
-				Size = UDim2.new(1, -20, 1, -80),
-				Position = UDim2.new(0, 10, 0, 65),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				CanvasSize = UDim2.new(0, 0, 0, 0),
-				AutomaticCanvasSize = Enum.AutomaticSize.Y,
-			}, dailyElements)
-		}),
-
-		-- RIGHT PANEL: LIFETIME MILESTONES
-		MilestonePanel = e("Frame", {
-			Size = UDim2.new(0.48, 0, 1, 0),
-			Position = UDim2.new(0.52, 0, 0, 0),
-			BackgroundColor3 = Color3.fromRGB(25, 25, 33),
-			BorderSizePixel = 0,
-		}, {
-			Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
-			
-			Title = e("TextLabel", {
-				Text = "PENCAPAIAN LIFE-TIME",
-				Size = UDim2.new(1, -30, 0, 45),
-				Position = UDim2.new(0, 15, 0, 15),
-				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(255, 255, 255),
-				TextSize = 16,
-				Font = Enum.Font.GothamBold,
-				TextXAlignment = Enum.TextXAlignment.Left,
-			}),
-
-			ScrollArea = e("ScrollingFrame", {
-				Size = UDim2.new(1, -20, 1, -80),
-				Position = UDim2.new(0, 10, 0, 65),
-				BackgroundTransparency = 1,
-				BorderSizePixel = 0,
-				ScrollBarThickness = 4,
-				CanvasSize = UDim2.new(0, 0, 0, 0),
-				AutomaticCanvasSize = Enum.AutomaticSize.Y,
-			}, milestoneElements)
-		})
-	})
+		BorderSizePixel = 0,
+		ScrollBarThickness = 4,
+		ScrollBarImageColor3 = Color3.fromRGB(100, 100, 130),
+		CanvasSize = UDim2.new(0, 0, 0, 0),
+		AutomaticCanvasSize = Enum.AutomaticSize.Y,
+	}, mainContent)
 end

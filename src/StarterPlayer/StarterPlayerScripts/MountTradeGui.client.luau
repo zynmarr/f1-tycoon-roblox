@@ -32,6 +32,7 @@ screenGui.Name = "TradeGui"
 screenGui.ResetOnSpawn = false
 screenGui.Enabled = false
 screenGui.Parent = playerGui
+screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
 
 local root = ReactRoblox.createRoot(screenGui)
 
@@ -151,7 +152,7 @@ end)
 
 tradeStateUpdateEvent.OnClientEvent:Connect(function(state)
 	tradeState = state
-	
+
 	if state and not state.Active then
 		if state.Success then
 			showNotification("Trade Sukses", "Pertukaran mobil berhasil dilakukan!")
@@ -164,7 +165,7 @@ tradeStateUpdateEvent.OnClientEvent:Connect(function(state)
 		tradeState = nil
 		playerListIsOpen = false
 	end
-	
+
 	updateRender()
 end)
 
@@ -177,7 +178,9 @@ local function destroyTradeButton()
 end
 
 local function createTradeButton()
-	if tradeBtnRegistered then return end
+	if tradeBtnRegistered then
+		return
+	end
 	RegisterSidebarButton:Fire({
 		Name = "Trade",
 		Label = "Trade",
@@ -222,7 +225,9 @@ task.defer(onRebirthsChanged)
 -- ===== HIDE OWN PROXIMITY PROMPT =====
 local function disableOwnPrompt(char: Model)
 	local hrp = char:WaitForChild("HumanoidRootPart", 10)
-	if not hrp then return end
+	if not hrp then
+		return
+	end
 
 	local function checkPrompt(child: Instance)
 		if child.Name == "TradePrompt" and child:IsA("ProximityPrompt") then
@@ -272,4 +277,6 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, playerWhoTrigger
 	end
 end)
 
-print("[Client] React MountTradeGui mounting controller siap! Klik tombol 'Trade' di SideMenu atau dekati pemain lain (min. 5 Rebirth) lalu tekan E.")
+print(
+	"[Client] React MountTradeGui mounting controller siap! Klik tombol 'Trade' di SideMenu atau dekati pemain lain (min. 5 Rebirth) lalu tekan E."
+)
