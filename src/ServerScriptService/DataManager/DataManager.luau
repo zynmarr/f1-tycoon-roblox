@@ -8,6 +8,7 @@ local DEFAULT_DATA = {
 		Level = 1,
 		Rebirth = 0,
 		RebirthPoints = 0,
+		RPMTokens = 0, -- Saldo RPM Tokens pemain (bermula dari 0)
 		RaceStats = {
 			Wins = 0,
 			Losses = 0,
@@ -231,6 +232,7 @@ function DataManager.syncData(player)
 	finalSave.Stats.Level = leaderstats:FindFirstChild("Level") and leaderstats.Level.Value or 1
 	finalSave.Stats.Rebirth = leaderstats:FindFirstChild("Rebirth") and leaderstats.Rebirth.Value or 0
 	finalSave.Stats.RebirthPoints = leaderstats:FindFirstChild("RebirthPoints") and leaderstats.RebirthPoints.Value or 0
+	finalSave.Stats.RPMTokens = leaderstats:FindFirstChild("RPM Tokens") and leaderstats["RPM Tokens"].Value or 0
 	finalSave.Stats.RaceStats = profile.Data.Stats and profile.Data.Stats.RaceStats or {
 		Wins = 0,
 		Losses = 0,

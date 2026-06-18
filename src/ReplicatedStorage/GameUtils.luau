@@ -59,14 +59,14 @@ end
 
 -- 4. Get plot's sell area
 function GameUtils.getPlotSellShopArea(plot: Folder, areaName: string): Part?
-	if not plot then
+	if not plot or not areaName then
 		return nil
 	end
-	local sellAreaFolder = plot:FindFirstChild("SellArea")
-	if not sellAreaFolder then
+	local areaFolder = plot:FindFirstChild(areaName)
+	if not areaFolder then
 		return nil
 	end
-	return sellAreaFolder:FindFirstChild("Area")
+	return areaFolder:FindFirstChild("Area")
 end
 
 -- 5. Get player's sell area (convenient helper combining 3 & 4)

@@ -41,7 +41,7 @@ function SellGuiManager:sellCar(player, car, stackChildName)
 	end
 
 	-- ===== ANTI-CHEAT: Verifikasi lokasi =====
-	local sellArea = GameUtils.getPlayerSellArea(player)
+	local sellArea = GameUtils.getPlayerSellShopArea(player, "SellArea")
 	if not sellArea then
 		return {
 			Success = false,
@@ -239,7 +239,7 @@ function SellGuiManager:sellAllCars(player, cars)
 	end
 
 	-- ===== ANTI-CHEAT: Verifikasi lokasi =====
-	local sellArea = GameUtils.getPlayerSellArea(player)
+	local sellArea = GameUtils.getPlayerSellShopArea(player, "SellArea")
 	if sellArea then
 		local jarak = (root.Position - sellArea:GetPivot().Position).Magnitude
 		if jarak > MAX_DISTANCE then

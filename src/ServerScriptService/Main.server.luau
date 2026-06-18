@@ -18,6 +18,7 @@ local RoleManager = safeRequire(script.Parent.RoleManager.RoleManager, "RoleMana
 local ParkingAreaManager = safeRequire(script.Parent.ParkingAreaManager.ParkingAreaManager, "ParkingAreaManager")
 local RebirthManager = safeRequire(script.Parent.RebirthManager.RebirthManager, "RebirthManager")
 local RaceManager = safeRequire(script.Parent.RaceManager.RaceManager, "RaceManager")
+local ShopManager = safeRequire(script.Parent.ShopManager.ShopManager, "ShopManager")
 -- local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
 
 -- ==========================================================
@@ -206,6 +207,11 @@ local function onPlayerAdded(player: Player)
 	rebirthPointsVal.Value = data.Stats.RebirthPoints or 0
 	rebirthPointsVal.Parent = leaderstats
 
+	local rpmVal = Instance.new("IntValue")
+	rpmVal.Name = "RPM Tokens"
+	rpmVal.Value = data.Stats.RPMTokens or 0
+	rpmVal.Parent = leaderstats
+
 	leaderstats.Parent = player
 
 	-- Memuat Karakter dan Spawn
@@ -312,6 +318,9 @@ local function InitializeServer()
 	end
 	if typeof(RaceManager.Init) == "function" then
 		RaceManager.Init()
+	end
+	if typeof(ShopManager.Init) == "function" then
+		ShopManager.Init()
 	end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)
