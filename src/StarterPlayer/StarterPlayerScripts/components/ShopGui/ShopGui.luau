@@ -55,11 +55,11 @@ end
 -- ===== CORE SHOP COMPONENT =====
 local function ShopGui(props)
 	local isStorybook = props.isStorybook or props.IsStorybook or false
-	local [activeTab, setActiveTab] = useState("Items")
-	local [toasts, setToasts] = useState({})
+	local activeTab, setActiveTab = useState("Items")
+	local toasts, setToasts = useState({})
 	
 	-- Pemantauan Ukuran Layar untuk Responsivitas
-	local [viewportSize, setViewportSize] = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
+	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
 	useEffect(function()
 		local connection: RBXScriptConnection? = nil
 		local function setupCamera(cam: Camera?)
@@ -84,8 +84,8 @@ local function ShopGui(props)
 	local isMobile = viewportSize.X < 650 or viewportSize.Y < 500
 	
 	-- Saldo RPM Tokens & Cash Ter-sinkronisasi Otomatis
-	local [rpmTokens, setRpmTokens] = useState(0)
-	local [cash, setCash] = useState(0)
+	local rpmTokens, setRpmTokens = useState(0)
+	local cash, setCash = useState(0)
 	
 	useEffect(function()
 		if isStorybook then
@@ -136,7 +136,7 @@ local function ShopGui(props)
 	end, {})
 	
 	-- Networker Client
-	local [networker] = useState(function()
+	local networker = useState(function()
 		if isStorybook then return nil end
 		return Networker.client.new("ShopGui", {})
 	end)
