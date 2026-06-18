@@ -81,7 +81,7 @@ task.spawn(function()
 			continue
 		end
 
-		local distance = (humanoidRoot.Position - shopArea.Position).Magnitude
+		local distance = (humanoidRoot.Position - shopArea:GetPivot().Position).Magnitude
 		local isNear = distance <= SHOP_RADIUS
 
 		-- Terbuka HANYA saat transisi masuk area (dari luar ke dalam)

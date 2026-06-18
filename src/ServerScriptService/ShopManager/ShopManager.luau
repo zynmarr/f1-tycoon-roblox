@@ -102,7 +102,7 @@ function ShopManager:buyBox(player: Player, boxLevel: number)
 		return { Success = false, Error = "Shop area tidak ditemukan di plot Anda!" }
 	end
 	
-	local jarak = (root.Position - shopArea.Position).Magnitude
+	local jarak = (root.Position - shopArea:GetPivot().Position).Magnitude
 	if jarak > MAX_DISTANCE then
 		warn(`[ANTI-CHEAT] {player.Name} mencoba membeli Box dari luar area Shop! Jarak: {jarak}m`)
 		return { Success = false, Error = "Anda terlalu jauh dari shop area!" }
