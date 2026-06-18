@@ -96,13 +96,11 @@ function NetworkerServer.new(networkTag: NetworkTag, module: {}?, clientAccess: 
 
 	local function callback(player: Player, method: string, ...: any?): ...any?
 		local access = self._accessLookup[method]
-		print("[NetworkerServer Callback] invoking method:", tostring(method), "for player:", tostring(player), "access found:", access ~= nil)
 		if not access then
 			warn(method .. " does not exist or is restricted for ", networkTag)
 			return
 		end
 
-		print("[NetworkerServer Callback] calling:", tostring(access.method), "with module:", tostring(access.module), "and player:", tostring(player))
 		return access.method(access.module, player, ...)
 	end
 

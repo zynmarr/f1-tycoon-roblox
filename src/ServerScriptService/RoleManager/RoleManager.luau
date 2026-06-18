@@ -307,25 +307,33 @@ function RoleManager.Init()
 			-- Bangun teks rich text
 			local prefixText = ""
 			if roleName ~= "Player" and roleData then
-				prefixText = string.format("<font color='#%s'><b>[%s %s]</b></font> ", roleColorHex, roleEmoji, string.upper(roleDisplayName))
+				prefixText = string.format(
+					"<font color='#%s'><b>[%s %s]</b></font> ",
+					roleColorHex,
+					roleEmoji,
+					string.upper(roleDisplayName)
+				)
 			end
 
 			local playerText = string.format("<font color='#%s'><b>%s</b></font>", roleColorHex, playerName)
 			local messageBody = string.format(": baru saja membeli Gamepass <b>%s</b>!", gamePassName)
 			-- Ikon global 🌐 dengan warna emas khas VIP (#ffc800) untuk badan pesan
-			local richText = string.format("🌐 %s%s<font color='#ffc800'>%s</font>", prefixText, playerText, messageBody)
+			local richText =
+				string.format("🌐 %s%s<font color='#ffc800'>%s</font>", prefixText, playerText, messageBody)
 
 			print("[RoleManager] Menyiarkan pengumuman global gamepass: " .. playerName .. " membeli " .. gamePassName)
 
 			-- Siarkan ke Client untuk ditampilkan di Chat UI
-			local chatAnnounceEvent = ReplicatedStorage:FindFirstChild("ChatAnnounceEvent") :: RemoteEvent?
+			local chatAnnounceEvent: RemoteEvent? =
+				ReplicatedStorage:FindFirstChild("ChatAnnounceEvent") :: RemoteEvent?
 			if not chatAnnounceEvent then
-				local newEvent = Instance.new("RemoteEvent")
+				local newEvent: RemoteEvent = Instance.new("RemoteEvent") :: RemoteEvent
 				newEvent.Name = "ChatAnnounceEvent"
 				newEvent.Parent = ReplicatedStorage
 				chatAnnounceEvent = newEvent
 			end
-			chatAnnounceEvent:FireAllClients(richText, Color3.fromRGB(255, 200, 0))
+
+			chatAnnounceEvent:FireAllClients(richText)
 		end)
 	end)
 end

@@ -58,7 +58,7 @@ function GameUtils.getPlayerPlot(player: Player): Folder?
 end
 
 -- 4. Get plot's sell area
-function GameUtils.getPlotSellArea(plot: Folder): Part?
+function GameUtils.getPlotSellShopArea(plot: Folder, areaName: string): Part?
 	if not plot then
 		return nil
 	end
@@ -70,12 +70,12 @@ function GameUtils.getPlotSellArea(plot: Folder): Part?
 end
 
 -- 5. Get player's sell area (convenient helper combining 3 & 4)
-function GameUtils.getPlayerSellArea(player: Player): Part?
+function GameUtils.getPlayerSellShopArea(player: Player, areaName: string): Part?
 	local plot = GameUtils.getPlayerPlot(player)
 	if not plot then
 		return nil
 	end
-	return GameUtils.getPlotSellArea(plot)
+	return GameUtils.getPlotSellShopArea(plot, areaName)
 end
 
 -- ===== TOOL AND VEHICLE IDENTIFICATION =====

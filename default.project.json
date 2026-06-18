@@ -49,6 +49,35 @@
     "SoundService": {
       "$properties": {
         "DefaultListenerLocation": "Camera",
+        "ListenerCFrame": {
+          "CFrame": {
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "orientation": [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          }
+        },
+        "ListenerType": {
+          "Enum": 0
+        },
         "RespectFilteringEnabled": true
       }
     },

@@ -65,9 +65,15 @@ local function Topbar(props: { IsMobile: boolean })
 			VerticalAlignment = Enum.VerticalAlignment.Center,
 		}),
 
-		ShopBtn = createMenuButton("Shop", "🛒 Shop", 1, toggleShop),
-		HomeBtn = createMenuButton("Home", "🏠 Home", 2, function() teleport("Home") end),
-		SellBtn = createMenuButton("Sell", "🏪 Sell", 3, function() teleport("SellArea") end),
+		ShopBtn = createMenuButton("Shop", "🛒 Shop", 1, function()
+			teleport("ShopArea")
+		end),
+		HomeBtn = createMenuButton("Home", "🏠 Home", 2, function()
+			teleport("Home")
+		end),
+		SellBtn = createMenuButton("Sell", "🏪 Sell", 3, function()
+			teleport("SellArea")
+		end),
 	})
 end
 

@@ -60,6 +60,17 @@ local function plotArea(plot: Folder)
 	end)
 end
 
+function PlotManager.teleportToPlot(player, character)
+	local plot = GameUtils.getPlayerPlot(player)
+	if plot then
+		local spawnPos = plot:FindFirstChild("SpawnLocation")
+		if spawnPos then
+			character:PivotTo(spawnPos.CFrame * CFrame.new(0, 3, 0))
+			print("++++ TELEPORTED TO PLOT: " .. plot.Name)
+		end
+	end
+end
+
 function PlotManager.Init()
 	local function onSpawnerAdded(plot: Folder)
 		task.spawn(plotArea, plot)
@@ -228,17 +239,6 @@ function PlotManager.releasePlot(player)
 					end
 				end
 			end
-		end
-	end
-end
-
-function PlotManager.teleportToPlot(player, character)
-	local plot = GameUtils.getPlayerPlot(player)
-	if plot then
-		local spawnPos = plot:FindFirstChild("SpawnLocation")
-		if spawnPos then
-			character:PivotTo(spawnPos.CFrame * CFrame.new(0, 3, 0))
-			print("++++ TELEPORTED TO PLOT: " .. plot.Name)
 		end
 	end
 end

@@ -287,12 +287,14 @@ local function InitializeServer()
 		notifEvent.Parent = game:GetService("ReplicatedStorage")
 	end
 
-	if typeof(RoleManager.Init) == "function" then
-		RoleManager.Init()
-	end
 	if typeof(PlotManager.Init) == "function" then
 		PlotManager.Init()
 	end
+
+	if typeof(RoleManager.Init) == "function" then
+		RoleManager.Init()
+	end
+
 	if typeof(CarManager.Init) == "function" then
 		CarManager.Init()
 	end

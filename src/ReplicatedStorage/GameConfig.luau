@@ -136,6 +136,13 @@ GameConfig.Variants = {
 		Material = Enum.Material.CorrodedMetal,
 		Effect = "WaterAura",
 	},
+	["Water"] = {
+		Chance = 12,
+		Multiplier = 2.0,
+		Color = Color3.fromRGB(0, 157, 255),
+		Material = Enum.Material.Neon,
+		-- Effect = "Shiny",
+	},
 	["Shiny"] = {
 		Chance = 12,
 		Multiplier = 2.0,
@@ -158,7 +165,7 @@ GameConfig.Variants = {
 	["Frostbite"] = {
 		Chance = 2.5,
 		Multiplier = 20.0,
-		Color = Color3.fromRGB(135, 206, 250),
+		Color = Color3.fromRGB(0, 64, 255),
 		Material = Enum.Material.Glass,
 	},
 	["Galaxy"] = {

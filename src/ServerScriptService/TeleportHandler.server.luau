@@ -44,7 +44,13 @@ teleportEvent.OnServerEvent:Connect(function(player, destination)
 			character:PivotTo(spawnLocation.CFrame * CFrame.new(0, 3, 0))
 		end
 	elseif destination == "SellArea" then
-		local sellArea = GameUtils.getPlotSellArea(plot)
+		local sellArea = GameUtils.getPlotSellShopArea(plot, "SellArea")
+		local centerArea = sellArea and sellArea:FindFirstChild("LightCore")
+		if sellArea and centerArea then
+			character:PivotTo(centerArea.CFrame * CFrame.new(0, 0, 10))
+		end
+	elseif destination == "ShopArea" then
+		local sellArea = GameUtils.getPlotSellShopArea(plot, "ShopArea")
 		local centerArea = sellArea and sellArea:FindFirstChild("LightCore")
 		if sellArea and centerArea then
 			character:PivotTo(centerArea.CFrame * CFrame.new(0, 0, 10))

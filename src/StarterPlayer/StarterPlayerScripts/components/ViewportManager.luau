@@ -139,6 +139,8 @@ local function setupCarViewport(cache, viewport, carTool, options)
 			distMultiplier = 2 -- Further distance for boxes
 		end
 
+		task.wait(0.05)
+
 		-- Hitung parameter kamera dan CFrame
 		local halfFov = targetFov / 2
 		local dist = (maxDim / 2) / math.tan(math.rad(halfFov)) * distMultiplier

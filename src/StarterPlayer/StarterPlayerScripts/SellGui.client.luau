@@ -110,7 +110,9 @@ end
 local uiIsOpen = false
 
 local function updateUIRender()
-	if not root then return end
+	if not root then
+		return
+	end
 
 	if uiIsOpen then
 		local currentComponent = React.createElement(SellGui, {
@@ -168,7 +170,7 @@ end
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 
 local function detectSellArea()
-	return GameUtils.getPlayerSellArea(player)
+	return GameUtils.getPlayerSellShopArea(player, "SellArea")
 end
 
 -- ===== SETUP REACT ROOT ON DEDICATED SCREENGUI =====
@@ -192,7 +194,11 @@ function handleSellCar(car, stackChildName)
 		carName = car.Name or "Unknown"
 	end
 
-	print("[SellGui CLIENT] Selling car: " .. tostring(carName) .. (stackChildName and (" (" .. stackChildName .. ")") or ""))
+	print(
+		"[SellGui CLIENT] Selling car: "
+			.. tostring(carName)
+			.. (stackChildName and (" (" .. stackChildName .. ")") or "")
+	)
 
 	local result = networker:fetch("sellCar", car, stackChildName)
 
@@ -234,7 +240,9 @@ task.spawn(function()
 	local wasInsideArea = false
 
 	local function openUI()
-		if uiIsOpen then return end
+		if uiIsOpen then
+			return
+		end
 		print("[SellGui CLIENT] Player masuk area sell, tampilkan UI")
 		uiIsOpen = true
 		updateUIRender()
