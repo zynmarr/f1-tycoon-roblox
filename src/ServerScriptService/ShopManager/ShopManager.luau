@@ -63,6 +63,13 @@ local function processReceipt(receiptInfo)
 				newBox:SetAttribute("Amount", 1)
 				newBox.Name = boxLevels[item.Level] and boxLevels[item.Level].Name or "Crate Level " .. tostring(item.Level)
 				
+				local handle = newBox:FindFirstChild("Handle") :: Part?
+				if handle then
+					handle.Anchored = false
+					handle.CanCollide = false
+					handle.Massless = true
+				end
+				
 				-- Setup visual di client
 				CollectionService:AddTag(newBox, "Box")
 				newBox.Parent = backpack
@@ -156,6 +163,13 @@ function ShopManager:buyBox(player: Player, boxLevel: number)
 	newBox:SetAttribute("Type", "Box")
 	newBox:SetAttribute("Amount", 1)
 	newBox.Name = boxLevels[item.Level] and boxLevels[item.Level].Name or "Crate Level " .. tostring(item.Level)
+	
+	local handle = newBox:FindFirstChild("Handle") :: Part?
+	if handle then
+		handle.Anchored = false
+		handle.CanCollide = false
+		handle.Massless = true
+	end
 	
 	-- Tag box
 	CollectionService:AddTag(newBox, "Box")
