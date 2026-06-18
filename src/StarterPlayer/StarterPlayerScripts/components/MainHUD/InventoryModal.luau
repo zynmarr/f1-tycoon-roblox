@@ -19,7 +19,7 @@ local function InventoryModal(props: {
 	SetIsHovered: (boolean) -> (),
 	OnSlotInputBegan: (tool: Tool, input: InputObject) -> (),
 })
-	local backpack = player:FindFirstChild("Backpack") or player:WaitForChild("Backpack", 5)
+	local backpack = player:WaitForChild("Backpack")
 	if not backpack then
 		warn("[InventoryModal] Backpack tidak ditemukan!")
 		return nil

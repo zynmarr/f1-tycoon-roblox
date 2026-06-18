@@ -19,7 +19,7 @@ local ViewportManager = require(script.Parent.Parent.ViewportManager)
 local player = Players.LocalPlayer
 
 local function MainHUD(props: { Buttons: any })
-	local backpack = player:FindFirstChild("Backpack") or player:WaitForChild("Backpack", 5)
+	local backpack = player:WaitForChild("Backpack")
 	local inventoryOpen, setInventoryOpen = useState(false)
 	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
 
@@ -32,6 +32,7 @@ local function MainHUD(props: { Buttons: any })
 	-- ===== DRAG & DROP STATE =====
 	local slotMapping, setSlotMapping = useState({} :: { [number]: Tool })
 	local manuallyUnmapped = useRef({} :: { [Tool]: boolean })
+	local pendingRemovals = useRef({} :: { [Tool]: boolean })
 	local heldTool, setHeldTool = useState(nil :: Tool?)
 	
 	local draggedItem, setDraggedItem = useState(nil :: { Tool: Tool, Source: string, SlotIndex: number? }?)
@@ -78,6 +79,7 @@ local function MainHUD(props: { Buttons: any })
 		if refreshScheduled then return end
 		refreshScheduled = true
 		task.defer(function()
+			task.wait(0.05) -- Beri waktu agar frame transisi parent tool selesai
 			refreshScheduled = false
 			if not backpack then return end
 			local char = player.Character
@@ -96,15 +98,6 @@ local function MainHUD(props: { Buttons: any })
 
 			setSlotMapping(function(oldMapping)
 				local newMapping = table.clone(oldMapping)
-				-- Hapus mapping jika tool tidak lagi dimiliki
-				for i = 1, 10 do
-					local tool = newMapping[i]
-					if tool then
-						if not tool.Parent or (tool.Parent ~= backpack and tool.Parent ~= char) then
-							newMapping[i] = nil
-						end
-					end
-				end
 				-- Masukkan tool baru yang belum ter-map ke slot kosong
 				for _, tool in ipairs(list) do
 					local alreadyMapped = false
@@ -123,6 +116,43 @@ local function MainHUD(props: { Buttons: any })
 						end
 					end
 				end
+
+				-- Periksa apakah ada tool yang dilepas dari kepemilikan
+				for i = 1, 10 do
+					local tool = newMapping[i]
+					if tool then
+						local parent = tool.Parent
+						if not parent or (parent ~= backpack and parent ~= char) then
+							-- Tool dilepas/tidak ada di tas atau karakter.
+							-- Untuk mencegah bouncing (mental ke backpack) akibat delay replikasi di server asli,
+							-- kita tunda penghapusan selama 0.5 detik untuk memastikan item benar-benar dihapus secara permanen.
+							if not pendingRemovals.current[tool] then
+								pendingRemovals.current[tool] = true
+								task.delay(0.5, function()
+									pendingRemovals.current[tool] = nil
+									local latestChar = player.Character
+									local latestParent = tool.Parent
+									if not latestParent or (latestParent ~= backpack and latestParent ~= latestChar) then
+										-- Memang benar-benar dihapus secara permanen (misal: dijual/dibuang/ditukar)
+										setSlotMapping(function(old)
+											local new = table.clone(old)
+											for slotIdx = 1, 10 do
+												if new[slotIdx] == tool then
+													new[slotIdx] = nil
+												end
+											end
+											return new
+										end)
+									end
+								end)
+							end
+						else
+							-- Jika tool kembali terdeteksi di backpack/char sebelum 0.5 detik, batalkan status pending removal
+							pendingRemovals.current[tool] = nil
+						end
+					end
+				end
+
 				return newMapping
 			end)
 		end)

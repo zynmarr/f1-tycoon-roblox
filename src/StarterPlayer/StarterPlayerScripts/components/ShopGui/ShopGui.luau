@@ -5,12 +5,46 @@ local React = require(ReplicatedStorage.Packages.React)
 local Networker = require(ReplicatedStorage.Packages.Networker)
 local ShopConfig = require(ReplicatedStorage:WaitForChild("ShopConfig"))
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
+local ViewportManager = require(script.Parent.Parent:WaitForChild("ViewportManager"))
 
 local e = React.createElement
 local useState = React.useState
 local useEffect = React.useEffect
+local useRef = React.useRef
 
 local player = Players.LocalPlayer
+
+-- ===== DUMMY TOOLS CACHE FOR 3D SHOP VISUALS =====
+local dummyToolsCache = {}
+
+local function getOrCreateDummyTool(item)
+	if dummyToolsCache[item.Level] then
+		return dummyToolsCache[item.Level]
+	end
+
+	local dummyTool = Instance.new("Tool")
+	dummyTool.Name = item.Name
+	dummyTool:SetAttribute("Level", item.Level)
+	dummyTool:SetAttribute("Type", "Box")
+
+	local BoxModels = ReplicatedStorage:FindFirstChild("BoxModels")
+	if BoxModels then
+		local targetModelName = "Level" .. tostring(item.Level)
+		local modelTemplate = BoxModels:FindFirstChild(targetModelName)
+		if not modelTemplate then
+			-- Fallback to Level1 if not found
+			modelTemplate = BoxModels:FindFirstChild("Level1")
+		end
+		if modelTemplate then
+			local modelClone = modelTemplate:Clone()
+			modelClone.Name = "Model"
+			modelClone.Parent = dummyTool
+		end
+	end
+
+	dummyToolsCache[item.Level] = dummyTool
+	return dummyTool
+end
 
 -- ===== TOAST STATE COMPONENT FOR FEEDBACK =====
 local function ToastComponent(props)
@@ -58,6 +92,11 @@ local function ShopGui(props)
 	local activeTab, setActiveTab = useState("Items")
 	local toasts, setToasts = useState({})
 	
+	local cache = useRef(nil)
+	if not cache.current then
+		cache.current = ViewportManager.new()
+	end
+	
 	-- Pemantauan Ukuran Layar untuk Responsivitas
 	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
 	useEffect(function()
@@ -97,8 +136,8 @@ local function ShopGui(props)
 		local function setupLeaderstats(leaderstats)
 			if not leaderstats then return end
 			
-			local tokenObj = leaderstats:WaitForChild("RPM Tokens", 5) :: IntValue?
-			local cashObj = leaderstats:WaitForChild("Cash", 5) :: IntValue?
+			local tokenObj = leaderstats:WaitForChild("RPM Tokens") :: IntValue?
+			local cashObj = leaderstats:WaitForChild("Cash") :: IntValue?
 			
 			local tokenConn, cashConn
 			if tokenObj then
@@ -132,6 +171,9 @@ local function ShopGui(props)
 		
 		return function()
 			if cleanup then cleanup() end
+			if cache.current then
+				ViewportManager.clearAllCache(cache.current)
+			end
 		end
 	end, {})
 	
@@ -254,13 +296,15 @@ local function ShopGui(props)
 						BorderSizePixel = 0,
 					}, {
 						Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
-						Icon = e("TextLabel", {
-							Text = "📦",
-							Size = UDim2.new(1, 0, 1, 0),
+						BoxView = e("ViewportFrame", {
+							Size = UDim2.fromScale(1, 1),
 							BackgroundTransparency = 1,
-							TextSize = 24,
-							TextXAlignment = Enum.TextXAlignment.Center,
-							TextYAlignment = Enum.TextYAlignment.Center,
+							ref = function(rbx: any)
+								if rbx then
+									local dummyTool = getOrCreateDummyTool(item)
+									ViewportManager.setupViewport(cache.current, rbx, dummyTool, { bgTransparency = 1 })
+								end
+							end,
 						}),
 						LevelBadge = e("TextLabel", {
 							Text = "Lvl " .. tostring(item.Level),

@@ -12,6 +12,7 @@ local player = Players.LocalPlayer
 local function CustomStats(props: { IsMobile: boolean })
 	-- State untuk statistik player
 	local cashVal, setCashVal = useState(0)
+	local rpmVal, setRpmVal = useState(0)
 	local rebirthVal, setRebirthVal = useState(0)
 	local rebirthPoints, setRebirthPoints = useState(0)
 
@@ -30,7 +31,7 @@ local function CustomStats(props: { IsMobile: boolean })
 
 	-- ===== 1. SINKRONISASI STATISTIK PLAYER =====
 	useEffect(function()
-		local leaderstats = player:WaitForChild("leaderstats", 15)
+		local leaderstats = player:WaitForChild("leaderstats")
 		local connections: { RBXScriptConnection } = {}
 
 		if leaderstats then
@@ -39,6 +40,14 @@ local function CustomStats(props: { IsMobile: boolean })
 				setCashVal(cashObj.Value)
 				table.insert(connections, cashObj.Changed:Connect(function(val)
 					setCashVal(val)
+				end))
+			end
+
+			local rpmObj = leaderstats:FindFirstChild("RPM Tokens") :: IntValue?
+			if rpmObj then
+				setRpmVal(rpmObj.Value)
+				table.insert(connections, rpmObj.Changed:Connect(function(val)
+					setRpmVal(val)
 				end))
 			end
 
@@ -65,7 +74,7 @@ local function CustomStats(props: { IsMobile: boolean })
 
 	-- ===== 2. SINKRONISASI ACTIVE BUFFS =====
 	useEffect(function()
-		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents", 10)
+		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents")
 		local connections: { RBXScriptConnection } = {}
 
 		local function syncBuffs()
@@ -223,7 +232,7 @@ local function CustomStats(props: { IsMobile: boolean })
 	local anchorPoint = Vector2.new(0, 0.5)
 
 	return e("Frame", {
-		Size = UDim2.new(0, 220, 0, 160),
+		Size = UDim2.new(0, 220, 0, 185),
 		Position = containerPos,
 		AnchorPoint = anchorPoint,
 		BackgroundTransparency = 1,
@@ -238,7 +247,7 @@ local function CustomStats(props: { IsMobile: boolean })
 
 		-- KARTU UTAMA STATISTIK (SEKARANG POLOS TANPA CARD BACKGROUND)
 		StatsCard = e("Frame", {
-			Size = UDim2.new(1, 0, 0, 75),
+			Size = UDim2.new(1, 0, 0, 100),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			LayoutOrder = 1,
@@ -263,12 +272,12 @@ local function CustomStats(props: { IsMobile: boolean })
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
 			}),
 
-			-- Row 2: Rebirth Points
-			PointsRow = e("TextLabel", {
-				Text = "✨  " .. GameUtils.formatCompact(rebirthPoints) .. " RP",
+			-- Row 2: RPM Tokens (RPM Points)
+			RpmRow = e("TextLabel", {
+				Text = "⚙️  " .. GameUtils.formatCompact(rpmVal) .. " RPM",
 				Size = UDim2.new(1, 0, 0, 20),
 				BackgroundTransparency = 1,
-				TextColor3 = Color3.fromRGB(0, 220, 255),
+				TextColor3 = Color3.fromRGB(255, 185, 0),
 				TextSize = 13,
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
@@ -277,7 +286,21 @@ local function CustomStats(props: { IsMobile: boolean })
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
 			}),
 
-			-- Row 3: Rebirth Level
+			-- Row 3: Rebirth Points
+			PointsRow = e("TextLabel", {
+				Text = "✨  " .. GameUtils.formatCompact(rebirthPoints) .. " RP",
+				Size = UDim2.new(1, 0, 0, 20),
+				BackgroundTransparency = 1,
+				TextColor3 = Color3.fromRGB(0, 220, 255),
+				TextSize = 13,
+				Font = Enum.Font.GothamBold,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				LayoutOrder = 3,
+				TextStrokeTransparency = 0.5,
+				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
+			}),
+
+			-- Row 4: Rebirth Level
 			RebirthRow = e("TextLabel", {
 				Text = "🔄  Rebirth " .. tostring(rebirthVal),
 				Size = UDim2.new(1, 0, 0, 20),
@@ -286,7 +309,7 @@ local function CustomStats(props: { IsMobile: boolean })
 				TextSize = 13,
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
-				LayoutOrder = 3,
+				LayoutOrder = 4,
 				TextStrokeTransparency = 0.5,
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
 			}),

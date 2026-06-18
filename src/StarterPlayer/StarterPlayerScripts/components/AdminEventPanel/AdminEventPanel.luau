@@ -102,7 +102,7 @@ return function(props: any)
 
 	-- 5. INITIALIZE SLIDERS FROM SERVER ON MOUNT
 	useEffect(function()
-		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents", 10)
+		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents")
 		if not liveEvents then
 			return
 		end
@@ -144,7 +144,7 @@ return function(props: any)
 
 	-- 6. LISTEN TO SERVER CHANGES (REAL-TIME SYNC)
 	useEffect(function()
-		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents", 10)
+		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents")
 		if not liveEvents then
 			return
 		end

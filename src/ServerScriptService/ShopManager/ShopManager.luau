@@ -8,6 +8,7 @@ local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local ShopConfig = require(ReplicatedStorage:WaitForChild("ShopConfig"))
 local DataManager = require(game:GetService("ServerScriptService"):WaitForChild("DataManager"):WaitForChild("DataManager"))
+local BoxManager = require(game:GetService("ServerScriptService"):WaitForChild("BoxManager"):WaitForChild("BoxManager"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
 
 local ShopManager = {}
@@ -50,30 +51,8 @@ local function processReceipt(receiptInfo)
 	if item then
 		local backpack = player:FindFirstChild("Backpack")
 		if backpack then
-			local boxTemplate = ServerStorage:FindFirstChild("Box")
-			if boxTemplate then
-				local newBox = boxTemplate:Clone()
-				newBox:SetAttribute("Level", item.Level)
-				newBox:SetAttribute("Exp", 0)
-				local boxLevels = GameConfig.BoxLevels or {}
-				local maxExp = boxLevels[item.Level] and boxLevels[item.Level].MaxExp or 100
-				newBox:SetAttribute("MaxExp", maxExp)
-				newBox:SetAttribute("Variants", "Normal")
-				newBox:SetAttribute("Type", "Box")
-				newBox:SetAttribute("Amount", 1)
-				newBox.Name = boxLevels[item.Level] and boxLevels[item.Level].Name or "Crate Level " .. tostring(item.Level)
-				
-				local handle = newBox:FindFirstChild("Handle") :: Part?
-				if handle then
-					handle.Anchored = false
-					handle.CanCollide = false
-					handle.Massless = true
-				end
-				
-				-- Setup visual di client
-				CollectionService:AddTag(newBox, "Box")
-				newBox.Parent = backpack
-				
+			local success = BoxManager.giveBoxToPlayer(player, item.Level, "Normal", nil, nil)
+			if success then
 				print(`[ShopManager] 💳 Pembelian Robux Berhasil: {player.Name} membeli {item.Name}`)
 				return Enum.ProductPurchaseDecision.PurchaseGranted
 			end
@@ -147,35 +126,15 @@ function ShopManager:buyBox(player: Player, boxLevel: number)
 		profile.Data.Stats.RPMTokens = rpmVal.Value
 	end
 	
-	-- B. Kloning Box
-	local boxTemplate = ServerStorage:FindFirstChild("Box")
-	if not boxTemplate then
-		return { Success = false, Error = "Aset Box template tidak ditemukan di ServerStorage!" }
+	-- B. Berikan/Stack Box
+	local success = BoxManager.giveBoxToPlayer(player, item.Level, "Normal", nil, nil)
+	if not success then
+		return { Success = false, Error = "Gagal memproses pemberian box!" }
 	end
 	
-	local newBox = boxTemplate:Clone()
-	newBox:SetAttribute("Level", item.Level)
-	newBox:SetAttribute("Exp", 0)
 	local boxLevels = GameConfig.BoxLevels or {}
-	local maxExp = boxLevels[item.Level] and boxLevels[item.Level].MaxExp or 100
-	newBox:SetAttribute("MaxExp", maxExp)
-	newBox:SetAttribute("Variants", "Normal")
-	newBox:SetAttribute("Type", "Box")
-	newBox:SetAttribute("Amount", 1)
-	newBox.Name = boxLevels[item.Level] and boxLevels[item.Level].Name or "Crate Level " .. tostring(item.Level)
-	
-	local handle = newBox:FindFirstChild("Handle") :: Part?
-	if handle then
-		handle.Anchored = false
-		handle.CanCollide = false
-		handle.Massless = true
-	end
-	
-	-- Tag box
-	CollectionService:AddTag(newBox, "Box")
-	newBox.Parent = backpack
-	
-	print(`[ShopManager] ⚙️ Pembelian Berhasil: {player.Name} membeli {newBox.Name} seharga {item.Cost} RPM Tokens`)
+	local boxName = boxLevels[item.Level] and boxLevels[item.Level].Name or "Crate Level " .. tostring(item.Level)
+	print(`[ShopManager] ⚙️ Pembelian Berhasil: {player.Name} membeli {boxName} seharga {item.Cost} RPM Tokens`)
 	return {
 		Success = true,
 		Message = `Berhasil membeli {item.Name} seharga {item.Cost} RPM!`,

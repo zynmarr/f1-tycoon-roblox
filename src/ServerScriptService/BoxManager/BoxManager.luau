@@ -564,6 +564,119 @@ local function setupBox(box: Tool)
 	table.insert(connections, cleanupConnection)
 end
 
+function BoxManager.giveBoxToPlayer(player: Player, level: number, variants: string?, customLuckyChance: number?, ownerName: string?)
+	local backpack = player:FindFirstChild("Backpack")
+	if not backpack then
+		return false
+	end
+
+	local boxTemplate = ServerStorage:FindFirstChild("Box")
+	if not boxTemplate then
+		warn("[BoxManager] Box template tidak ditemukan di ServerStorage!")
+		return false
+	end
+
+	local newBox = boxTemplate:Clone()
+	
+	-- Unanchor all parts to prevent player flinging
+	for _, part in ipairs(newBox:GetDescendants()) do
+		if part:IsA("BasePart") then
+			part.Anchored = false
+			part.CanCollide = false
+		end
+	end
+
+	local initialLvlData = GameConfig.BoxLevels[level]
+	local maxExp = initialLvlData and initialLvlData.MaxExp or 100
+	local boxName = initialLvlData and initialLvlData.Name or "Crate Level " .. tostring(level)
+
+	local variantStr = variants or "Normal"
+	
+	newBox:SetAttribute("Level", level)
+	newBox:SetAttribute("Exp", 0)
+	newBox:SetAttribute("MaxExp", maxExp)
+	newBox:SetAttribute("Variants", variantStr)
+	newBox:SetAttribute("Type", "Box")
+	newBox:SetAttribute("Amount", 1)
+	newBox:SetAttribute("HasPicked", true)
+	newBox:SetAttribute("Name", boxName)
+	
+	if ownerName then
+		newBox:SetAttribute("Owner", ownerName)
+	end
+	
+	if customLuckyChance then
+		newBox:SetAttribute("LuckyChance", customLuckyChance)
+	else
+		-- Default lucky chance dari level box
+		newBox:SetAttribute("LuckyChance", initialLvlData and initialLvlData.LuckMulti or 1.0)
+	end
+
+	-- Tentukan nama tool berdasarkan variant
+	if variantStr == "Normal" then
+		newBox.Name = boxName
+	else
+		newBox.Name = boxName .. "_Variant_" .. string.gsub(variantStr, ",", "_")
+	end
+
+	newBox.Handle.Size = Vector3.new(2, 2, 2)
+
+	-- Aktifkan StatsDisplay jika ada
+	local display = newBox.Handle:FindFirstChild("StatsDisplay")
+	if not display then
+		local moduleNode = newBox:FindFirstChild("BoxModule")
+		local moduleDisplay = moduleNode and moduleNode:FindFirstChild("StatsDisplay")
+		if moduleDisplay then
+			display = moduleDisplay:Clone()
+			display.Parent = newBox.Handle
+		end
+	end
+	if display then
+		display.Enabled = true
+	end
+
+	-- Update Text visual box awal
+	local boxModule = newBox:FindFirstChild("BoxModule")
+	if boxModule then
+		local BoxModuleRequire = require(boxModule)
+		BoxModuleRequire.UpdateBoxText(newBox.Handle, level, 0, maxExp, variantStr)
+	end
+
+	-- Setup visual di client via tag
+	CollectionService:AddTag(newBox, "Box")
+
+	-- LOGIKA STACKING (PENUMPUKAN)
+	local existingBox = backpack:FindFirstChild(newBox.Name)
+		or (player.Character and player.Character:FindFirstChild(newBox.Name))
+
+	if existingBox then
+		local stackFolder = existingBox:FindFirstChild("Stacks")
+		if not stackFolder then
+			stackFolder = Instance.new("Folder")
+			stackFolder.Name = "Stacks"
+			stackFolder.Parent = existingBox
+		end
+
+		local boxData = Instance.new("Configuration")
+		boxData.Name = "BoxData_" .. (#stackFolder:GetChildren() + 1)
+		for name, value in pairs(newBox:GetAttributes()) do
+			boxData:SetAttribute(name, value)
+		end
+		boxData.Parent = stackFolder
+
+		local currentAmount = existingBox:GetAttribute("Amount") or 1
+		existingBox:SetAttribute("Amount", currentAmount + 1)
+		
+		newBox:Destroy()
+		print(`[BoxManager] 📦 Stacked {existingBox.Name} untuk {player.Name}. Jumlah baru: {currentAmount + 1}`)
+	else
+		newBox.Parent = backpack
+		print(`[BoxManager] 📦 Memberikan {newBox.Name} baru ke {player.Name}`)
+	end
+
+	return true
+end
+
 function BoxManager:printTest(player: Player, text: string)
 	print(`[Server Test] {tostring(text)} is called in event by {player.Name}`)
 end
@@ -571,6 +684,7 @@ end
 -- ==========================================
 -- 4. BOOTSTRAPPER INIT METHOD
 -- ==========================================
+
 function BoxManager.Init()
 	print("[BoxManager] Mengaktifkan kernel sistem Box modern terpusat.")
 

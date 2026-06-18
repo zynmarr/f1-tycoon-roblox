@@ -150,13 +150,6 @@ local function setupPlayerSkinsAndAssets(player: Player, data: any, myPlot: Inst
 					warn("[MainServer] Gagal memuat Mobil di Backpack: " .. tostring(err))
 				end
 			end
-
-			-- if item.Location == "Backpack" or item.Location == "Character" then
-			-- 	loadInventoryItem(player, item)
-			-- else
-			-- 	pcall(function()
-			-- 		CarManager.spawnLoadedCar(player, item, myPlot)
-			-- 	end)
 			-- end
 		end
 	end
@@ -181,7 +174,6 @@ local function onPlayerAdded(player: Player)
 	end
 
 	player:SetAttribute("MyPlotName", myPlot.Name)
-	DataManager.syncData(player)
 
 	-- Setup Leaderstats fisik
 	local leaderstats = Instance.new("Folder")
@@ -232,17 +224,32 @@ local function onPlayerAdded(player: Player)
 		end
 	end)
 
-	-- Tracker perubahan inventori real-time (dengan/debounce per frame)
-	local function connectInventoryTracker(character)
-		local backpack = player:WaitForChild("Backpack", 5)
-		local syncPending = false
+	-- 1. Jalankan pemuatan item fisik (backpack & mobil) terlebih dahulu secara sinkronis
+	-- Kita buat salinan lokal inventori agar aman dari overwrite selama proses pemuatan
+	local initialInventory = {}
+	if data.Inventory then
+		for _, item in pairs(data.Inventory) do
+			table.insert(initialInventory, item)
+		end
+	end
 
+	pcall(function()
+		setupPlayerSkinsAndAssets(player, { Inventory = initialInventory, PlotData = data.PlotData }, myPlot)
+	end)
+
+	-- 2. Baru lakukan sinkronisasi data awal ke profile (sekarang backpack sudah terisi tool fisik)
+	DataManager.syncData(player)
+
+	-- Tracker perubahan inventori real-time (dengan debounce per frame)
+	local function startInventoryTracker()
+		local syncPending = false
 		local function sync()
 			if syncPending then
 				return
 			end
 			syncPending = true
 			task.defer(function()
+				task.wait(0.2) -- Beri jeda kecil agar transisi parenting tool selesai sebelum memicu sinkronisasi data
 				syncPending = false
 				if player.Parent and not player:GetAttribute("IsLeaving") then
 					pcall(DataManager.syncData, player)
@@ -250,26 +257,31 @@ local function onPlayerAdded(player: Player)
 			end)
 		end
 
-		if backpack then
-			backpack.ChildAdded:Connect(sync)
-			backpack.ChildRemoved:Connect(sync)
-		end
-		if character then
+		task.spawn(function()
+			local backpack = player:WaitForChild("Backpack", 15)
+			if backpack then
+				backpack.ChildAdded:Connect(sync)
+				backpack.ChildRemoved:Connect(sync)
+			end
+		end)
+
+		player.CharacterAdded:Connect(function(character)
 			character.ChildAdded:Connect(sync)
 			character.ChildRemoved:Connect(sync)
+			sync()
+		end)
+		if player.Character then
+			player.Character.ChildAdded:Connect(sync)
+			player.Character.ChildRemoved:Connect(sync)
 		end
 	end
 
-	player.CharacterAdded:Connect(connectInventoryTracker)
-	if player.Character then
-		task.spawn(connectInventoryTracker, player.Character)
-	end
+	startInventoryTracker()
 
 	if player.Character then
 		PlotManager.teleportToPlot(player, player.Character)
 	end
 
-	task.spawn(setupPlayerSkinsAndAssets, player, data, myPlot)
 	player:SetAttribute("DataLoaded", true)
 end
 

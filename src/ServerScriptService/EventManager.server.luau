@@ -10,6 +10,7 @@ local HttpService = game:GetService("HttpService")
 local RoleManager = require(script.Parent:WaitForChild("RoleManager"):WaitForChild("RoleManager"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
 local ParkingAreaManager = require(script.Parent:WaitForChild("ParkingAreaManager"):WaitForChild("ParkingAreaManager"))
+local BoxManager = require(script.Parent:WaitForChild("BoxManager"):WaitForChild("BoxManager"))
 
 -- Buat RemoteEvent untuk pengumuman
 local announcementEvent = ReplicatedStorage:FindFirstChild("AnnouncementEvent")
@@ -225,28 +226,7 @@ local function displayLocalAnnouncement(message, duration)
 end
 
 local function giftBoxToPlayer(player: Player, level: number, extraVariants: {string}?)
-	local boxTemplate = game:GetService("ServerStorage"):FindFirstChild("Box")
 	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
-	if not boxTemplate then
-		warn("[EventManager] Box template tidak ditemukan di ServerStorage!")
-		return false
-	end
-	
-	local backpack = player:FindFirstChild("Backpack")
-	if not backpack then
-		return false
-	end
-	
-	local newBox = boxTemplate:Clone()
-	
-	-- Unanchor all parts to prevent player flinging
-	for _, part in ipairs(newBox:GetDescendants()) do
-		if part:IsA("BasePart") then
-			part.Anchored = false
-			part.CanCollide = false
-		end
-	end
-	
 	local initialLvlData = GameConfig.BoxLevels[level]
 	if not initialLvlData then
 		return false
@@ -258,42 +238,12 @@ local function giftBoxToPlayer(player: Player, level: number, extraVariants: {st
 		variantStr = "Admin," .. table.concat(extraVariants, ",")
 	end
 	
-	newBox:SetAttribute("Owner", player.Name)
-	newBox:SetAttribute("HasPicked", true)
-	newBox:SetAttribute("Level", level)
-	newBox:SetAttribute("Exp", 0)
-	newBox:SetAttribute("Variants", variantStr)
-	newBox:SetAttribute("Type", "Box")
-	newBox:SetAttribute("MaxExp", initialLvlData.MaxExp)
-	newBox:SetAttribute("Name", initialLvlData.Name)
 	-- Force lucky chance to be equal to level 30's LuckMulti (500x)
 	local lvl30Data = GameConfig.BoxLevels[30]
-	newBox:SetAttribute("LuckyChance", lvl30Data and lvl30Data.LuckMulti or 500.0)
-	newBox.Name = initialLvlData.Name .. "_Variant_" .. string.gsub(variantStr, ",", "_")
-
-	newBox.Handle.Size = Vector3.new(2, 2, 2)
+	local luckyChance = lvl30Data and lvl30Data.LuckMulti or 500.0
 	
-	local display = newBox.Handle:FindFirstChild("StatsDisplay")
-	if not display then
-		local moduleNode = newBox:FindFirstChild("BoxModule")
-		local moduleDisplay = moduleNode and moduleNode:FindFirstChild("StatsDisplay")
-		if moduleDisplay then
-			display = moduleDisplay:Clone()
-			display.Parent = newBox.Handle
-		end
-	end
-	if display then
-		display.Enabled = true
-	end
-	
-	local boxModule = newBox:FindFirstChild("BoxModule")
-	if boxModule then
-		local BoxModuleRequire = require(boxModule)
-		BoxModuleRequire.UpdateBoxText(newBox.Handle, level, 0, initialLvlData.MaxExp, variantStr)
-	end
-	
-	newBox.Parent = backpack
-	return true
+	-- Gunakan BoxManager.giveBoxToPlayer agar inisialisasi dan stacking terproses dengan benar
+	return BoxManager.giveBoxToPlayer(player, level, variantStr, luckyChance, player.Name)
 end
 
 local function giftCarToPlayer(player: Player, carName: string, extraVariants: {string}?)

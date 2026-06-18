@@ -53,12 +53,15 @@ end
 local function setupCarViewport(cache, viewport, carTool, options)
 	options = options or {}
 	local toolID = tostring(carTool)
+	local levelAttr = carTool:GetAttribute("Level") or ""
+	local variantAttr = carTool:GetAttribute("Variants") or carTool:GetAttribute("Variant") or ""
+	local renderKey = toolID .. "_" .. tostring(levelAttr) .. "_" .. tostring(variantAttr)
 
-	if viewport:GetAttribute("LastCar") == toolID then
+	if viewport:GetAttribute("LastCar") == renderKey then
 		return
 	end
 
-	viewport:SetAttribute("LastCar", toolID)
+	viewport:SetAttribute("LastCar", renderKey)
 	viewport.BackgroundTransparency = options.bgTransparency or 0.95
 
 	-- Bersihkan model dan kamera lama dengan memanggil Destroy() agar bebas memory leak
@@ -70,7 +73,7 @@ local function setupCarViewport(cache, viewport, carTool, options)
 		end
 	end
 
-	if not cache.renderCache[carTool] then
+	if not cache.renderCache[renderKey] then
 		local originalModel = nil
 		local retryCount = 0
 		while not originalModel and retryCount < 20 do
@@ -84,6 +87,23 @@ local function setupCarViewport(cache, viewport, carTool, options)
 		if not originalModel then
 			warn("[ViewportManager] Model tidak ditemukan untuk: " .. tostring(carTool.Name))
 			return
+		end
+
+		-- TUNGGU REPLIKASI DESENDAN STABIL (Mengatasi bug render melar / 100% full)
+		local lastDescendantCount = #originalModel:GetDescendants()
+		local stableFrames = 0
+		local maxWaitTime = 0.5
+		local startTime = tick()
+
+		while stableFrames < 3 and (tick() - startTime) < maxWaitTime do
+			task.wait(0.05)
+			local currentCount = #originalModel:GetDescendants()
+			if currentCount == lastDescendantCount and currentCount > 0 then
+				stableFrames = stableFrames + 1
+			else
+				lastDescendantCount = currentCount
+				stableFrames = 0
+			end
 		end
 
 		local carClone = originalModel:Clone()
@@ -148,11 +168,11 @@ local function setupCarViewport(cache, viewport, carTool, options)
 		local camCFrame = CFrame.new(camPos, center + Vector3.new(0, maxDim * 0.1, 0))
 
 		-- Simpan ModelSource (untuk diclone ulang) dan koordinat kamera di cache render
-		cache.renderCache[carTool] = { ModelSource = carClone, CameraCFrame = camCFrame, FieldOfView = targetFov }
+		cache.renderCache[renderKey] = { ModelSource = carClone, CameraCFrame = camCFrame, FieldOfView = targetFov }
 		trimCache(cache)
 	end
 
-	local entry = cache.renderCache[carTool]
+	local entry = cache.renderCache[renderKey]
 	if entry then
 		-- Selalu kloning model segar ke dalam viewport agar tidak hilang saat viewport lama di-destroy oleh React
 		local modelClone = entry.ModelSource:Clone()
@@ -180,7 +200,14 @@ function ViewportManager.setupViewport(cache, viewport, carTool, options)
 end
 
 function ViewportManager.clearCache(cache, carTool)
-	clearCacheEntry(cache, carTool)
+	local prefix = tostring(carTool)
+	for key in pairs(cache.renderCache) do
+		if type(key) == "string" and string.sub(key, 1, string.len(prefix)) == prefix then
+			clearCacheEntry(cache, key)
+		elseif key == carTool then
+			clearCacheEntry(cache, key)
+		end
+	end
 end
 
 function ViewportManager.clearAllCache(cache)

@@ -85,3 +85,59 @@ Menambahkan sistem role mandiri tanpa Roblox Group (menggunakan DataStore global
 *   **Tampilan Nama di Chat**:
     *   `TextChatService`: Menghias prefix pesan chat dengan emoji role bold dan mewarnai nama pengirim di chat sesuai warna rolenya masing-masing.
     *   `Legacy Chat`: Menambahkan emoji role pada tags ChatService dan menyinkronkan warna teks nama pengirim menggunakan properti `NameColor`.
+
+---
+
+## 8. Perbaikan Bug Stacking & Kuantitas (Amount) Crate Pembelian dan Event Gift
+*   **Penyebab Masalah**:
+    *   **Masalah Stacking**: Pembelian box di Toko (`ShopManager.luau`) dan pemberian box hadiah admin (`EventManager.server.luau`) sebelumnya langsung meletakkan klon box baru ke `Backpack` tanpa melakukan pemeriksaan apakah tipe box yang sama sudah ada di dalam tas pemain. Hal ini menyebabkan box bertumpuk secara fisik sebagai tool terpisah alih-alih masuk ke dalam folder `Stacks` box yang sudah ada.
+    *   **Masalah Kuantitas (Amount) Bernilai Nil/0**: Pada event hadiah admin (`EventManager.server.luau`), atribut `Amount` pada box yang dibuat sama sekali tidak diatur (nil), yang menyebabkan ketidaksinkronan data dan membuat UI hotbar/tas menampilkannya secara tidak benar atau tidak konsisten.
+*   **Perbaikan yang Diterapkan**:
+    *   **Fungsi Terpadu `giveBoxToPlayer`**: Menambahkan fungsi utilitas terpusat `BoxManager.giveBoxToPlayer` di dalam `BoxManager.luau`. Fungsi ini bertanggung jawab untuk kloning template box, inisialisasi visual, setup client tag, dan yang terpenting: melakukan logika pengecekan item lama (`existingBox`).
+    *   **Sistem Stacking Server-Side**: Jika player sudah memiliki box dengan nama yang sama, fungsi `giveBoxToPlayer` akan secara otomatis memasukkan atribut box baru ke dalam folder `Stacks` konfigurasi dan meningkatkan atribut `Amount` sebanyak 1. Jika belum ada, box akan dimasukkan ke backpack dengan atribut `Amount` awal bernilai 1.
+    *   **Refaktorisasi Shop & Event**: Mengintegrasikan `ShopManager.luau` (pembelian via Robux dan RPM Token) serta `EventManager.server.luau` (hadiah box admin) agar sepenuhnya memanggil fungsi terpusat `BoxManager.giveBoxToPlayer` untuk konsistensi sistem inventori.
+
+---
+
+## 9. Peningkatan Tampilan 3D Model Box di Shop (ShopGui)
+*   **Pembaruan Fitur**:
+    *   Mengganti ikon statis emoji box `"📦"` pada daftar produk di Shop GUI (`ShopGui.luau`) dengan `ViewportFrame` dinamis untuk merender visual 3D dari box sesuai levelnya masing-masing.
+*   **Implementasi Teknis**:
+    *   **Impor ViewportManager**: Menghubungkan modul `ViewportManager.luau` ke `ShopGui.luau` untuk memproses setup kamera 3D, orientasi, pencahayaan, dan bounding box model secara seragam.
+    *   **Pembuatan Dummy Tool & Caching**: Menggunakan helper `getOrCreateDummyTool` untuk merakit instance tool tiruan yang mewakili model box dari `ReplicatedStorage.BoxModels` (misalnya `"Level1"`, `"Level3"`, dll.) secara ter-cache agar hemat memori saat React merender ulang UI.
+    *   **Lifecycle Cleanup**: Menambahkan callback pembersihan `ViewportManager.clearAllCache(cache.current)` pada cleanup hook `useEffect` saat Shop GUI unmount guna menghindari kebocoran memori (memory leak).
+
+---
+
+## 10. Implementasi Tampilan RPM Tokens pada Stats HUD Utama (CustomStats)
+*   **Pembaruan Fitur**:
+    *   Menampilkan jumlah saldo **RPM Tokens** (RPM Points) pemain secara *real-time* langsung pada kartu statistik di sidebar HUD utama (`CustomStats.luau`), tepat di bawah baris **Cash** dan di atas **Rebirth Points (RP)**.
+*   **Implementasi Teknis**:
+    *   **Sinkronisasi State**: Menambahkan state `rpmVal` dan menghubungkannya dengan perubahan nilai `RPM Tokens` dari `leaderstats` secara reaktif di dalam `useEffect`.
+    *   **Penyelarasan Tata Letak (Layout)**:
+        *   Mengatur `LayoutOrder` baru pada barisan stats: **Cash (1)** -> **RPM Tokens (2)** -> **Rebirth Points (3)** -> **Rebirth Level (4)**.
+        *   Meningkatkan tinggi `StatsCard` dari `75` menjadi `100` dan wadah luar `Frame` utama HUD dari `160` menjadi `185` untuk mencegah terjadinya tumpang tindih visual (overlapping) atau pemotongan elemen (clipping).
+        *   Mewarnai nilai RPM dengan kode warna kuning premium `Color3.fromRGB(255, 185, 0)` dan menyertakan ikon roda gigi `"⚙️"`.
+
+---
+
+## 11. Perbaikan Bug Render 3D Model Hotbar Melar / 100% (ViewportManager)
+*   **Penyebab Masalah**:
+    *   **Replication Race Condition**: Saat membuka box atau menerima item baru, instance `Model` dari server terkadang belum selesai mereplikasi seluruh keturunannya (bagian part dalam mobil/box) ketika client mulai mendeteksi keberadaan objek tersebut. Hal ini menyebabkan perhitungan bounding box menghasilkan nilai `maxDim` yang sangat kecil atau salah, sehingga rasio kamera zoom menjadi terlalu besar (melar 100% memenuhi layar slot).
+    *   **Cache Mismatch**: Karena cache render sebelumnya hanya menggunakan referensi tool instance (`toolID`), perubahan isi visual model (seperti level box yang berubah saat dikonsumsi dari stack) tidak terdeteksi oleh `LastCar` check, sehingga client melewatkan re-render dan menampilkan model lama yang tidak sesuai.
+*   **Perbaikan yang Diterapkan**:
+    *   **Pemeriksaan Stabilitas Keturunan**: Menambahkan loop tunggu pada `ViewportManager.luau` untuk memastikan jumlah keturunan model (`#originalModel:GetDescendants()`) telah stabil (tidak berubah) selama minimal 3 check frame berturut-turut sebelum melakukan kloning dan pemosisian kamera. Dilengkapi dengan timeout pengaman sebesar `0.5` detik.
+    *   **Kombinasi Render Key Dinamis**: Mengubah kunci identifikasi viewport (`LastCar` dan cache key) dari `toolID` biasa menjadi `renderKey` gabungan: `toolID_Level_Variant`. Jika level atau varian item berubah secara dinamis (seperti saat membuka box atau stack berkurang), sistem akan mendeteksi perbedaan key dan memaksa pemuatan ulang model baru secara akurat.
+
+---
+
+## 12. Perbaikan Bug Sinkronisasi Online (Sistem Macet & Data Hilang Saat Log Out)
+*   **Penyebab Masalah**:
+    *   **Data Backpack Hilang (Race Condition Server)**: Di server online, karakter pemain membutuhkan waktu lebih lama untuk memuat (ping/asset delay) dibanding di Studio. Logika pemuatan item awal (`setupPlayerSkinsAndAssets`) berjalan selesai **sebelum** karakter spawn, padahal tracker inventori (`connectInventoryTracker`) hanya dipasang saat karakter spawn. Akibatnya, pemuatan awal box/mobil tidak memicu `syncData` (tracker belum aktif), menyisakan `profile.Data.Inventory` dalam keadaan kosong (`{}`). Ketika pemain keluar, sistem mendeteksi `IsLeaving = true` dan menyimpan data inventori kosong tersebut langsung ke DataStore, menghapus seluruh barang di tas.
+    *   **Sistem Gagal Memuat Online (Replication Delay Client)**: Beberapa UI krusial (seperti `MainHUD`, `InventoryModal`, `CustomStats`, `ShopGui`, dan `AdminEventPanel`) menggunakan pemanggilan `WaitForChild` dengan batas waktu singkat (5 hingga 15 detik) untuk mencari folder `Backpack`, `leaderstats`, `LiveEvents`, serta nilai RPM/Cash. Di server online dengan ping tinggi, objek-objek tersebut terlambat direplikasi ke client melebihi batas waktu tersebut, menyebabkan inisialisasi UI terputus setengah jalan dan tidak merender stats/indikator event.
+*   **Perbaikan yang Diterapkan**:
+    *   **Perbaikan Tracker Inventori Terpusat**:
+        *   Membuat `startInventoryTracker` di `Main.server.luau` berjalan **langsung** setelah data pemain dimuat, tanpa menunggu karakter spawn. Ini menghubungkan listener `ChildAdded/ChildRemoved` pada `Backpack` seketika saat player join.
+        *   Menyisipkan panggilan `pcall(DataManager.syncData, player)` di bagian akhir fungsi `setupPlayerSkinsAndAssets` untuk memastikan data inventori awal yang dimuat langsung tersinkronisasi dengan aman dan utuh di DataStore sebelum pemain bertransaksi atau log out.
+    *   **Penghapusan Timeout Replikasi**:
+        *   Menghapus seluruh parameter batas waktu (seperti `5`, `10`, `15` detik) pada `WaitForChild` untuk objek-objek terjamin (seperti `Backpack` di `MainHUD`/`InventoryModal`, `leaderstats` dan `LiveEvents` di `CustomStats`, `AdminEventPanel`, dan `ShopGui`). Client kini akan menunggu objek tersebut selesai direplikasi sepenuhnya secara aman, meniadakan kegagalan loading sistem online.
