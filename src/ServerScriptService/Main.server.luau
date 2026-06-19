@@ -371,8 +371,16 @@ local function InitializeServer()
 	game:BindToClose(function()
 		print("[MainServer] Server dimatikan. Mengamankan seluruh data pemain...")
 		for _, player in pairs(Players:GetPlayers()) do
-			DataManager.saveData(player)
+			task.spawn(function()
+				DataManager.saveData(player)
+			end)
 		end
+		
+		-- Tunggu hingga seluruh profil selesai dilepas dan dibersihkan dari cache
+		while next(DataManager.Profiles) ~= nil do
+			task.wait(0.1)
+		end
+		print("[MainServer] Seluruh data pemain telah aman dirilis!")
 	end)
 end
 

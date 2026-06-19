@@ -583,8 +583,8 @@ function RaceManager:getRaceOutcome(player: Player, raceId: string)
 	session.RetrievedOutcomes[tostring(player.UserId)] = true
 
 	local allRetrieved = true
-	for _, part in pairs(session.Participants) do
-		if part.IsHuman and not session.RetrievedOutcomes[tostring(part.UserId)] then
+	for key, part in pairs(session.Participants) do
+		if part.IsHuman and not session.RetrievedOutcomes[key] then
 			allRetrieved = false
 			break
 		end
