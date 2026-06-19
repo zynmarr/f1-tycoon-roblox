@@ -582,6 +582,7 @@ function SpawnerBoxManager:buyUpgrade(player, machineArea, upgradeName)
 	-- 5. Eksekusi Pembelian
 	cash.Value = cash.Value - cost
 	machineArea:SetAttribute(upgradeName, true)
+	DataManager.syncData(player)
 
 	-- 6. Hapus UI upgrade di billboard dari server agar sinkron untuk semua player
 	local billArea = billboardGui:FindFirstChild("Area")

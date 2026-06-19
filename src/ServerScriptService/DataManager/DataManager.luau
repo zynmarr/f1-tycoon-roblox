@@ -303,10 +303,13 @@ function DataManager.syncData(player)
 			end
 
 			local plotMachines = myPlot:FindFirstChild("Machines")
-			if plotMachines then
+			if plotMachines and player:GetAttribute("DataLoaded") then
 				for _, machineArea in pairs(plotMachines:GetChildren()) do
 					finalSave.PlotData.Machines[machineArea.Name] = DataManager.extractMachineData(player, machineArea)
 				end
+			else
+				-- Jika data belum ter-load sepenuhnya ke workspace, pertahankan data mesin dari profile
+				finalSave.PlotData.Machines = profile.Data.PlotData and profile.Data.PlotData.Machines or {}
 			end
 		end)
 
