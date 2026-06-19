@@ -280,7 +280,7 @@ local function giftLocalPlayer(targetPlayerName, giftType, params)
 	end
 
 	for _, p in ipairs(targetPlayers) do
-		pcall(function()
+		local success, err = pcall(function()
 			if giftType == "Cash" then
 				local amount = params.Amount or 0
 				local leaderstats = p:FindFirstChild("leaderstats")
@@ -308,6 +308,9 @@ local function giftLocalPlayer(targetPlayerName, giftType, params)
 				end
 			end
 		end)
+		if not success then
+			warn("[EventManager] Error gifting reward: " .. tostring(err))
+		end
 	end
 end
 

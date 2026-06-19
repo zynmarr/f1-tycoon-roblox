@@ -90,8 +90,8 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 		return
 	end
 
-	local newBox = boxTemplate:Clone()
-	local BoxModule = require(newBox.BoxModule) -- Ambil dari hasil clone agar lebih aman
+	local newBox: Tool = boxTemplate:Clone() :: Tool
+	local BoxModule = require(newBox:FindFirstChild("BoxModule")) -- Ambil dari hasil clone agar lebih aman
 
 	-- 1. INITIAL ATTRIBUTES
 	local bLvl = 1
@@ -110,14 +110,19 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 	local activeVariants = {}
 
 	-- Baca Rebirth Upgrade data pemain untuk variant chances
-	local rebirthUpgrades = {}
+	local rebirthUpgrades = {
+		AllVariantsBoost = 0,
+	}
+
 	do
 		local pData = DataManager.getPlayerData(player)
 		if pData and pData.RebirthUpgrades then
 			rebirthUpgrades = pData.RebirthUpgrades
 		end
 	end
-	local rebirthAllVariantsBonus = RebirthConfig.getUpgradeEffect("AllVariantsBoost", rebirthUpgrades.AllVariantsBoost or 0)
+
+	local rebirthAllVariantsBonus =
+		RebirthConfig.getUpgradeEffect("AllVariantsBoost", rebirthUpgrades.AllVariantsBoost or 0)
 
 	-- Roll variants dynamically each time to ensure correct gacha randomness
 	for vName, vData in pairs(GameConfig.Variants) do
@@ -134,9 +139,18 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 			end
 
 			-- Rebirth: Bonus spesifik per varian
-			local rebirthSpecBonus = RebirthConfig.getUpgradeEffect("VariantChance_" .. vName, rebirthUpgrades["VariantChance_" .. vName] or 0)
+			local rebirthSpecBonus = RebirthConfig.getUpgradeEffect(
+				"VariantChance_" .. vName,
+				rebirthUpgrades["VariantChance_" .. vName] or 0
+			)
 
-			local totalChance = vData.Chance + specUpgrade + allUpgrade + globalVariantBoost + specVariantBoost + rebirthSpecBonus + rebirthAllVariantsBonus
+			local totalChance = vData.Chance
+				+ specUpgrade
+				+ allUpgrade
+				+ globalVariantBoost
+				+ specVariantBoost
+				+ rebirthSpecBonus
+				+ rebirthAllVariantsBonus
 
 			-- MENGGUNAKAN LOGIKA RANDOM YANG LEBIH PRESISI UNTUK DESIMAL
 			local rng = math.random() * 100
@@ -167,8 +181,14 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 
 	newBox.Name = initialLvlData.Name .. "_Variant_" .. bVariants
 
-	local baseOffset = 0.5
-	local dynamicY = baseOffset + (newBox.Handle.Size.Y / 2)
+	local handle = newBox:FindFirstChild("Handle")
+	if not handle then
+		return
+	end
+
+	local baseOffset = 0.5 :: number
+	local handleSizeY = (handle :: BasePart).Size.Y :: number
+	local dynamicY = baseOffset + (handleSizeY / 2)
 	newBox:PivotTo(machinePart.CFrame * CFrame.new(0, -dynamicY + 2, 0))
 	newBox.Parent = workspace
 
@@ -181,17 +201,13 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 	sourceMachineVal.Parent = newBox
 
 	-- 3. SETUP UI & PROMPT SEBELUM PARENTING
-	newBox.Handle.Size = Vector3.new(2, 2, 2)
-	local display = newBox.Handle:FindFirstChild("StatsDisplay")
-	if not display then
-		display = newBox:FindFirstChild("BoxModule"):FindFirstChild("StatsDisplay"):Clone()
-		display.Parent = newBox.Handle
-	end
+	handle.Size = Vector3.new(2, 2, 2)
+	local display = handle:FindFirstChild("StatsDisplay") :: BillboardGui
 	display.Enabled = true
-	newBox.Handle:FindFirstChild("ProximityPrompt").Enabled = true
+	handle:FindFirstChild("ProximityPrompt").Enabled = true
 
 	-- Tampilkan teks awal untuk Level 1
-	BoxModule.UpdateBoxText(newBox.Handle, bLvl, bExp, initialLvlData.MaxExp, bVariants)
+	BoxModule.UpdateBoxText(handle, bLvl, bExp, initialLvlData.MaxExp, bVariants)
 
 	newBox.Parent = machinePart
 
@@ -278,16 +294,16 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 				local targetSize = Vector3.new(5, 5, 5)
 				local newSize = startSize:Lerp(targetSize, steppedGrowthRatio)
 
-				newBox.Handle.Size = newSize
+				handle.Size = newSize
 				local offsetInput = (machinePart.Size.Y / 2) + (newSize.Y / 2)
-				newBox.Handle.CFrame = machinePart.CFrame * CFrame.new(0, offsetInput, 0)
+				handle.CFrame = machinePart.CFrame * CFrame.new(0, offsetInput, 0)
 			end
 
 			-- ==========================================
 			-- UPDATE VISUAL TEXT (OPTIMIZED - DIRECT CALL PER TICK)
 			-- ==========================================
 			-- Menghilangkan listener AttributeChanged dan meng-update langsung agar menghemat CPU & replikasi
-			BoxModule.UpdateBoxText(newBox.Handle, curLvl, newExp, currentLvlData.MaxExp, bVariants)
+			BoxModule.UpdateBoxText(handle, curLvl, newExp, currentLvlData.MaxExp, bVariants)
 		end
 
 		-- Reset State untuk Respawn jika tidak ada box aktif lain

@@ -104,7 +104,7 @@ local function setupCar(car)
 
 	if car:IsA("Tool") then
 		car.Equipped:Connect(function()
-			local billboard = car:FindFirstChild("BillboardGui")
+			local billboard = car:FindFirstChild("BillboardGui") :: BillboardGui
 			if billboard then
 				billboard.Size = billboard.Size + UDim2.new(4, 0, 0.9, 0)
 			end
@@ -116,7 +116,7 @@ local function setupCar(car)
 		end)
 
 		car.Unequipped:Connect(function()
-			local billboard = car:FindFirstChild("BillboardGui")
+			local billboard = car:FindFirstChild("BillboardGui") :: BillboardGui
 			if billboard then
 				billboard.Size = UDim2.new(3, 0, 0.6, 0)
 			end

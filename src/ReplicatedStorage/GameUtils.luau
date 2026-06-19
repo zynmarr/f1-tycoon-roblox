@@ -97,10 +97,10 @@ function GameUtils.updateTextLabel(car: Tool)
 	local variantText = billboard:FindFirstChild("Variants") :: TextLabel?
 	local PriceText = billboard:FindFirstChild("Price") :: TextLabel?
 
-	local carName = car:GetAttribute("Name")
-	local carVariant = car:GetAttribute("Variant")
-	local carPrice = car:GetAttribute("Price")
-	local rarity = car:GetAttribute("Rarity")
+	local carName = car:GetAttribute("Name") :: string
+	local carVariant = car:GetAttribute("Variant") :: string
+	local carIncome = car:GetAttribute("Income") :: number
+	local rarity = car:GetAttribute("Rarity") :: string
 
 	if nameText then
 		nameText.Text = carName .. " [" .. rarity .. "]"
@@ -109,7 +109,7 @@ function GameUtils.updateTextLabel(car: Tool)
 		variantText.Text = GameConfig.GetColoredVariantList(carVariant)
 	end
 	if PriceText then
-		PriceText.Text = "$ " .. GameUtils.formatCompact(carPrice)
+		PriceText.Text = "$ " .. GameUtils.formatCompact(carIncome) .. "/sec"
 	end
 end
 
