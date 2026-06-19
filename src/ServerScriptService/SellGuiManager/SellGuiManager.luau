@@ -15,7 +15,7 @@ local SellGuiManager = {}
 -- ===============================================
 -- SELL SINGLE CAR
 -- ===============================================
-function SellGuiManager.sellCar(player, car, stackChildName)
+function SellGuiManager:sellCar(player, car, stackChildName)
 	if not player or not player.Parent then
 		return {
 			Success = false,
@@ -210,7 +210,7 @@ end
 -- ===============================================
 -- SELL ALL CARS
 -- ===============================================
-function SellGuiManager.sellAllCars(player, cars)
+function SellGuiManager:sellAllCars(player, cars)
 	if not player or not player.Parent then
 		return {
 			Success = false,
