@@ -19,12 +19,6 @@ local function InventoryModal(props: {
 	SetIsHovered: (boolean) -> (),
 	OnSlotInputBegan: (tool: Tool, input: InputObject) -> (),
 })
-	local backpack = player:WaitForChild("Backpack")
-	if not backpack then
-		warn("[InventoryModal] Backpack tidak ditemukan!")
-		return nil
-	end
-
 	local cache = useRef(nil)
 	if not cache.current then
 		cache.current = ViewportManager.new()
@@ -39,6 +33,8 @@ local function InventoryModal(props: {
 
 	-- Refresh daftar tool di tas dan karakter
 	local function refreshTools()
+		local backpack = player:FindFirstChild("Backpack")
+		if not backpack then return end
 		local char = player.Character
 		local currentHeld = char and char:FindFirstChildOfClass("Tool")
 		setHeldTool(currentHeld)
@@ -58,27 +54,42 @@ local function InventoryModal(props: {
 	useEffect(function()
 		local connections = {}
 
-		-- Pantau perubahan tas dan karakter
-		table.insert(connections, backpack.ChildAdded:Connect(refreshTools))
-		table.insert(connections, backpack.ChildRemoved:Connect(refreshTools))
-
-		local function setupChar(char)
-			table.insert(connections, char.ChildAdded:Connect(refreshTools))
-			table.insert(connections, char.ChildRemoved:Connect(refreshTools))
-			refreshTools()
-		end
-
-		table.insert(connections, player.CharacterAdded:Connect(setupChar))
-		if player.Character then
-			setupChar(player.Character)
-		end
-
-		refreshTools()
-
-		return function()
+		local function cleanup()
 			for _, conn in ipairs(connections) do
 				conn:Disconnect()
 			end
+			table.clear(connections)
+		end
+
+		local function setupListeners()
+			cleanup()
+
+			local backpack = player:FindFirstChild("Backpack")
+			if backpack then
+				table.insert(connections, backpack.ChildAdded:Connect(refreshTools))
+				table.insert(connections, backpack.ChildRemoved:Connect(refreshTools))
+			end
+
+			local char = player.Character
+			if char then
+				table.insert(connections, char.ChildAdded:Connect(refreshTools))
+				table.insert(connections, char.ChildRemoved:Connect(refreshTools))
+			end
+
+			refreshTools()
+		end
+
+		-- Jalankan kembali setup ketika karakter baru ditambahkan (respawn)
+		local charAddedConn = player.CharacterAdded:Connect(function()
+			task.wait(0.1) -- Jeda kecil agar Backpack baru selesai terbuat oleh engine
+			setupListeners()
+		end)
+
+		setupListeners()
+
+		return function()
+			charAddedConn:Disconnect()
+			cleanup()
 			if cache.current then
 				ViewportManager.clearAllCache(cache.current)
 			end

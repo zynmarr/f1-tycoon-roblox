@@ -4,6 +4,10 @@ local CollectionService = game:GetService("CollectionService")
 
 local gradients = {}
 
+local function lerpColor(c1: Color3, c2: Color3, alpha: number): Color3
+	return (c1 :: any):Lerp(c2, alpha)
+end
+
 local function addGradient(gradient: UIGradient)
 	if gradient:IsA("UIGradient") and not table.find(gradients, gradient) then
 		table.insert(gradients, gradient)
@@ -52,8 +56,8 @@ RunService.Heartbeat:Connect(function(dt: number)
 			-- 2. DEVELOPER: Fire Pulse
 			local t = time * 3.0
 			local pulse = math.sin(t) * 0.5 + 0.5
-			local c1 = Color3.fromRGB(255, 45, 45):Lerp(Color3.fromRGB(255, 140, 0), pulse)
-			local c2 = Color3.fromRGB(255, 140, 0):Lerp(Color3.fromRGB(255, 230, 0), pulse)
+			local c1 = lerpColor(Color3.fromRGB(255, 45, 45), Color3.fromRGB(255, 140, 0), pulse)
+			local c2 = lerpColor(Color3.fromRGB(255, 140, 0), Color3.fromRGB(255, 230, 0), pulse)
 
 			gradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.0, c1),
@@ -66,8 +70,8 @@ RunService.Heartbeat:Connect(function(dt: number)
 			-- 3. MODERATOR: Shield Pulse
 			local t = time * 2.0
 			local pulse = math.sin(t) * 0.5 + 0.5
-			local c1 = Color3.fromRGB(0, 160, 255):Lerp(Color3.fromRGB(0, 255, 220), pulse)
-			local c2 = Color3.fromRGB(0, 255, 220):Lerp(Color3.fromRGB(0, 80, 255), pulse)
+			local c1 = lerpColor(Color3.fromRGB(0, 160, 255), Color3.fromRGB(0, 255, 220), pulse)
+			local c2 = lerpColor(Color3.fromRGB(0, 255, 220), Color3.fromRGB(0, 80, 255), pulse)
 
 			gradient.Color = ColorSequence.new({
 				ColorSequenceKeypoint.new(0.0, c1),

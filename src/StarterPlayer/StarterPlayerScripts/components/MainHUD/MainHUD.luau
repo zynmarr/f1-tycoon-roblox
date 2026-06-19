@@ -19,7 +19,6 @@ local ViewportManager = require(script.Parent.Parent.ViewportManager)
 local player = Players.LocalPlayer
 
 local function MainHUD(props: { Buttons: any })
-	local backpack = player:WaitForChild("Backpack")
 	local inventoryOpen, setInventoryOpen = useState(false)
 	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
 
@@ -81,6 +80,7 @@ local function MainHUD(props: { Buttons: any })
 		task.defer(function()
 			task.wait(0.05) -- Beri waktu agar frame transisi parent tool selesai
 			refreshScheduled = false
+			local backpack = player:FindFirstChild("Backpack")
 			if not backpack then return end
 			local char = player.Character
 			local currentHeld = char and char:FindFirstChildOfClass("Tool")
@@ -131,8 +131,9 @@ local function MainHUD(props: { Buttons: any })
 								task.delay(0.5, function()
 									pendingRemovals.current[tool] = nil
 									local latestChar = player.Character
+									local latestBackpack = player:FindFirstChild("Backpack")
 									local latestParent = tool.Parent
-									if not latestParent or (latestParent ~= backpack and latestParent ~= latestChar) then
+									if not latestParent or (latestParent ~= latestBackpack and latestParent ~= latestChar) then
 										-- Memang benar-benar dihapus secara permanen (misal: dijual/dibuang/ditukar)
 										setSlotMapping(function(old)
 											local new = table.clone(old)
@@ -159,29 +160,44 @@ local function MainHUD(props: { Buttons: any })
 	end
 
 	useEffect(function()
-		if not backpack then return end
 		local connections = {}
 
-		table.insert(connections, backpack.ChildAdded:Connect(refreshTools))
-		table.insert(connections, backpack.ChildRemoved:Connect(refreshTools))
-
-		local function setupChar(char)
-			table.insert(connections, char.ChildAdded:Connect(refreshTools))
-			table.insert(connections, char.ChildRemoved:Connect(refreshTools))
-			refreshTools()
-		end
-
-		table.insert(connections, player.CharacterAdded:Connect(setupChar))
-		if player.Character then
-			setupChar(player.Character)
-		end
-
-		refreshTools()
-
-		return function()
+		local function cleanup()
 			for _, conn in ipairs(connections) do
 				conn:Disconnect()
 			end
+			table.clear(connections)
+		end
+
+		local function setupListeners()
+			cleanup()
+
+			local backpack = player:FindFirstChild("Backpack")
+			if backpack then
+				table.insert(connections, backpack.ChildAdded:Connect(refreshTools))
+				table.insert(connections, backpack.ChildRemoved:Connect(refreshTools))
+			end
+
+			local char = player.Character
+			if char then
+				table.insert(connections, char.ChildAdded:Connect(refreshTools))
+				table.insert(connections, char.ChildRemoved:Connect(refreshTools))
+			end
+
+			refreshTools()
+		end
+
+		-- Jalankan kembali setup ketika karakter baru ditambahkan (respawn)
+		local charAddedConn = player.CharacterAdded:Connect(function()
+			task.wait(0.1) -- Jeda kecil agar Backpack baru selesai terbuat oleh engine
+			setupListeners()
+		end)
+
+		setupListeners()
+
+		return function()
+			charAddedConn:Disconnect()
+			cleanup()
 		end
 	end, {})
 

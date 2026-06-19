@@ -28,6 +28,7 @@ local function loadInventoryItem(player: Player, itemData)
 	local backpack = player:WaitForChild("Backpack")
 	local boxTemplate = ServerStorage:WaitForChild("Box", 5)
 	if not boxTemplate then
+		warn("[MainServer] Gagal memuat Box: Template 'Box' tidak ditemukan di ServerStorage!")
 		return
 	end
 
@@ -233,9 +234,12 @@ local function onPlayerAdded(player: Player)
 		end
 	end
 
-	pcall(function()
+	local success, err = pcall(function()
 		setupPlayerSkinsAndAssets(player, { Inventory = initialInventory, PlotData = data.PlotData }, myPlot)
 	end)
+	if not success then
+		warn("[MainServer] Gagal memuat skins dan assets untuk " .. player.Name .. ": " .. tostring(err))
+	end
 
 	-- 2. Baru lakukan sinkronisasi data awal ke profile (sekarang backpack sudah terisi tool fisik)
 	DataManager.syncData(player)
