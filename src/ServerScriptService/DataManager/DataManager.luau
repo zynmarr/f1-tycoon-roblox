@@ -241,8 +241,8 @@ function DataManager.syncData(player)
 		PvPWins = 0,
 	}
 
-	-- 2. Scan Seluruh Item di Backpack & Karakter (Hanya jika pemain tidak sedang keluar)
-	if not player:GetAttribute("IsLeaving") then
+	-- 2. Scan Seluruh Item di Backpack & Karakter (Hanya jika pemain tidak sedang keluar dan data sudah ter-load)
+	if not player:GetAttribute("IsLeaving") and player:GetAttribute("DataLoaded") then
 		local function scanTools(folder: Instance?, locationName: string)
 			if not folder then
 				return
@@ -279,10 +279,10 @@ function DataManager.syncData(player)
 		finalSave.Inventory = profile.Data.Inventory or {}
 	end
 
-	-- 3. Scan Seluruh Mobil di Lahan Parkir & Mesin secara Dinamis
+	-- 3. Scan Seluruh Mobil di Lahan Parkir & Mesin secara Dinamis (Hanya jika data sudah ter-load)
 	local myPlot = GameUtils.getPlayerPlot(player)
 
-	if myPlot then
+	if myPlot and player:GetAttribute("DataLoaded") then
 		local scanSuccess, scanError = pcall(function()
 			local parkingLots = myPlot:FindFirstChild("AllParkingLots")
 			if parkingLots then
@@ -303,19 +303,19 @@ function DataManager.syncData(player)
 			end
 
 			local plotMachines = myPlot:FindFirstChild("Machines")
-			if plotMachines and player:GetAttribute("DataLoaded") then
+			if plotMachines then
 				for _, machineArea in pairs(plotMachines:GetChildren()) do
 					finalSave.PlotData.Machines[machineArea.Name] = DataManager.extractMachineData(player, machineArea)
 				end
-			else
-				-- Jika data belum ter-load sepenuhnya ke workspace, pertahankan data mesin dari profile
-				finalSave.PlotData.Machines = profile.Data.PlotData and profile.Data.PlotData.Machines or {}
 			end
 		end)
 
 		if not scanSuccess then
 			warn("[DataManager] Gagal melakukan sinkronisasi plot data untuk player: " .. player.Name .. " - Error: " .. tostring(scanError))
 		end
+	else
+		-- Jika data belum ter-load sepenuhnya ke workspace, pertahankan data plot dari profile
+		finalSave.PlotData = profile.Data.PlotData or { MyCars = {}, Machines = {} }
 	end
 
 	-- 4. Kirim data hasil scan ke ProfileService

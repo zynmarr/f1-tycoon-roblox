@@ -6,11 +6,12 @@ function ChatAnnounceHandler.init()
 	local TextChatService = game:GetService("TextChatService")
 	local StarterGui = game:GetService("StarterGui")
 
-	local chatAnnounceEvent = ReplicatedStorage:WaitForChild("ChatAnnounceEvent", 15) :: RemoteEvent?
-	if not chatAnnounceEvent then
+	local chatAnnounceEventNullable = ReplicatedStorage:WaitForChild("ChatAnnounceEvent", 15) :: RemoteEvent?
+	if not chatAnnounceEventNullable then
 		warn("[ChatAnnounceHandler] ChatAnnounceEvent tidak ditemukan!")
 		return
 	end
+	local chatAnnounceEvent = chatAnnounceEventNullable :: RemoteEvent
 
 	chatAnnounceEvent.OnClientEvent:Connect(function(richText: string, chatColor: Color3)
 		-- 1. Siarkan ke TextChatService (Modern Chat UI) jika tersedia

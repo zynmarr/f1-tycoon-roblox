@@ -10,11 +10,12 @@ function AnnouncementGui.init()
 	local playerGui = player:WaitForChild("PlayerGui")
 
 	-- Menunggu AnnouncementEvent dari server
-	local announcementEvent = ReplicatedStorage:WaitForChild("AnnouncementEvent", 15) :: RemoteEvent?
-	if not announcementEvent then
+	local announcementEventNullable = ReplicatedStorage:WaitForChild("AnnouncementEvent", 15) :: RemoteEvent?
+	if not announcementEventNullable then
 		warn("[AnnouncementGui] AnnouncementEvent tidak ditemukan dari server!")
 		return
 	end
+	local announcementEvent = announcementEventNullable :: RemoteEvent
 
 	-- ===== CREATE MODERN GLASS UI =====
 	local screenGui = Instance.new("ScreenGui")
@@ -116,15 +117,15 @@ function AnnouncementGui.init()
 	local function showAnnouncement(text: string, duration: number)
 		msgLabel.Text = text
 		banner.Position = hidePosition
-		
+
 		-- Mainkan Animasi Slide Down
 		TweenService:Create(banner, tweenInfo, { Position = showPosition }):Play()
-		
+
 		-- Batalkan thread timeout sebelumnya jika ada yang sedang berjalan
 		if currentThread then
 			task.cancel(currentThread)
 		end
-		
+
 		currentThread = task.delay(duration, function()
 			hideBanner()
 			currentThread = nil

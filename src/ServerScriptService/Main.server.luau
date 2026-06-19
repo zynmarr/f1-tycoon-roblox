@@ -123,35 +123,12 @@ end
 -- ==========================================================
 -- [2] LOGIKA UTAMA SINKRONISASI PLOT & DATA
 -- ==========================================================
-local function setupPlayerSkinsAndAssets(player: Player, data: any, myPlot: Instance)
+local function spawnPlotCars(player: Player, data: any, myPlot: Instance)
 	if data.PlotData and data.PlotData.MyCars then
 		for _, carData in pairs(data.PlotData.MyCars) do
 			pcall(function()
 				CarManager.spawnLoadedCar(player, carData, myPlot)
 			end)
-		end
-	end
-
-	if data.Inventory then
-		for _, item in pairs(data.Inventory) do
-			local isBox = (item.Attributes and item.Attributes.Type == "Box")
-				or (item.Name and string.find(item.Name, "Level") ~= nil)
-			if isBox then
-				local success, err = pcall(function()
-					loadInventoryItem(player, item)
-				end)
-				if not success then
-					warn("[MainServer] Gagal memuat Box: " .. tostring(err))
-				end
-			else
-				local success, err = pcall(function()
-					CarManager.spawnLoadedCar(player, item, myPlot)
-				end)
-				if not success then
-					warn("[MainServer] Gagal memuat Mobil di Backpack: " .. tostring(err))
-				end
-			end
-			-- end
 		end
 	end
 end
@@ -207,10 +184,91 @@ local function onPlayerAdded(player: Player)
 
 	leaderstats.Parent = player
 
-	-- Memuat Karakter dan Spawn
-	player.CharacterAdded:Connect(function(character)
+	-- Handle character loading (both initial spawn and respawn)
+	local trackerConnections = {}
+
+	local function cleanupTracker()
+		for _, conn in ipairs(trackerConnections) do
+			if conn.Connected then
+				conn:Disconnect()
+			end
+		end
+		table.clear(trackerConnections)
+	end
+
+	local syncPending = false
+	local function sync()
+		if syncPending then
+			return
+		end
+		syncPending = true
+		task.defer(function()
+			task.wait(0.2) -- Beri jeda kecil agar transisi parenting tool selesai sebelum memicu sinkronisasi data
+			syncPending = false
+			if player.Parent and not player:GetAttribute("IsLeaving") then
+				pcall(DataManager.syncData, player)
+			end
+		end)
+	end
+
+	local function onCharacterAdded(character)
+		cleanupTracker()
+
+		-- 1. Teleportasi ke plot lahan parkir
 		PlotManager.teleportToPlot(player, character)
-	end)
+
+		-- 2. Muat item fisik backpack (inventory) dari database tersimpan
+		local backpack = player:WaitForChild("Backpack", 10)
+		if backpack then
+			-- Hapus dulu tool bawaan jika ada untuk mencegah duplikasi (seperti dari StarterPack)
+			for _, child in pairs(backpack:GetChildren()) do
+				if child:IsA("Tool") then
+					child:Destroy()
+				end
+			end
+
+			-- Spawn item fisik (Box dan Mobil di Backpack)
+			if data.Inventory then
+				for _, item in pairs(data.Inventory) do
+					local isBox = (item.Attributes and item.Attributes.Type == "Box")
+						or (item.Name and string.find(item.Name, "Level") ~= nil)
+					if isBox then
+						local success, err = pcall(function()
+							loadInventoryItem(player, item)
+						end)
+						if not success then
+							warn("[MainServer] Gagal memuat Box: " .. tostring(err))
+						end
+					else
+						local success, err = pcall(function()
+							CarManager.spawnLoadedCar(player, item, myPlot)
+						end)
+						if not success then
+							warn("[MainServer] Gagal memuat Mobil di Backpack: " .. tostring(err))
+						end
+					end
+				end
+			end
+
+			-- Hubungkan tracker perubahan ke Backpack baru
+			table.insert(trackerConnections, backpack.ChildAdded:Connect(sync))
+			table.insert(trackerConnections, backpack.ChildRemoved:Connect(sync))
+		else
+			warn("[MainServer] Backpack tidak ditemukan dalam 10 detik untuk " .. player.Name)
+		end
+
+		-- Hubungkan tracker perubahan ke Character baru
+		table.insert(trackerConnections, character.ChildAdded:Connect(sync))
+		table.insert(trackerConnections, character.ChildRemoved:Connect(sync))
+
+		-- Lakukan sinkronisasi data awal sesaat setelah load selesai
+		sync()
+	end
+
+	player.CharacterAdded:Connect(onCharacterAdded)
+	if player.Character then
+		task.spawn(onCharacterAdded, player.Character)
+	end
 
 	player.CharacterRemoving:Connect(function(character)
 		local backpack = player:FindFirstChild("Backpack")
@@ -225,67 +283,15 @@ local function onPlayerAdded(player: Player)
 		end
 	end)
 
-	-- 1. Jalankan pemuatan item fisik (backpack & mobil) terlebih dahulu secara sinkronis
-	-- Kita buat salinan lokal inventori agar aman dari overwrite selama proses pemuatan
-	local initialInventory = {}
-	if data.Inventory then
-		for _, item in pairs(data.Inventory) do
-			table.insert(initialInventory, item)
-		end
-	end
-
+	-- Spawn persistent plot cars (parking lots) secara sinkronis saat pemain pertama kali join
 	local success, err = pcall(function()
-		setupPlayerSkinsAndAssets(player, { Inventory = initialInventory, PlotData = data.PlotData }, myPlot)
+		spawnPlotCars(player, data, myPlot)
 	end)
 	if not success then
-		warn("[MainServer] Gagal memuat skins dan assets untuk " .. player.Name .. ": " .. tostring(err))
+		warn("[MainServer] Gagal memuat Mobil di Lahan: " .. tostring(err))
 	end
 
-	-- 2. Baru lakukan sinkronisasi data awal ke profile (sekarang backpack sudah terisi tool fisik)
-	DataManager.syncData(player)
-
-	-- Tracker perubahan inventori real-time (dengan debounce per frame)
-	local function startInventoryTracker()
-		local syncPending = false
-		local function sync()
-			if syncPending then
-				return
-			end
-			syncPending = true
-			task.defer(function()
-				task.wait(0.2) -- Beri jeda kecil agar transisi parenting tool selesai sebelum memicu sinkronisasi data
-				syncPending = false
-				if player.Parent and not player:GetAttribute("IsLeaving") then
-					pcall(DataManager.syncData, player)
-				end
-			end)
-		end
-
-		task.spawn(function()
-			local backpack = player:WaitForChild("Backpack", 15)
-			if backpack then
-				backpack.ChildAdded:Connect(sync)
-				backpack.ChildRemoved:Connect(sync)
-			end
-		end)
-
-		player.CharacterAdded:Connect(function(character)
-			character.ChildAdded:Connect(sync)
-			character.ChildRemoved:Connect(sync)
-			sync()
-		end)
-		if player.Character then
-			player.Character.ChildAdded:Connect(sync)
-			player.Character.ChildRemoved:Connect(sync)
-		end
-	end
-
-	startInventoryTracker()
-
-	if player.Character then
-		PlotManager.teleportToPlot(player, player.Character)
-	end
-
+	-- Tandai bahwa data awal pemain selesai dimuat (membuka kunci DataStore syncData dan menginisialisasi mesin)
 	player:SetAttribute("DataLoaded", true)
 end
 

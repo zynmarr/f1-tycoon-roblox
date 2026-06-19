@@ -1,5 +1,5 @@
 --!strict
-local RoleManager = {}
+local RoleManager = {} :: any
 local Players = game:GetService("Players")
 local DataStoreService = game:GetService("DataStoreService")
 local MarketplaceService = game:GetService("MarketplaceService")
@@ -324,13 +324,15 @@ function RoleManager.Init()
 			print("[RoleManager] Menyiarkan pengumuman global gamepass: " .. playerName .. " membeli " .. gamePassName)
 
 			-- Siarkan ke Client untuk ditampilkan di Chat UI
-			local chatAnnounceEvent: RemoteEvent? =
-				ReplicatedStorage:FindFirstChild("ChatAnnounceEvent") :: RemoteEvent?
-			if not chatAnnounceEvent then
-				local newEvent: RemoteEvent = Instance.new("RemoteEvent") :: RemoteEvent
+			local chatAnnounceEventOptional = ReplicatedStorage:FindFirstChild("ChatAnnounceEvent") :: RemoteEvent?
+			local chatAnnounceEvent: RemoteEvent
+			if not chatAnnounceEventOptional then
+				local newEvent = Instance.new("RemoteEvent") :: RemoteEvent
 				newEvent.Name = "ChatAnnounceEvent"
 				newEvent.Parent = ReplicatedStorage
 				chatAnnounceEvent = newEvent
+			else
+				chatAnnounceEvent = chatAnnounceEventOptional :: RemoteEvent
 			end
 
 			chatAnnounceEvent:FireAllClients(richText)

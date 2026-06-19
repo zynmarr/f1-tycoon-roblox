@@ -420,12 +420,15 @@ function BoxManager:openBox(player: Player, boxName: string)
 			print("[BoxManager] Menyiarkan pengumuman gacha mobil Epic+: " .. player.Name .. " mendapatkan " .. carDisplayName)
 
 			-- Siarkan ke Client untuk ditampilkan di Chat UI
-			local chatAnnounceEvent = ReplicatedStorage:FindFirstChild("ChatAnnounceEvent") :: RemoteEvent?
-			if not chatAnnounceEvent then
+			local chatAnnounceEventOptional = ReplicatedStorage:FindFirstChild("ChatAnnounceEvent") :: RemoteEvent?
+			local chatAnnounceEvent: RemoteEvent
+			if not chatAnnounceEventOptional then
 				local newEvent = Instance.new("RemoteEvent")
 				newEvent.Name = "ChatAnnounceEvent"
 				newEvent.Parent = ReplicatedStorage
 				chatAnnounceEvent = newEvent
+			else
+				chatAnnounceEvent = chatAnnounceEventOptional :: RemoteEvent
 			end
 			chatAnnounceEvent:FireAllClients(richText, rarityColor)
 		end)
