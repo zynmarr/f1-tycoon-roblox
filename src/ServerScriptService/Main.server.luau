@@ -309,6 +309,13 @@ local function InitializeServer()
 		notifEvent.Parent = game:GetService("ReplicatedStorage")
 	end
 
+	-- Buat RemoteEvent untuk pengumuman chat (harus dibuat di server untuk keamanan)
+	if not game:GetService("ReplicatedStorage"):FindFirstChild("ChatAnnounceEvent") then
+		local chatAnnounceEvent = Instance.new("RemoteEvent")
+		chatAnnounceEvent.Name = "ChatAnnounceEvent"
+		chatAnnounceEvent.Parent = game:GetService("ReplicatedStorage")
+	end
+
 	if typeof(PlotManager.Init) == "function" then
 		PlotManager.Init()
 	end

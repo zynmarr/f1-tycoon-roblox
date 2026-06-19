@@ -1,6 +1,8 @@
 -- ==========================================
 -- SCRIPT: EventManager (ServerScriptService)
 -- ==========================================
+print("[EventManager] Memulai memuat EventManager server script...")
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local MessagingService = game:GetService("MessagingService")
@@ -580,4 +582,6 @@ Networker.server.new("AdminEventService", AdminEventService, {
 	AdminEventService.getAvailableCars,
 	AdminEventService.getAdminCars,
 })
+
+print("[EventManager] ✅ AdminEventService Networker endpoints berhasil didaftarkan.")
 

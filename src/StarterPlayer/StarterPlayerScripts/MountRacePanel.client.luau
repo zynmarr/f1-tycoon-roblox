@@ -32,7 +32,8 @@ local root = ReactRoblox.createRoot(screenGui)
 
 local uiIsOpen = false
 
-local function updateUIRender()
+local updateUIRender: () -> ()
+function updateUIRender()
 	if not uiIsOpen then
 		screenGui.Enabled = false
 		root:render(nil)

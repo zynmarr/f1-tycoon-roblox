@@ -1,7 +1,6 @@
 --!strict
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
 local StarterGui = game:GetService("StarterGui")
 local ProximityPromptService = game:GetService("ProximityPromptService")
 
@@ -70,7 +69,8 @@ local function showNotification(title: string, text: string)
 end
 
 -- ===== UPDATE RENDER FUNCTION =====
-local function updateRender()
+local updateRender: () -> ()
+function updateRender()
 	if activeInvitation then
 		screenGui.Enabled = true
 		root:render(React.createElement(TradeInvitation, {
@@ -198,7 +198,10 @@ end
 local function onRebirthsChanged()
 	local rebirths = 0
 	local leaderstatsFolder = player:FindFirstChild("leaderstats")
-	local rebirthVal = leaderstatsFolder and leaderstatsFolder:FindFirstChild("Rebirth") :: IntValue?
+	local rebirthVal: IntValue? = nil
+	if leaderstatsFolder then
+		rebirthVal = leaderstatsFolder:FindFirstChild("Rebirth") :: IntValue?
+	end
 	if rebirthVal then
 		rebirths = rebirthVal.Value
 	end
@@ -255,7 +258,10 @@ ProximityPromptService.PromptTriggered:Connect(function(prompt, playerWhoTrigger
 		if targetPlayer then
 			local myRebirths = 0
 			local statsFolder = player:FindFirstChild("leaderstats")
-			local rebirthVal = statsFolder and statsFolder:FindFirstChild("Rebirth") :: IntValue?
+			local rebirthVal: IntValue? = nil
+			if statsFolder then
+				rebirthVal = statsFolder:FindFirstChild("Rebirth") :: IntValue?
+			end
 			if rebirthVal then
 				myRebirths = rebirthVal.Value
 			end
