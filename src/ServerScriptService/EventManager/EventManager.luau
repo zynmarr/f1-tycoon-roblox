@@ -1,20 +1,15 @@
--- ==========================================
--- SCRIPT: EventManager (ServerScriptService)
--- ==========================================
-print("[EventManager] Memulai memuat EventManager server script...")
-
+local EventManager = {}
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local MessagingService = game:GetService("MessagingService")
 local HttpService = game:GetService("HttpService")
 
--- 1. IMPORT ROLE MANAGER, NETWORKER & PARKING AREA
-local RoleManager = require(script.Parent:WaitForChild("RoleManager"):WaitForChild("RoleManager"))
+local RoleManager = require(game.ServerScriptService.RoleManager.RoleManager)
 local Networker = require(ReplicatedStorage.Packages.Networker)
-local ParkingAreaManager = require(script.Parent:WaitForChild("ParkingAreaManager"):WaitForChild("ParkingAreaManager"))
-local BoxManager = require(script.Parent:WaitForChild("BoxManager"):WaitForChild("BoxManager"))
+local ParkingAreaManager = require(game.ServerScriptService.ParkingAreaManager.ParkingAreaManager)
+local BoxManager = require(game.ServerScriptService.BoxManager.BoxManager)
 
--- Buat RemoteEvent untuk pengumuman
+-- Variables & Folder Setup
 local announcementEvent = ReplicatedStorage:FindFirstChild("AnnouncementEvent")
 if not announcementEvent then
 	announcementEvent = Instance.new("RemoteEvent")
@@ -22,70 +17,49 @@ if not announcementEvent then
 	announcementEvent.Parent = ReplicatedStorage
 end
 
--- 2. SETUP FOLDER & VALUES
-local liveEvents = Instance.new("Folder")
-liveEvents.Name = "LiveEvents"
-liveEvents.Parent = ReplicatedStorage
+local liveEvents = ReplicatedStorage:FindFirstChild("LiveEvents")
+if not liveEvents then
+	liveEvents = Instance.new("Folder")
+	liveEvents.Name = "LiveEvents"
+	liveEvents.Parent = ReplicatedStorage
+end
 
-local variantBoost = Instance.new("IntValue")
-variantBoost.Name = "VariantBoost"
-variantBoost.Value = 0
-variantBoost.Parent = liveEvents
+local function getOrCreateInt(name, defaultValue)
+	local val = liveEvents:FindFirstChild(name)
+	if not val then
+		val = Instance.new("IntValue")
+		val.Name = name
+		val.Value = defaultValue
+		val.Parent = liveEvents
+	end
+	return val
+end
 
-local luckBoost = Instance.new("IntValue")
-luckBoost.Name = "LuckyChanceBoost"
-luckBoost.Value = 0
-luckBoost.Parent = liveEvents
+local variantBoost = getOrCreateInt("VariantBoost", 0)
+local luckBoost = getOrCreateInt("LuckyChanceBoost", 0)
+local expBoost = getOrCreateInt("ExpBoost", 0)
+local goldenBoost = getOrCreateInt("VariantBoost_Golden", 0)
+local rainbowBoost = getOrCreateInt("VariantBoost_Rainbow", 0)
+local galaxyBoost = getOrCreateInt("VariantBoost_Galaxy", 0)
+local hellfireBoost = getOrCreateInt("VariantBoost_Hellfire", 0)
 
-local expBoost = Instance.new("IntValue")
-expBoost.Name = "ExpBoost"
-expBoost.Value = 0 -- 0 artinya tidak ada bonus, 50 artinya +50% Exp
-expBoost.Parent = liveEvents
-
-local goldenBoost = Instance.new("IntValue")
-goldenBoost.Name = "VariantBoost_Golden"
-goldenBoost.Value = 0
-goldenBoost.Parent = liveEvents
-
-local rainbowBoost = Instance.new("IntValue")
-rainbowBoost.Name = "VariantBoost_Rainbow"
-rainbowBoost.Value = 0
-rainbowBoost.Parent = liveEvents
-
-local galaxyBoost = Instance.new("IntValue")
-galaxyBoost.Name = "VariantBoost_Galaxy"
-galaxyBoost.Value = 0
-galaxyBoost.Parent = liveEvents
-
-local hellfireBoost = Instance.new("IntValue")
-hellfireBoost.Name = "VariantBoost_Hellfire"
-hellfireBoost.Value = 0
-hellfireBoost.Parent = liveEvents
-
--- Set nilai awal Attribute agar script lain tidak error mencari nilai 'nil'
 ReplicatedStorage:SetAttribute("SpeedBoost", 0)
 
 local commandCooldowns = {}
-local COOLDOWN_DURATION = 1 -- 1 detik antar command
+local COOLDOWN_DURATION = 1
 
 local function checkCooldown(playerId)
 	local lastCommand = commandCooldowns[playerId] or 0
 	local now = tick()
-
 	if now - lastCommand < COOLDOWN_DURATION then
 		return false
 	end
-
 	commandCooldowns[playerId] = now
 	return true
 end
 
--- ==========================================
--- 3. SISTEM COMMAND PARSER (LEBIH AMAN & FLEKSIBEL)
--- ==========================================
 local function onPlayerAdded(player)
 	player.Chatted:Connect(function(msg)
-		-- 1. Keamanan: Berhenti jika player tidak memiliki izin mengubah konfigurasi event game
 		if not RoleManager.hasPermission(player, "EditGameConfigs") then
 			return
 		end
@@ -95,55 +69,28 @@ local function onPlayerAdded(player)
 			return
 		end
 
-		-- 2. Memecah pesan chat berdasarkan Spasi
-		-- Contoh Chat: "/luck 50" -> args[1] = "/luck", args[2] = "50"
 		local args = string.split(msg, " ")
-
-		-- Jadikan command huruf kecil semua agar tidak sensitif huruf besar/kecil
 		local command = string.lower(args[1])
-		-- Ubah argumen kedua menjadi angka (menghindari error teks)
 		local value = tonumber(args[2])
 
-		-- 3. LOGIKA COMMAND
 		if command == "/variant" then
 			if value then
 				variantBoost.Value = math.clamp(value, 0, 100)
-				print(
-					string.format(
-						"[EVENT] 🌟 Variant Boost aktif: %d%% | Admin: %s (ID: %d)",
-						variantBoost.Value,
-						player.Name,
-						player.UserId
-					)
-				)
+				print(string.format("[EVENT] 🌟 Variant Boost aktif: %d%% | Admin: %s (ID: %d)", variantBoost.Value, player.Name, player.UserId))
 			else
 				warn("[EVENT] Format salah! Gunakan: /variant [angka]")
 			end
 		elseif command == "/luck" then
 			if value then
 				luckBoost.Value = math.clamp(value, 0, 500)
-				print(
-					string.format(
-						"[EVENT] 🍀 Lucky Chance diset: %d%% | Admin: %s (ID: %d)",
-						luckBoost.Value,
-						player.Name,
-						player.UserId
-					)
-				)
+				print(string.format("[EVENT] 🍀 Lucky Chance diset: %d%% | Admin: %s (ID: %d)", luckBoost.Value, player.Name, player.UserId))
 			else
 				warn("[EVENT] Format salah! Gunakan: /luck [angka]")
 			end
 		elseif command == "/exp" then
 			if value then
 				expBoost.Value = math.clamp(value, 0, 500)
-				print(
-					string.format(
-						"[EVENT] 🆙 Exp Boost aktif: +%d%% | Admin: %s (ID: %d)",
-						expBoost.Value,
-						player.Name,
-						player.UserId
-					)
-				)
+				print(string.format("[EVENT] 🆙 Exp Boost aktif: +%d%% | Admin: %s (ID: %d)", expBoost.Value, player.Name, player.UserId))
 			else
 				warn("[EVENT] Format salah! Gunakan: /exp [angka]")
 			end
@@ -151,14 +98,7 @@ local function onPlayerAdded(player)
 			if value then
 				local clampedSpeed = math.clamp(value, 0, 100)
 				ReplicatedStorage:SetAttribute("SpeedBoost", clampedSpeed)
-				print(
-					string.format(
-						"[EVENT] ⚡ Speed Boost aktif: %d%% | Admin: %s (ID: %d)",
-						clampedSpeed,
-						player.Name,
-						player.UserId
-					)
-				)
+				print(string.format("[EVENT] ⚡ Speed Boost aktif: %d%% | Admin: %s (ID: %d)", clampedSpeed, player.Name, player.UserId))
 			else
 				warn("[EVENT] Format salah! Gunakan: /speed [angka]")
 			end
@@ -167,7 +107,6 @@ local function onPlayerAdded(player)
 				warn("[EVENT] ❌ Command /stop tidak butuh argumen!")
 				return
 			end
-			-- Reset Semua
 			variantBoost.Value = 0
 			luckBoost.Value = 0
 			expBoost.Value = 0
@@ -181,22 +120,10 @@ local function onPlayerAdded(player)
 	end)
 end
 
-Players.PlayerAdded:Connect(onPlayerAdded)
-for _, player in ipairs(Players:GetPlayers()) do
-	task.spawn(onPlayerAdded, player)
-end
-
-Players.PlayerRemoving:Connect(function(player)
-	commandCooldowns[player.UserId] = nil
-end)
-
--- ==========================================
--- 4. NETWORKER ADMIN EVENT SERVICE ENDPOINTS
--- ==========================================
 local AdminEventService = {}
 local TOPIC_NAME = "GlobalAdminEvents_V1"
 
-local function applyLocalEventValues(values)
+local function applyEventValues(values)
 	variantBoost.Value = math.clamp(values.VariantBoost or values.Variant or 0, 0, 100)
 	luckBoost.Value = math.clamp(values.LuckBoost or values.Luck or 0, 0, 500)
 	expBoost.Value = math.clamp(values.ExpBoost or values.Exp or 0, 0, 500)
@@ -208,12 +135,11 @@ local function applyLocalEventValues(values)
 	hellfireBoost.Value = math.clamp(values.VariantBoost_Hellfire or values.Hellfire or 0, 0, 50)
 end
 
-local function stopLocalEvents()
+local function stopEvents()
 	variantBoost.Value = 0
 	luckBoost.Value = 0
 	expBoost.Value = 0
 	ReplicatedStorage:SetAttribute("SpeedBoost", 0)
-
 	goldenBoost.Value = 0
 	rainbowBoost.Value = 0
 	galaxyBoost.Value = 0
@@ -234,17 +160,14 @@ local function giftBoxToPlayer(player: Player, level: number, extraVariants: {st
 		return false
 	end
 	
-	-- Build variant string
 	local variantStr = "Admin"
 	if extraVariants and #extraVariants > 0 then
 		variantStr = "Admin," .. table.concat(extraVariants, ",")
 	end
 	
-	-- Force lucky chance to be equal to level 30's LuckMulti (500x)
 	local lvl30Data = GameConfig.BoxLevels[30]
 	local luckyChance = lvl30Data and lvl30Data.LuckMulti or 500.0
 	
-	-- Gunakan BoxManager.giveBoxToPlayer agar inisialisasi dan stacking terproses dengan benar
 	return BoxManager.giveBoxToPlayer(player, level, variantStr, luckyChance, player.Name)
 end
 
@@ -259,7 +182,6 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	local foundTemplate = nil
 	local foundRarity = ""
 
-	-- First check if it's an admin car
 	local adminTemplate = adminFolder and adminFolder:FindFirstChild(carName)
 	if adminTemplate then
 		foundTemplate = adminTemplate
@@ -287,7 +209,6 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 		return false
 	end
 	
-	-- Check capacity
 	local inventoryCount = #backpack:GetChildren()
 	local maxInventorySlots = GameConfig.MaxInventorySlots or 50
 	if inventoryCount >= maxInventorySlots then
@@ -297,7 +218,6 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	local car = foundTemplate:Clone()
 	CollectionService:AddTag(car, "Car")
 	
-	-- Unanchor all parts to prevent player flinging
 	for _, part in ipairs(car:GetDescendants()) do
 		if part:IsA("BasePart") then
 			part.Anchored = false
@@ -305,7 +225,6 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 		end
 	end
 	
-	-- Build variant string
 	local variantStr = "Admin"
 	if extraVariants and #extraVariants > 0 then
 		variantStr = "Admin," .. table.concat(extraVariants, ",")
@@ -321,7 +240,6 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	car:SetAttribute("Name", car.Name)
 	car:SetAttribute("Type", "Car")
 	car.Name = car.Name .. "_" .. foundRarity .. "_" .. string.gsub(variantStr, ",", "_")
-
 
 	pcall(function()
 		GameConfig.ApplyVisuals(car, foundRarity, variantStr)
@@ -411,7 +329,6 @@ local function onGlobalMessageReceived(messageData)
 	local success, decoded = pcall(HttpService.JSONDecode, HttpService, messageData.Data)
 	if not success or not decoded then return end
 	
-	-- Lewati jika dikirim oleh server ini sendiri
 	if decoded.SenderServerId == game.JobId then
 		return
 	end
@@ -420,25 +337,15 @@ local function onGlobalMessageReceived(messageData)
 	local data = decoded.Data
 	
 	if action == "UpdateEvents" then
-		applyLocalEventValues(data)
+		applyEventValues(data)
 	elseif action == "StopEvents" then
-		stopLocalEvents()
+		stopEvents()
 	elseif action == "BroadcastMessage" then
 		displayLocalAnnouncement(data.Message, data.Duration)
 	elseif action == "GiftAll" then
 		giftLocalPlayer("All", data.GiftType, data.Params)
 	end
 end
-
-local subscribeSuccess, subscribeConnection = pcall(function()
-	return MessagingService:SubscribeAsync(TOPIC_NAME, onGlobalMessageReceived)
-end)
-
-if not subscribeSuccess then
-	warn("[EventManager] Gagal berlangganan ke MessagingService: " .. tostring(subscribeConnection))
-end
-
--- --- API ENDPOINTS ---
 
 function AdminEventService:getAdminCars(player: Player): { { Name: string } }
 	local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
@@ -474,7 +381,7 @@ function AdminEventService:setEventValues(player: Player, values: any, isGlobal:
 		return { Success = false, Error = "Parameter tidak valid!" }
 	end
 
-	applyLocalEventValues(values)
+	applyEventValues(values)
 	
 	if isGlobal then
 		publishGlobalEvent("UpdateEvents", values)
@@ -489,7 +396,7 @@ function AdminEventService:stopAllEvents(player: Player, isGlobal: boolean)
 		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
 	end
 
-	stopLocalEvents()
+	stopEvents()
 	
 	if isGlobal then
 		publishGlobalEvent("StopEvents", {})
@@ -574,14 +481,33 @@ function AdminEventService:getAvailableCars(player: Player)
 	return cars
 end
 
-Networker.server.new("AdminEventService", AdminEventService, {
-	AdminEventService.setEventValues,
-	AdminEventService.stopAllEvents,
-	AdminEventService.broadcastMessage,
-	AdminEventService.giftPlayerReward,
-	AdminEventService.getAvailableCars,
-	AdminEventService.getAdminCars,
-})
+function EventManager.Init()
+	Players.PlayerAdded:Connect(onPlayerAdded)
+	for _, player in ipairs(Players:GetPlayers()) do
+		task.spawn(onPlayerAdded, player)
+	end
 
-print("[EventManager] ✅ AdminEventService Networker endpoints berhasil didaftarkan.")
+	Players.PlayerRemoving:Connect(function(player)
+		commandCooldowns[player.UserId] = nil
+	end)
 
+	local subscribeSuccess, subscribeConnection = pcall(function()
+		return MessagingService:SubscribeAsync(TOPIC_NAME, onGlobalMessageReceived)
+	end)
+	if not subscribeSuccess then
+		warn("[EventManager] Gagal berlangganan ke MessagingService: " .. tostring(subscribeConnection))
+	end
+
+	Networker.server.new("AdminEventService", AdminEventService, {
+		AdminEventService.setEventValues,
+		AdminEventService.stopAllEvents,
+		AdminEventService.broadcastMessage,
+		AdminEventService.giftPlayerReward,
+		AdminEventService.getAvailableCars,
+		AdminEventService.getAdminCars,
+	})
+
+	print("[EventManager] ✅ AdminEventService Networker endpoints initialized.")
+end
+
+return EventManager

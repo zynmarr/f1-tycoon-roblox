@@ -1,7 +1,9 @@
 --!strict
+local OverheadManager = {}
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
+local CollectionService = game:GetService("CollectionService")
 
 local RoleManager = require(ServerScriptService:WaitForChild("RoleManager"):WaitForChild("RoleManager"))
 local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
@@ -40,7 +42,6 @@ local function createOverhead(player: Player, character: Model)
 
 	if roleName == "Player" then
 		billboard.Size = UDim2.new(0, 300, 0, 30)
-		-- billboard.SizeBehavior = Enum.SizeBehavior.ScreenSize
 		billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Ketinggian lebih rendah untuk text biasa
 
 		local nameLabel = Instance.new("TextLabel")
@@ -57,7 +58,6 @@ local function createOverhead(player: Player, character: Model)
 		nameLabel.Parent = frame
 	else
 		billboard.Size = UDim2.new(0, 300, 0, 30)
-		-- billboard.SizeBehavior = Enum.SizeBehavior.ScreenSize
 		billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Ketinggian sama dengan player biasa karena sebaris
 
 		-- UI List Layout untuk susunan horizontal sebaris tanpa bingkai
@@ -114,7 +114,6 @@ local function createOverhead(player: Player, character: Model)
 		roleGradient.Parent = roleLabel
 
 		-- Tandai dengan CollectionService agar client-side mendeteksi dan memberi animasi custom
-		local CollectionService = game:GetService("CollectionService")
 		CollectionService:AddTag(roleGradient, "RoleGradient")
 		roleGradient:SetAttribute("RoleName", roleName)
 	end
@@ -134,10 +133,14 @@ local function setupPlayer(player: Player)
 	end)
 end
 
-Players.PlayerAdded:Connect(setupPlayer)
-for _, player in ipairs(Players:GetPlayers()) do
-	task.spawn(setupPlayer, player)
-	if player.Character then
-		task.spawn(createOverhead, player, player.Character)
+function OverheadManager.Init()
+	Players.PlayerAdded:Connect(setupPlayer)
+	for _, player in ipairs(Players:GetPlayers()) do
+		task.spawn(setupPlayer, player)
+		if player.Character then
+			task.spawn(createOverhead, player, player.Character)
+		end
 	end
 end
+
+return OverheadManager

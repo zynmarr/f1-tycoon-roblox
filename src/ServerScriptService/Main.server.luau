@@ -19,6 +19,15 @@ local ParkingAreaManager = safeRequire(script.Parent.ParkingAreaManager.ParkingA
 local RebirthManager = safeRequire(script.Parent.RebirthManager.RebirthManager, "RebirthManager")
 local RaceManager = safeRequire(script.Parent.RaceManager.RaceManager, "RaceManager")
 local ShopManager = safeRequire(script.Parent.ShopManager.ShopManager, "ShopManager")
+
+-- New Managers
+local DeveloperBoostManager = safeRequire(script.Parent.DeveloperBoostManager.DeveloperBoostManager, "DeveloperBoostManager")
+local EventManager = safeRequire(script.Parent.EventManager.EventManager, "EventManager")
+local LegacyChatTagsManager = safeRequire(script.Parent.LegacyChatTagsManager.LegacyChatTagsManager, "LegacyChatTagsManager")
+local OverheadManager = safeRequire(script.Parent.OverheadManager.OverheadManager, "OverheadManager")
+local SellGuiManager = safeRequire(script.Parent.SellGuiManager.SellGuiManager, "SellGuiManager")
+local TeleportManager = safeRequire(script.Parent.TeleportManager.TeleportManager, "TeleportManager")
+local TestRunner = safeRequire(script.Parent.TestRunner.TestRunner, "TestRunner")
 -- local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
 
 -- ==========================================================
@@ -350,6 +359,29 @@ local function InitializeServer()
 	end
 	if typeof(ShopManager.Init) == "function" then
 		ShopManager.Init()
+	end
+
+	-- Initialize New Managers
+	if typeof(DeveloperBoostManager.Init) == "function" then
+		DeveloperBoostManager.Init()
+	end
+	if typeof(EventManager.Init) == "function" then
+		EventManager.Init()
+	end
+	if typeof(LegacyChatTagsManager.Init) == "function" then
+		LegacyChatTagsManager.Init()
+	end
+	if typeof(OverheadManager.Init) == "function" then
+		OverheadManager.Init()
+	end
+	if typeof(SellGuiManager.Init) == "function" then
+		SellGuiManager.Init()
+	end
+	if typeof(TeleportManager.Init) == "function" then
+		TeleportManager.Init()
+	end
+	if typeof(TestRunner.Init) == "function" then
+		TestRunner.Init()
 	end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)

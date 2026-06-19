@@ -1,6 +1,5 @@
+local TestRunner = {}
 local RebirthManager = require(game.ServerScriptService.RebirthManager.RebirthManager)
-
-print("[TEST RUNNER] Memulai verifikasi fungsionalitas logika Rebirth...")
 
 local function runTests()
 	-- Test 1: Verifikasi poin Rebirth 1 s.d 7 (Formula Linier: 340 * (level + 1))
@@ -28,10 +27,15 @@ local function runTests()
 	print("[TEST RUNNER] ✅ Semua pengujian perhitungan poin Rebirth (Formula Linier) berhasil lolos!")
 end
 
-task.spawn(function()
-	task.wait(1) -- Tunggu inisialisasi modul selesai
-	local success, err = pcall(runTests)
-	if not success then
-		warn("[TEST RUNNER] ❌ PENGUJIAN GAGAL: " .. tostring(err))
-	end
-end)
+function TestRunner.Init()
+	task.spawn(function()
+		task.wait(1) -- Tunggu inisialisasi modul selesai
+		print("[TEST RUNNER] Memulai verifikasi fungsionalitas logika Rebirth...")
+		local success, err = pcall(runTests)
+		if not success then
+			warn("[TEST RUNNER] ❌ PENGUJIAN GAGAL: " .. tostring(err))
+		end
+	end)
+end
+
+return TestRunner
