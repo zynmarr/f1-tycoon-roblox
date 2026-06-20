@@ -135,17 +135,17 @@ function DataManager.extractMachineData(player, machineArea: Instance)
 		machinePart = machineArea:FindFirstChildOfClass("BasePart")
 	end
 
-	-- Scan for any active box currently growing on this machine part
-	local activeBoxData = nil
+	-- Scan for any active boxes currently growing on this machine part
+	local activeBoxes = {}
 	if machinePart then
 		for _, child in pairs(machinePart:GetChildren()) do
 			if child:IsA("Tool") and child:GetAttribute("Level") ~= nil then
-				activeBoxData = {
+				table.insert(activeBoxes, {
 					Level = child:GetAttribute("Level") or 1,
 					Exp = child:GetAttribute("Exp") or 0,
 					Variants = child:GetAttribute("Variants") or "Normal",
-				}
-				break
+					SpawnLocationName = child:GetAttribute("SpawnLocationName"),
+				})
 			end
 		end
 	end
@@ -154,7 +154,8 @@ function DataManager.extractMachineData(player, machineArea: Instance)
 		Name = machineArea.Name,
 		Attributes = extractAttributes(machineArea),
 		PartAttributes = extractAttributes(machinePart),
-		ActiveBox = activeBoxData,
+		ActiveBoxes = #activeBoxes > 0 and activeBoxes or nil,
+		ActiveBox = #activeBoxes > 0 and activeBoxes[1] or nil, -- Keep fallback for backward compatibility
 	}
 	return mData
 end

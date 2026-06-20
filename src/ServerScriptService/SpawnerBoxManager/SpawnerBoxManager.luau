@@ -69,20 +69,29 @@ end
 -- ==========================================
 -- ( getPlotOwner dihapus karena kita sekarang mendeteksi langsung lewat plotModel )
 
-local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPosition: CFrame?)
+local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPosition: CFrame?, locationName: string?)
 	print(boxPosition)
 	if not player or not player.Parent then
 		return
 	end
-	if machineArea:GetAttribute("IsRunning") then
-		return
+
+	local machinePart, _ = getMachineComponents(machineArea)
+	assert(machinePart, "[SpawnerBoxManager] ERROR: Mesin fisik (Part) tidak ditemukan di dalam " .. machineArea.Name)
+
+	if locationName then
+		for _, child in ipairs(machinePart:GetChildren()) do
+			if child:IsA("Tool") and child:GetAttribute("SpawnLocationName") == locationName then
+				-- Lokasi ini sudah ditempati oleh box aktif lain, batalkan spawn!
+				return
+			end
+		end
+	else
+		if machineArea:GetAttribute("IsRunning") then
+			return
+		end
 	end
 
 	machineArea:SetAttribute("IsRunning", true)
-
-	-- 1. Bedah folder area mesinnya
-	local machinePart, _ = getMachineComponents(machineArea)
-	assert(machinePart, "[SpawnerBoxManager] ERROR: Mesin fisik (Part) tidak ditemukan di dalam " .. machineArea.Name)
 
 	local machinesFolder = machineArea.Parent
 	local plotModel = machinesFolder and machinesFolder.Parent
@@ -198,6 +207,9 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 	newBox.Parent = workspace
 
 	newBox:SetAttribute("MachineSource", machineArea.Name)
+	if locationName then
+		newBox:SetAttribute("SpawnLocationName", locationName)
+	end
 
 	-- Tautkan SourceMachine ObjectValue agar BoxManager bisa membuka kunci IsRunning secara instan saat diambil
 	local sourceMachineVal = Instance.new("ObjectValue")
@@ -316,22 +328,46 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 		end
 
 		-- Reset State untuk Respawn jika tidak ada box aktif lain
-		local activeBox = machinePart:FindFirstChildOfClass("Tool")
-		if not activeBox or activeBox == newBox then
-			machineArea:SetAttribute("IsRunning", false)
-			task.wait(0.2)
-
-			local ownerName = plotModel:GetAttribute("Owner")
-			if ownerName and ownerName == player.Name then
-				pcall(function()
-					warn("SPAWN BOX " .. machineArea.Name)
-					spawnBox(player, machineArea, nil)
-				end)
-			else
-				warn("PLAYER NO LONGER OWNER, SKIPPING RESPAWN")
+		local locationsFolder = machineArea:FindFirstChild("Locations")
+		if locationsFolder then
+			-- Untuk spawner multi-lokasi, hitung lokasi yang kosong
+			local freeLocationsCount = 0
+			for _, locPart in ipairs(locationsFolder:GetChildren()) do
+				if locPart:IsA("BasePart") then
+					local occupied = false
+					for _, child in ipairs(machinePart:GetChildren()) do
+						if child:IsA("Tool") and child ~= newBox and child:GetAttribute("SpawnLocationName") == locPart.Name then
+							occupied = true
+							break
+						end
+					end
+					if not occupied then
+						freeLocationsCount = freeLocationsCount + 1
+					end
+				end
+			end
+			if freeLocationsCount > 0 then
+				machineArea:SetAttribute("IsRunning", false)
 			end
 		else
-			warn("ANOTHER ACTIVE BOX ALREADY SPAWNED, SKIPPING RESPAWN")
+			-- Fallback untuk spawner 1-box tunggal
+			local activeBox = machinePart:FindFirstChildOfClass("Tool")
+			if not activeBox or activeBox == newBox then
+				machineArea:SetAttribute("IsRunning", false)
+				task.wait(0.2)
+
+				local ownerName = plotModel:GetAttribute("Owner")
+				if ownerName and ownerName == player.Name then
+					pcall(function()
+						warn("SPAWN BOX " .. machineArea.Name)
+						spawnBox(player, machineArea, nil)
+					end)
+				else
+					warn("PLAYER NO LONGER OWNER, SKIPPING RESPAWN")
+				end
+			else
+				warn("ANOTHER ACTIVE BOX ALREADY SPAWNED, SKIPPING RESPAWN")
+			end
 		end
 	end)
 end
@@ -378,21 +414,15 @@ local function setupMachineArea(machineArea: Folder)
 		local boxPosition: { [string]: CFrame } = {}
 
 		local machinePart: BasePart, _ = getMachineComponents(machineArea)
+		local locationsFolder = machineArea:FindFirstChild("Locations")
 
-		if machineArea.Name == "AthenaArea" then
-			print("KHUSUS AREA: " .. machinePart.Name)
-			task.spawn(function()
-				for _, child in ipairs(machinePart:GetChildren()) do
-					if child:IsA("BasePart") then
-						if child and child ~= nil then
-							local location: BasePart = child :: BasePart
-							print(child.Name, child.Position)
-							local offsetInput = (machinePart.Size.Y / 2) + (child.Size.Y / 2)
-							boxPosition[location.Name] = location.CFrame * CFrame.new(0, offsetInput, 0)
-						end
-					end
+		if locationsFolder then
+			print("MEMPROSES PENANDA LOKASI UNTUK: " .. machineArea.Name)
+			for _, child in ipairs(locationsFolder:GetChildren()) do
+				if child:IsA("BasePart") then
+					boxPosition[child.Name] = child.CFrame
 				end
-			end)
+			end
 		end
 
 		print(boxPosition)
@@ -423,9 +453,17 @@ local function setupMachineArea(machineArea: Folder)
 			end
 		end
 
-		-- if machineArea.Name == "AthenaArea" then
-		-- 	return
-		-- end
+		-- Persiapkan data box aktif yang dimuat
+		local loadedActiveBoxes = {}
+		if machineData then
+			if machineData.ActiveBoxes then
+				for _, b in ipairs(machineData.ActiveBoxes) do
+					table.insert(loadedActiveBoxes, b)
+				end
+			elseif machineData.ActiveBox then
+				table.insert(loadedActiveBoxes, machineData.ActiveBox)
+			end
+		end
 
 		-- Logic Loop
 		task.spawn(function()
@@ -437,31 +475,79 @@ local function setupMachineArea(machineArea: Folder)
 					break
 				end
 
+				-- Deteksi lokasi kosong (untuk spawner multi-lokasi)
+				local freeLocations = {}
+				local totalLocations = 0
+
+				if next(boxPosition) ~= nil then
+					for locName, cframe in pairs(boxPosition) do
+						totalLocations = totalLocations + 1
+						local occupied = false
+						for _, child in ipairs(machinePart:GetChildren()) do
+							if child:IsA("Tool") and child:GetAttribute("SpawnLocationName") == locName then
+								occupied = true
+								break
+							end
+						end
+						if not occupied then
+							table.insert(freeLocations, { Name = locName, CFrame = cframe })
+						end
+					end
+				end
+
+				-- Update status IsRunning berdasarkan keterisian lokasi
+				if totalLocations > 0 then
+					if #freeLocations == 0 then
+						machineArea:SetAttribute("IsRunning", true)
+					else
+						machineArea:SetAttribute("IsRunning", false)
+					end
+				end
+
 				if not machineArea:GetAttribute("IsRunning") then
-					if machineData and machineData.ActiveBox then
-						if next(boxPosition) ~= nil then
+					if #loadedActiveBoxes > 0 then
+						if totalLocations > 0 then
 							warn("SPAWN MANY BOX DATA FROM: " .. machinePart.Name)
-							for _, v in pairs(boxPosition) do
+							local savedBoxesMap = {}
+							local unmappedSavedBoxes = {}
+							for _, boxD in ipairs(loadedActiveBoxes) do
+								if boxD.SpawnLocationName then
+									savedBoxesMap[boxD.SpawnLocationName] = boxD
+								else
+									table.insert(unmappedSavedBoxes, boxD)
+								end
+							end
+
+							for _, loc in ipairs(freeLocations) do
 								task.spawn(function()
-									spawnBox(player, machineArea, nil, v)
+									local savedData = savedBoxesMap[loc.Name]
+									if not savedData and #unmappedSavedBoxes > 0 then
+										savedData = table.remove(unmappedSavedBoxes, 1)
+									end
+									spawnBox(player, machineArea, savedData, loc.CFrame, loc.Name)
 								end)
-								task.wait(0.5)
+								task.wait(0.1)
 							end
 						else
 							warn("SPAWN BOX " .. machineArea.Name .. " FROM DATA")
+							local savedData = table.remove(loadedActiveBoxes, 1)
 							task.spawn(function()
-								spawnBox(player, machineArea, machineData.ActiveBox)
+								spawnBox(player, machineArea, savedData)
 							end)
 						end
-						machineData.ActiveBox = nil
+						table.clear(loadedActiveBoxes) -- bersihkan agar tidak ter-spawn berulang kali
+						if machineData then
+							machineData.ActiveBox = nil
+							machineData.ActiveBoxes = nil
+						end
 					else
-						if next(boxPosition) ~= nil then
+						if totalLocations > 0 then
 							warn("SPAWN MANY BOX NORMAL AT: " .. machinePart.Name)
-							for _, v in pairs(boxPosition) do
+							for _, loc in ipairs(freeLocations) do
 								task.spawn(function()
-									spawnBox(player, machineArea, nil, v)
+									spawnBox(player, machineArea, nil, loc.CFrame, loc.Name)
 								end)
-								task.wait(0.5)
+								task.wait(0.1)
 							end
 						else
 							warn("SPAWN BOX " .. machineArea.Name .. " NORMAL")
