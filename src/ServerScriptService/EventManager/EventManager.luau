@@ -351,11 +351,7 @@ local function onGlobalMessageReceived(messageData)
 end
 
 function AdminEventService:getAdminCars(player: Player): { { Name: string } }
-	local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
-	local playerRole = (player:GetAttribute("Role") :: string?) or "Player"
-	local roleData = (RoleConfig.Roles :: any)[playerRole]
-
-	if not roleData or not roleData.Permissions["EditGameConfigs"] then
+	if not RoleManager.hasPermission(player, "EditGameConfigs") then
 		warn("[EventManager] Player " .. player.Name .. " mencoba mengambil list admin car tanpa permission!")
 		return {}
 	end
