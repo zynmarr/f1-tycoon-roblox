@@ -534,8 +534,9 @@ local function setupBox(box: Tool)
 				local baseOffset = 0.5
 				local dynamicY = baseOffset + (handle.Size.Y / 2)
 
-				handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
-				currentModel:PivotTo(handle.CFrame * CFrame.new(0, -dynamicY + 0.5, 0))
+				-- Pengaturan CFrame handle ditangani sepenuhnya oleh SpawnerBoxManager (Box Manager)
+				-- handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
+				currentModel:PivotTo(handle.CFrame * CFrame.new(0, -(handle.Size.Y / 2) + 0.5, 0))
 
 				mainWeld = Instance.new("WeldConstraint")
 				mainWeld.Name = "MainWeld"
