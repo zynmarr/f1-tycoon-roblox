@@ -321,16 +321,24 @@ handle:GetPropertyChangedSignal("Size"):Connect(function()
 	currentModel:ScaleTo(handle.Size.X / 3)
 
 	-- 3. KALKULASI TINGGI DINAMIS
-	-- Angka 1.5 ini adalah tinggi dari tengah mesin ke atas mesin (sesuaikan jika perlu).
-	-- Kita tambahkan (handle.Size.Y / 2) agar bagian bawah kotak yang menempel, bukan bagian tengahnya.
 	local baseOffset = 0.5
 	local dynamicY = baseOffset + (handle.Size.Y / 2)
 
-	handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
+	local spawnLocationName = box:GetAttribute("SpawnLocationName")
+	local locPart = nil
+	if spawnLocationName and machineArea then
+		local locations = machineArea:FindFirstChild("Locations")
+		locPart = locations and locations:FindFirstChild(spawnLocationName)
+	end
+
+	if locPart then
+		handle.CFrame = locPart.CFrame * CFrame.new(0, (handle.Size.Y / 2), 0)
+	else
+		handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
+	end
 
 	-- 4. POSISIKAN ULANG MODEL KE HANDLE
-	--currentModel:PivotTo(handle.CFrame * CFrame.new(0, -modelDynamicY + 0.4, 0))
-	currentModel:PivotTo(handle.CFrame * CFrame.new(0, -dynamicY + 0.5, 0))
+	currentModel:PivotTo(handle.CFrame * CFrame.new(0, -(handle.Size.Y / 2) + 0.5, 0))
 
 	-- 5. PASANG KEMBALI WELD-NYA
 	mainWeld = Instance.new("WeldConstraint")

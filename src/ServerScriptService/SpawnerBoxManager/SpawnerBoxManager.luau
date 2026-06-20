@@ -312,10 +312,10 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 				local newSize = startSize:Lerp(targetSize, steppedGrowthRatio)
 
 				handle.Size = newSize
-				local offsetInput = (machinePart.Size.Y / 2) + (newSize.Y / 2)
 				if boxPosition then
-					handle.CFrame = boxPosition * CFrame.new(0, offsetInput, 0)
+					handle.CFrame = boxPosition * CFrame.new(0, newSize.Y / 2, 0)
 				else
+					local offsetInput = (machinePart.Size.Y / 2) + (newSize.Y / 2)
 					handle.CFrame = machinePart.CFrame * CFrame.new(0, offsetInput, 0)
 				end
 			end
@@ -336,7 +336,11 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 				if locPart:IsA("BasePart") then
 					local occupied = false
 					for _, child in ipairs(machinePart:GetChildren()) do
-						if child:IsA("Tool") and child ~= newBox and child:GetAttribute("SpawnLocationName") == locPart.Name then
+						if
+							child:IsA("Tool")
+							and child ~= newBox
+							and child:GetAttribute("SpawnLocationName") == locPart.Name
+						then
 							occupied = true
 							break
 						end
