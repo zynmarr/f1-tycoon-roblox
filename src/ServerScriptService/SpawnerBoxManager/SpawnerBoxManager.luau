@@ -313,7 +313,7 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 
 				handle.Size = newSize
 				if boxPosition then
-					handle.CFrame = boxPosition * CFrame.new(0, newSize.Y / 2, 0)
+					handle.CFrame = boxPosition * CFrame.new(0, (newSize.Y - 2) / 2, 0)
 				else
 					local offsetInput = (machinePart.Size.Y / 2) + (newSize.Y / 2)
 					handle.CFrame = machinePart.CFrame * CFrame.new(0, offsetInput, 0)
