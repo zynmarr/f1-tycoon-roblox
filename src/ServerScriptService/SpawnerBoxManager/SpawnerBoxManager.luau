@@ -69,7 +69,8 @@ end
 -- ==========================================
 -- ( getPlotOwner dihapus karena kita sekarang mendeteksi langsung lewat plotModel )
 
-local function spawnBox(player: Player, machineArea: Folder, boxData)
+local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPosition: CFrame?)
+	print(boxPosition)
 	if not player or not player.Parent then
 		return
 	end
@@ -189,7 +190,11 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 	local baseOffset = 0.5 :: number
 	local handleSizeY = (handle :: BasePart).Size.Y :: number
 	local dynamicY = baseOffset + (handleSizeY / 2)
-	newBox:PivotTo(machinePart.CFrame * CFrame.new(0, -dynamicY + 2, 0))
+	if boxPosition then
+		newBox:PivotTo(boxPosition)
+	else
+		newBox:PivotTo(machinePart.CFrame * CFrame.new(0, -dynamicY + 2, 0))
+	end
 	newBox.Parent = workspace
 
 	newBox:SetAttribute("MachineSource", machineArea.Name)
@@ -296,7 +301,11 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 
 				handle.Size = newSize
 				local offsetInput = (machinePart.Size.Y / 2) + (newSize.Y / 2)
-				handle.CFrame = machinePart.CFrame * CFrame.new(0, offsetInput, 0)
+				if boxPosition then
+					handle.CFrame = boxPosition * CFrame.new(0, offsetInput, 0)
+				else
+					handle.CFrame = machinePart.CFrame * CFrame.new(0, offsetInput, 0)
+				end
 			end
 
 			-- ==========================================
@@ -315,6 +324,7 @@ local function spawnBox(player: Player, machineArea: Folder, boxData)
 			local ownerName = plotModel:GetAttribute("Owner")
 			if ownerName and ownerName == player.Name then
 				pcall(function()
+					warn("SPAWN BOX " .. machineArea.Name)
 					spawnBox(player, machineArea, nil)
 				end)
 			else
@@ -330,6 +340,9 @@ end
 -- 2. CORE LOGIC: INITIALIZE MACHINE
 -- ==========================================
 local function setupMachineArea(machineArea: Folder)
+	-- if machineArea.Name == "AthenaArea" then
+	-- 	return
+	-- end
 	if machineArea:GetAttribute("IsInitialized") then
 		return
 	end
@@ -362,6 +375,28 @@ local function setupMachineArea(machineArea: Folder)
 			player:GetAttributeChangedSignal("DataLoaded"):Wait()
 		end
 
+		local boxPosition: { [string]: CFrame } = {}
+
+		local machinePart: BasePart, _ = getMachineComponents(machineArea)
+
+		if machineArea.Name == "AthenaArea" then
+			print("KHUSUS AREA: " .. machinePart.Name)
+			task.spawn(function()
+				for _, child in ipairs(machinePart:GetChildren()) do
+					if child:IsA("BasePart") then
+						if child and child ~= nil then
+							local location: BasePart = child :: BasePart
+							print(child.Name, child.Position)
+							local offsetInput = (machinePart.Size.Y / 2) + (child.Size.Y / 2)
+							boxPosition[location.Name] = location.CFrame * CFrame.new(0, offsetInput, 0)
+						end
+					end
+				end
+			end)
+		end
+
+		print(boxPosition)
+
 		local machineData = nil
 		local loadedData = DataManager.getPlayerData(player)
 
@@ -388,10 +423,15 @@ local function setupMachineArea(machineArea: Folder)
 			end
 		end
 
+		-- if machineArea.Name == "AthenaArea" then
+		-- 	return
+		-- end
+
 		-- Logic Loop
 		task.spawn(function()
 			while machineArea:GetAttribute("Active") do
 				local currentOwner = plot:GetAttribute("Owner")
+
 				if not player or not player.Parent or currentOwner ~= player.Name then
 					machineArea:SetAttribute("Active", false)
 					break
@@ -399,10 +439,36 @@ local function setupMachineArea(machineArea: Folder)
 
 				if not machineArea:GetAttribute("IsRunning") then
 					if machineData and machineData.ActiveBox then
-						spawnBox(player, machineArea, machineData.ActiveBox)
+						if next(boxPosition) ~= nil then
+							warn("SPAWN MANY BOX DATA FROM: " .. machinePart.Name)
+							for _, v in pairs(boxPosition) do
+								task.spawn(function()
+									spawnBox(player, machineArea, nil, v)
+								end)
+								task.wait(0.5)
+							end
+						else
+							warn("SPAWN BOX " .. machineArea.Name .. " FROM DATA")
+							task.spawn(function()
+								spawnBox(player, machineArea, machineData.ActiveBox)
+							end)
+						end
 						machineData.ActiveBox = nil
 					else
-						spawnBox(player, machineArea, nil)
+						if next(boxPosition) ~= nil then
+							warn("SPAWN MANY BOX NORMAL AT: " .. machinePart.Name)
+							for _, v in pairs(boxPosition) do
+								task.spawn(function()
+									spawnBox(player, machineArea, nil, v)
+								end)
+								task.wait(0.5)
+							end
+						else
+							warn("SPAWN BOX " .. machineArea.Name .. " NORMAL")
+							task.spawn(function()
+								spawnBox(player, machineArea, nil)
+							end)
+						end
 					end
 				end
 
