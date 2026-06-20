@@ -196,12 +196,22 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 		return
 	end
 
-	local baseOffset = 0.5 :: number
-	local handleSizeY = (handle :: BasePart).Size.Y :: number
-	local dynamicY = baseOffset + (handleSizeY / 2)
-	if boxPosition then
+	local initialSize = Vector3.new(2, 2, 2)
+	local locPart = nil
+	if locationName then
+		local locationsFolder = machineArea:FindFirstChild("Locations")
+		locPart = locationsFolder and locationsFolder:FindFirstChild(locationName) :: BasePart?
+	end
+
+	if locPart and boxPosition then
+		local offset = (locPart.Size.Y / 2) + (initialSize.Y / 2)
+		newBox:PivotTo(boxPosition * CFrame.new(0, offset, 0))
+	elseif boxPosition then
 		newBox:PivotTo(boxPosition)
 	else
+		local baseOffset = 0.5 :: number
+		local handleSizeY = (handle :: BasePart).Size.Y :: number
+		local dynamicY = baseOffset + (handleSizeY / 2)
 		newBox:PivotTo(machinePart.CFrame * CFrame.new(0, -dynamicY + 2, 0))
 	end
 	newBox.Parent = workspace
@@ -312,7 +322,10 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 				local newSize = startSize:Lerp(targetSize, steppedGrowthRatio)
 
 				handle.Size = newSize
-				if boxPosition then
+				if locPart and boxPosition then
+					local offset = (locPart.Size.Y / 2) + (newSize.Y / 2)
+					handle.CFrame = boxPosition * CFrame.new(0, offset, 0)
+				elseif boxPosition then
 					handle.CFrame = boxPosition * CFrame.new(0, (newSize.Y - 2) / 2, 0)
 				else
 					local offsetInput = (machinePart.Size.Y / 2) + (newSize.Y / 2)

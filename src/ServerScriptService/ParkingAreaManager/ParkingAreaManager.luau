@@ -9,9 +9,25 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameUtils = require(ReplicatedStorage.GameUtils)
 local RoleManager = require(game.ServerScriptService.RoleManager.RoleManager)
 local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
+local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 
 local SPAWNER_TAG = "ParkingArea"
 local playerPassiveIncome = {} -- [Player] = number (total passive income/sec)
+
+local function getOrCalculateCarIncome(car: Instance): number
+	local income = car:GetAttribute("Income") :: number?
+	if income and income > 0 then
+		return income
+	end
+
+	local rarity = car:GetAttribute("Rarity") or "Common"
+	local variant = car:GetAttribute("Variant") or "Normal"
+	local tierData = GameConfig.Rarities[rarity] or GameConfig.Rarities.Common
+	local baseIncome, _ = GameConfig.CalculatePrice(tierData.BasePrice, rarity, variant)
+	
+	car:SetAttribute("Income", baseIncome)
+	return baseIncome
+end
 
 local function processPickup(player: Player, car: Tool)
 	local character = player.Character
@@ -30,7 +46,7 @@ local function processPickup(player: Player, car: Tool)
 	car.Parent = character
 
 	-- Hook: Subtract income from player passive income cache
-	local carIncome: number = car:GetAttribute("Income") :: number or 0
+	local carIncome = getOrCalculateCarIncome(car)
 	playerPassiveIncome[player] = math.max(0, (playerPassiveIncome[player] or 0) - carIncome)
 end
 
@@ -91,7 +107,7 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 		end
 
 		-- Hook: Add income to player passive income cache
-		local carIncome: number = tool:GetAttribute("Income") :: number or 0
+		local carIncome = getOrCalculateCarIncome(tool)
 		playerPassiveIncome[player] = (playerPassiveIncome[player] or 0) + carIncome
 
 		warn("Mobil berhasil diparkir di: " .. tostring(targetCFrame.Position))
@@ -254,7 +270,7 @@ function ParkingAreaManager.recalculatePassiveIncome(player: Player)
 				if carsFolder then
 					for _, car in ipairs(carsFolder:GetChildren()) do
 						if car:IsA("Tool") then
-							local carIncome = car:GetAttribute("Income") :: number or 0
+							local carIncome = getOrCalculateCarIncome(car)
 							totalIncome = totalIncome + carIncome
 						end
 					end

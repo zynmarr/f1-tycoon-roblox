@@ -327,7 +327,7 @@ function SellGuiManager:sellAllCars(player, cars)
 		RebirthManager.incrementQuestProgress(player, "SellCars", carsCount)
 
 		local ParkingAreaManager = require(game.ServerScriptService.ParkingAreaManager.ParkingAreaManager)
-		ParkingAreaManager.resetPassiveIncome(player)
+		ParkingAreaManager.recalculatePassiveIncome(player)
 
 		print(
 			"[SellGui] "

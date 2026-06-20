@@ -300,6 +300,14 @@ local function onPlayerAdded(player: Player)
 		warn("[MainServer] Gagal memuat Mobil di Lahan: " .. tostring(err))
 	end
 
+	-- Recalculate passive income after plot cars have finished spawning and parenting
+	task.spawn(function()
+		task.wait(1.0)
+		if player.Parent then
+			ParkingAreaManager.recalculatePassiveIncome(player)
+		end
+	end)
+
 	-- Tandai bahwa data awal pemain selesai dimuat (membuka kunci DataStore syncData dan menginisialisasi mesin)
 	player:SetAttribute("DataLoaded", true)
 end
