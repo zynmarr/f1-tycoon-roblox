@@ -324,18 +324,8 @@ handle:GetPropertyChangedSignal("Size"):Connect(function()
 	local baseOffset = 0.5
 	local dynamicY = baseOffset + (handle.Size.Y / 2)
 
-	local spawnLocationName = box:GetAttribute("SpawnLocationName")
-	local locPart = nil
-	if spawnLocationName and machineArea then
-		local locations = machineArea:FindFirstChild("Locations")
-		locPart = locations and locations:FindFirstChild(spawnLocationName)
-	end
-
-	if locPart then
-		handle.CFrame = locPart.CFrame * CFrame.new(0, (handle.Size.Y / 2), 0)
-	else
-		handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
-	end
+	-- Pengaturan CFrame handle ditangani sepenuhnya oleh SpawnerBoxManager (Box Manager)
+	-- handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
 
 	-- 4. POSISIKAN ULANG MODEL KE HANDLE
 	currentModel:PivotTo(handle.CFrame * CFrame.new(0, -(handle.Size.Y / 2) + 0.5, 0))
