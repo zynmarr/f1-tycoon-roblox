@@ -1,6 +1,4 @@
 --!strict
--- Baris pertama wajib "--!strict" agar Linter (Selene/Luau-LSP)
--- mendeteksi tipe data secara agresif.
 
 local ParkingAreaManager = {}
 local CollectionService = game:GetService("CollectionService")
@@ -20,11 +18,11 @@ local function getOrCalculateCarIncome(car: Instance): number
 		return income
 	end
 
-	local rarity = car:GetAttribute("Rarity") or "Common"
-	local variant = car:GetAttribute("Variant") or "Normal"
+	local rarity: string = car:GetAttribute("Rarity") :: string or "Common"
+	local variant: string? = car:GetAttribute("Variant") :: string? or "Normal"
 	local tierData = GameConfig.Rarities[rarity] or GameConfig.Rarities.Common
 	local baseIncome, _ = GameConfig.CalculatePrice(tierData.BasePrice, rarity, variant)
-	
+
 	car:SetAttribute("Income", baseIncome)
 	return baseIncome
 end
@@ -70,12 +68,30 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 		-- 3. PINDAHKAN PARENT DULU
 		-- (Sangat penting agar koordinat relatif PivotTo dihitung di container yang baru)
 		tool.Parent = myCars
-		local targetCFrame = area:GetPivot() * CFrame.new(0, 2.25, 0)
+		local rotation = 0
+		local angle = CFrame.Angles(0, math.rad(rotation), 0)
+
+		local targetCFrame = area:GetPivot() * CFrame.new(0, 2.25, 0) * angle
 
 		-- 4. EKSEKUSI POSISI (Gunakan World Pivot agar aman)
 		-- Kita arahkan ke tengah area parkir, naik 2.5 studs (sumbu Y)
 		if isEdition then
-			targetCFrame = area:GetPivot() * CFrame.new(0, 2.6, 0) * CFrame.Angles(0, math.rad(180), 0)
+			rotation = 180
+			angle = CFrame.Angles(0, math.rad(rotation), 0)
+			targetCFrame = area:GetPivot() * CFrame.new(0, 2.6, 0) * angle
+		end
+
+		local lotGroup: Folder = area.Parent :: Folder
+		if lotGroup.Name == "Lots1" then
+			rotation = 180
+			angle = CFrame.Angles(0, math.rad(rotation), 0)
+			targetCFrame = area:GetPivot() * CFrame.new(0, 2.25, 0) * angle
+
+			if isEdition then
+				rotation = 360
+				angle = CFrame.Angles(0, math.rad(rotation), 0)
+				targetCFrame = area:GetPivot() * CFrame.new(0, 2.6, 0) * angle
+			end
 		end
 
 		task.wait() -- Beri jeda 1 frame agar engine Roblox meregistrasi parent baru

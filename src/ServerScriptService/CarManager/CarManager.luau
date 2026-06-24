@@ -203,8 +203,14 @@ function CarManager.spawnLoadedCar(player: Player, carData: any, plot: Instance)
 		carModel.Parent = player:WaitForChild("Backpack", 5)
 	else
 		local parkingLots = plot:WaitForChild("AllParkingLots")
-		local parkingArea = parkingLots:FindFirstChild(carData.Location)
-		ParkingAreaManager.storeCar(player, parkingArea, carModel)
+		for _, part in pairs(parkingLots:GetDescendants()) do
+			if part:isA("BasePart") then
+				if part.Name == carData.Location then
+					-- local parkingArea = parkingLots:FindFirstChild(carData.Location)
+					ParkingAreaManager.storeCar(player, part, carModel)
+				end
+			end
+		end
 	end
 
 	return carModel

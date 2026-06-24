@@ -21,7 +21,6 @@ local BoxModels = ReplicatedStorage:WaitForChild("BoxModels")
 
 local BOX_TAG = "Box"
 
-
 -- ========== RATE LIMITING ==========
 local BOX_OPEN_COOLDOWN = 3 -- seconds
 local playerBoxOpenTimes = {} -- {player: timestamp}
@@ -64,7 +63,7 @@ local function updateBoxVisual(box: Tool)
 	end
 
 	-- 2. Clone model baru ke dalam Box
-	local visualContainer = newVisualTemplate:Clone()
+	local visualContainer: Model = newVisualTemplate:Clone() :: Model
 	visualContainer.Name = "Model"
 	visualContainer.Parent = box
 
@@ -115,6 +114,7 @@ local function updateBoxVisual(box: Tool)
 	-- 3. Kalkulasi tinggi & posisikan ulang model ke Handle
 	local baseOffset = 0.5
 	local dynamicY = baseOffset + (handle.Size.Y / 2)
+	visualContainer:ScaleTo(handle.Size.X / 3)
 	visualContainer:PivotTo(handle.CFrame * CFrame.new(0, -dynamicY + 0.5, 0))
 
 	-- 4. Weld internal model agar part-part kecil menempel kuat
@@ -410,14 +410,26 @@ function BoxManager:openBox(player: Player, boxName: string)
 			-- Bangun teks dengan format rich text
 			local prefixText = ""
 			if roleName ~= "Player" and roleData then
-				prefixText = string.format("<font color='#%s'><b>[%s %s]</b></font> ", roleColorHex, roleEmoji, string.upper(roleDisplayName))
+				prefixText = string.format(
+					"<font color='#%s'><b>[%s %s]</b></font> ",
+					roleColorHex,
+					roleEmoji,
+					string.upper(roleDisplayName)
+				)
 			end
 
 			local playerText = string.format("<font color='#%s'><b>%s</b></font>", roleColorHex, player.Name)
-			local messageBody = string.format(": telah mendapatkan mobil <b>%s</b> dari <b>%s</b>", carDisplayName, boxDisplayName)
-			local richText = string.format("%s%s<font color='#%s'>%s</font>", prefixText, playerText, rarityColorHex, messageBody)
+			local messageBody =
+				string.format(": telah mendapatkan mobil <b>%s</b> dari <b>%s</b>", carDisplayName, boxDisplayName)
+			local richText =
+				string.format("%s%s<font color='#%s'>%s</font>", prefixText, playerText, rarityColorHex, messageBody)
 
-			print("[BoxManager] Menyiarkan pengumuman gacha mobil Epic+: " .. player.Name .. " mendapatkan " .. carDisplayName)
+			print(
+				"[BoxManager] Menyiarkan pengumuman gacha mobil Epic+: "
+					.. player.Name
+					.. " mendapatkan "
+					.. carDisplayName
+			)
 
 			-- Siarkan ke Client untuk ditampilkan di Chat UI
 			local chatAnnounceEventOptional = ReplicatedStorage:FindFirstChild("ChatAnnounceEvent") :: RemoteEvent?
@@ -468,8 +480,8 @@ local function setupBox(box: Tool)
 		--	processPickup(player)
 		--end
 
-		local boxSize = handle.Size or Vector3.new(1, 1, 1)
-		box.Grip = CFrame.new(0, 0, boxSize.Z / 2 + 0.5)
+		local boxSize = handle.Size or Vector3.new(2, 2, 2)
+		box.Grip = CFrame.new(0, 0, boxSize.Z / 2)
 	end)
 
 	box.Unequipped:Connect(function()
@@ -531,12 +543,12 @@ local function setupBox(box: Tool)
 
 				currentModel:ScaleTo(handle.Size.X / 3)
 
-				local baseOffset = 0.5
-				local dynamicY = baseOffset + (handle.Size.Y / 2)
+				-- local baseOffset = 0.5
+				-- local dynamicY = baseOffset + (handle.Size.Y / 2)
 
 				-- Pengaturan CFrame handle ditangani sepenuhnya oleh SpawnerBoxManager (Box Manager)
 				-- handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
-				currentModel:PivotTo(handle.CFrame * CFrame.new(0, -(handle.Size.Y / 2) + 0.5, 0))
+				currentModel:PivotTo(handle.CFrame * CFrame.new(0, -(handle.Size.Y / 2), 0))
 
 				mainWeld = Instance.new("WeldConstraint")
 				mainWeld.Name = "MainWeld"
@@ -568,7 +580,13 @@ local function setupBox(box: Tool)
 	table.insert(connections, cleanupConnection)
 end
 
-function BoxManager.giveBoxToPlayer(player: Player, level: number, variants: string?, customLuckyChance: number?, ownerName: string?)
+function BoxManager.giveBoxToPlayer(
+	player: Player,
+	level: number,
+	variants: string?,
+	customLuckyChance: number?,
+	ownerName: string?
+)
 	local backpack = player:FindFirstChild("Backpack")
 	if not backpack then
 		return false
@@ -581,7 +599,7 @@ function BoxManager.giveBoxToPlayer(player: Player, level: number, variants: str
 	end
 
 	local newBox = boxTemplate:Clone()
-	
+
 	-- Unanchor all parts to prevent player flinging
 	for _, part in ipairs(newBox:GetDescendants()) do
 		if part:IsA("BasePart") then
@@ -595,7 +613,7 @@ function BoxManager.giveBoxToPlayer(player: Player, level: number, variants: str
 	local boxName = initialLvlData and initialLvlData.Name or "Crate Level " .. tostring(level)
 
 	local variantStr = variants or "Normal"
-	
+
 	newBox:SetAttribute("Level", level)
 	newBox:SetAttribute("Exp", 0)
 	newBox:SetAttribute("MaxExp", maxExp)
@@ -604,11 +622,11 @@ function BoxManager.giveBoxToPlayer(player: Player, level: number, variants: str
 	newBox:SetAttribute("Amount", 1)
 	newBox:SetAttribute("HasPicked", true)
 	newBox:SetAttribute("Name", boxName)
-	
+
 	if ownerName then
 		newBox:SetAttribute("Owner", ownerName)
 	end
-	
+
 	if customLuckyChance then
 		newBox:SetAttribute("LuckyChance", customLuckyChance)
 	else
@@ -670,7 +688,7 @@ function BoxManager.giveBoxToPlayer(player: Player, level: number, variants: str
 
 		local currentAmount = existingBox:GetAttribute("Amount") or 1
 		existingBox:SetAttribute("Amount", currentAmount + 1)
-		
+
 		newBox:Destroy()
 		print(`[BoxManager] 📦 Stacked {existingBox.Name} untuk {player.Name}. Jumlah baru: {currentAmount + 1}`)
 	else

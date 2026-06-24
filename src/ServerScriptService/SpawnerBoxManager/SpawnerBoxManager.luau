@@ -70,7 +70,7 @@ end
 -- ( getPlotOwner dihapus karena kita sekarang mendeteksi langsung lewat plotModel )
 
 local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPosition: CFrame?, locationName: string?)
-	print(boxPosition)
+	-- print(boxPosition)
 	if not player or not player.Parent then
 		return
 	end
@@ -191,21 +191,24 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 
 	newBox.Name = initialLvlData.Name .. "_Variant_" .. bVariants
 
-	local handle = newBox:FindFirstChild("Handle")
+	local handle: BasePart = newBox:FindFirstChild("Handle") :: BasePart
 	if not handle then
 		return
 	end
 
-	local initialSize = Vector3.new(2, 2, 2)
-	local locPart = nil
+	local initialSize = Vector3.new(3, 3, 3)
+	local locPart: BasePart? = nil
 	if locationName then
 		local locationsFolder = machineArea:FindFirstChild("Locations")
 		locPart = locationsFolder and locationsFolder:FindFirstChild(locationName) :: BasePart?
 	end
 
 	if locPart and boxPosition then
-		local offset = (locPart.Size.Y / 2) + (initialSize.Y / 2)
-		newBox:PivotTo(boxPosition * CFrame.new(0, offset, 0))
+		-- local getSizeY =
+		-- local getMachineY = machinePart.Size.y / 2
+		-- local offset = -(locPart.Size.Y / 2) + (newSize.Y / 2)
+		local offset = -(locPart.Size.Y / 2) + (handle.Size.Y / 2)
+		newBox:PivotTo(boxPosition * CFrame.new(0, offset, 0) * CFrame.new(0, -(locPart.Size.Y / 2) - 0.5, 0))
 	elseif boxPosition then
 		newBox:PivotTo(boxPosition)
 	else
@@ -228,10 +231,21 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 	sourceMachineVal.Parent = newBox
 
 	-- 3. SETUP UI & PROMPT SEBELUM PARENTING
-	handle.Size = Vector3.new(2, 2, 2)
+	local rawGrowthRatio = math.clamp(bExp / initialLvlData.MaxExp, 0, 1)
+	local totalSteps = 4
+	local steppedGrowthRatio = math.floor(rawGrowthRatio * totalSteps) / totalSteps
+
+	local startSize = initialSize
+	local targetSize = Vector3.new(6, 6, 6)
+	local newSize = startSize:Lerp(targetSize, steppedGrowthRatio)
+	handle.Size = newSize
+
 	local display = handle:FindFirstChild("StatsDisplay") :: BillboardGui
 	display.Enabled = true
-	handle:FindFirstChild("ProximityPrompt").Enabled = true
+	local proximityPrompt = handle:FindFirstChild("ProximityPrompt")
+	if proximityPrompt then
+		proximityPrompt.Enabled = true
+	end
 
 	-- Tampilkan teks awal untuk Level 1
 	BoxModule.UpdateBoxText(handle, bLvl, bExp, initialLvlData.MaxExp, bVariants)
@@ -250,8 +264,6 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 			local baseExp = 20 + expBoost
 			local totalMultiplier = eventBoostPercent / 100
 			local finalExp = math.floor(baseExp + (baseExp * totalMultiplier))
-
-			task.wait(math.max(0.1, 2 / (1 + (speed * 0.15))))
 
 			if not newBox:FindFirstChild("Handle") then
 				break
@@ -310,23 +322,23 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 			-- ==========================================
 			-- UPDATE VISUAL (SIZE & POSITION) - OPTIMIZED
 			-- ==========================================
-			local rawGrowthRatio = math.clamp(newExp / currentLvlData.MaxExp, 0, 1)
-			local totalSteps = 4
-			local steppedGrowthRatio = math.floor(rawGrowthRatio * totalSteps) / totalSteps
+			rawGrowthRatio = math.clamp(newExp / currentLvlData.MaxExp, 0, 1)
+			totalSteps = 5
+			steppedGrowthRatio = math.floor(rawGrowthRatio * totalSteps) / totalSteps
 
 			-- Hanya perbarui properti Part (Size & CFrame) jika step pertumbuhan berubah (hanya 5 kali per lifetime)
 			if steppedGrowthRatio ~= lastSteppedRatio then
 				lastSteppedRatio = steppedGrowthRatio
-				local startSize = Vector3.new(2, 2, 2)
-				local targetSize = Vector3.new(5, 5, 5)
-				local newSize = startSize:Lerp(targetSize, steppedGrowthRatio)
-
+				startSize = initialSize
+				newSize = startSize:Lerp(targetSize, steppedGrowthRatio)
 				handle.Size = newSize
 				if locPart and boxPosition then
-					local offset = (locPart.Size.Y / 2) + (newSize.Y / 2)
+					local offset = -(locPart.Size.Y / 2) + (newSize.Y / 2)
+					-- handle.CFrame = boxPosition * CFrame.new(0, offset, 0)
 					handle.CFrame = boxPosition * CFrame.new(0, offset, 0)
 				elseif boxPosition then
-					handle.CFrame = boxPosition * CFrame.new(0, (newSize.Y - 2) / 2, 0)
+					-- handle.CFrame = boxPosition * CFrame.new(0, (newSize.Y - 2) / 2, 0)
+					handle.CFrame = boxPosition * CFrame.new(0, -(boxPosition.Y / 2), 0)
 				else
 					local offsetInput = (machinePart.Size.Y / 2) + (newSize.Y / 2)
 					handle.CFrame = machinePart.CFrame * CFrame.new(0, offsetInput, 0)
@@ -338,6 +350,8 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 			-- ==========================================
 			-- Menghilangkan listener AttributeChanged dan meng-update langsung agar menghemat CPU & replikasi
 			BoxModule.UpdateBoxText(handle, curLvl, newExp, currentLvlData.MaxExp, bVariants)
+
+			task.wait(math.max(0.1, 2 / (1 + (speed * 0.15))))
 		end
 
 		-- Reset State untuk Respawn jika tidak ada box aktif lain
@@ -434,7 +448,6 @@ local function setupMachineArea(machineArea: Folder)
 		local locationsFolder = machineArea:FindFirstChild("Locations")
 
 		if locationsFolder then
-			print("MEMPROSES PENANDA LOKASI UNTUK: " .. machineArea.Name)
 			for _, child in ipairs(locationsFolder:GetChildren()) do
 				if child:IsA("BasePart") then
 					boxPosition[child.Name] = child.CFrame

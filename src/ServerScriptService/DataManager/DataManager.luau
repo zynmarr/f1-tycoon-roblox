@@ -48,8 +48,8 @@ local DEFAULT_DATA = {
 			TotalCarsSold = 0,
 			TotalBoxesOpened = 0,
 			ClaimedMilestones = {},
-		}
-	}
+		},
+	},
 }
 
 -- ===== ATTRIBUTE SCHEMA VALIDATION =====
@@ -234,13 +234,14 @@ function DataManager.syncData(player)
 	finalSave.Stats.Rebirth = leaderstats:FindFirstChild("Rebirth") and leaderstats.Rebirth.Value or 0
 	finalSave.Stats.RebirthPoints = leaderstats:FindFirstChild("RebirthPoints") and leaderstats.RebirthPoints.Value or 0
 	finalSave.Stats.RPMTokens = leaderstats:FindFirstChild("RPM Tokens") and leaderstats["RPM Tokens"].Value or 0
-	finalSave.Stats.RaceStats = profile.Data.Stats and profile.Data.Stats.RaceStats or {
-		Wins = 0,
-		Losses = 0,
-		CashEarned = 0,
-		WinStreak = 0,
-		PvPWins = 0,
-	}
+	finalSave.Stats.RaceStats = profile.Data.Stats and profile.Data.Stats.RaceStats
+		or {
+			Wins = 0,
+			Losses = 0,
+			CashEarned = 0,
+			WinStreak = 0,
+			PvPWins = 0,
+		}
 
 	-- 2. Scan Seluruh Item di Backpack & Karakter (Hanya jika pemain tidak sedang keluar dan data sudah ter-load)
 	if not player:GetAttribute("IsLeaving") and player:GetAttribute("DataLoaded") then
@@ -287,16 +288,18 @@ function DataManager.syncData(player)
 		local scanSuccess, scanError = pcall(function()
 			local parkingLots = myPlot:FindFirstChild("AllParkingLots")
 			if parkingLots then
-				for _, parking in pairs(parkingLots:GetChildren()) do
-					local carsFolder = parking:FindFirstChild("MyCars", true)
-					if carsFolder then
-						for _, car in pairs(carsFolder:GetChildren()) do
-							if car:IsA("Tool") or car:IsA("Model") then
-								table.insert(finalSave.PlotData.MyCars, {
-									Name = car.Name,
-									Location = parking.Name,
-									Attributes = extractAttributes(car),
-								})
+				for _, part in pairs(parkingLots:GetDescendants()) do
+					if part:isA("BasePart") then
+						local carsFolder = part:FindFirstChild("MyCars", true)
+						if carsFolder then
+							for _, car in pairs(carsFolder:GetChildren()) do
+								if car:IsA("Tool") or car:IsA("Model") then
+									table.insert(finalSave.PlotData.MyCars, {
+										Name = car.Name,
+										Location = part.Name,
+										Attributes = extractAttributes(car),
+									})
+								end
 							end
 						end
 					end
@@ -312,7 +315,12 @@ function DataManager.syncData(player)
 		end)
 
 		if not scanSuccess then
-			warn("[DataManager] Gagal melakukan sinkronisasi plot data untuk player: " .. player.Name .. " - Error: " .. tostring(scanError))
+			warn(
+				"[DataManager] Gagal melakukan sinkronisasi plot data untuk player: "
+					.. player.Name
+					.. " - Error: "
+					.. tostring(scanError)
+			)
 		end
 	else
 		-- Jika data belum ter-load sepenuhnya ke workspace, pertahankan data plot dari profile
@@ -330,7 +338,12 @@ function DataManager.syncData(player)
 	player:SetAttribute("RebirthUpgrades", HttpService:JSONEncode(profile.Data.RebirthUpgrades or {}))
 	player:SetAttribute("DailyRewards", HttpService:JSONEncode(profile.Data.DailyRewards or {}))
 	player:SetAttribute("Quests", HttpService:JSONEncode(profile.Data.Quests or {}))
-	player:SetAttribute("RaceStats", HttpService:JSONEncode(profile.Data.Stats.RaceStats or { Wins = 0, Losses = 0, CashEarned = 0, WinStreak = 0, PvPWins = 0 }))
+	player:SetAttribute(
+		"RaceStats",
+		HttpService:JSONEncode(
+			profile.Data.Stats.RaceStats or { Wins = 0, Losses = 0, CashEarned = 0, WinStreak = 0, PvPWins = 0 }
+		)
+	)
 
 	return true
 end
