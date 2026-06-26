@@ -11,6 +11,8 @@ Currently, variant boxes and variant cars are obtained based on fixed base rarit
 * **Visual Effects**:
   * When an event is active, apply a localized sky effect matching the variant from `ReplicatedStorage.eventassets`.
   * The `Rainy` event is unique and will spawn a specific `Rain` tool from `ReplicatedStorage.eventassets` onto the client's local plot baseplate, aligning the X and Z coordinates with the plot center while preserving the template's Y coordinate.
+* **Decoupled Configuration**:
+  * All event settings (variant names, icons, colors, boost amounts, and the names/types of visual assets to clone) will be stored in a central config module `EventVariantConfig.luau` under `ReplicatedStorage`. This allows the user to easily change asset names or configurations without editing the core code.
 
 ---
 
@@ -25,26 +27,88 @@ We will follow a clean **Server-Replicated State & Client-Side Rendering** archi
          ▼                                                                                           ▼
 [Gacha Logic] (SpawnerBoxManager)                                                         [Client Renderer] (EventVariantClient)
 Reads player attributes and applies                                                       Listens to attribute changes,
-+25% chance to the active variant                                                          renders BillboardGui locally above plot,
++25% chance to the active variant                                                          reads config from EventVariantConfig,
+                                                                                           renders BillboardGui locally above plot,
                                                                                            updates CustomStats React HUD,
                                                                                            and applies local sky/rain effects
 ```
 
-### A. Server-Side: Player Event Loop (`EventVariantManager.luau`)
+### A. Configuration Module (`EventVariantConfig.luau`)
+Located under `src/ReplicatedStorage/EventVariantConfig.luau`.
+This module returns a configuration table, easily editable by the user:
+```luau
+local EventVariantConfig = {
+	Variants = {
+		Rainy = {
+			DisplayName = "Rainy",
+			Icon = "🌧️",
+			Color = Color3.fromRGB(0, 157, 255),
+			Boost = 25,
+			AssetName = "Rain",
+			AssetType = "Rain", -- "Rain" spawns on the plot baseplate
+		},
+		Shiny = {
+			DisplayName = "Shiny",
+			Icon = "✨",
+			Color = Color3.fromRGB(255, 255, 255),
+			Boost = 25,
+			AssetName = "ShinySky",
+			AssetType = "Sky",  -- "Sky" spawns in game.Lighting
+		},
+		Golden = {
+			DisplayName = "Golden",
+			Icon = "🪙",
+			Color = Color3.fromRGB(255, 215, 0),
+			Boost = 25,
+			AssetName = "GoldenSky",
+			AssetType = "Sky",
+		},
+		Rainbow = {
+			DisplayName = "Rainbow",
+			Icon = "🌈",
+			Color = Color3.fromRGB(255, 100, 255),
+			Boost = 25,
+			AssetName = "RainbowSky",
+			AssetType = "Sky",
+		},
+		Frostbite = {
+			DisplayName = "Frostbite",
+			Icon = "❄️",
+			Color = Color3.fromRGB(150, 220, 255),
+			Boost = 25,
+			AssetName = "FrostbiteSky",
+			AssetType = "Sky",
+		},
+	},
+	Chances = {
+		Rest = 70,    -- 70% chance to start in Rest state on join
+		Active = 30,  -- 30% chance to start in Active state on join
+	},
+	Durations = {
+		Active = 300,        -- 5 minutes in seconds
+		RestMin = 180,       -- 3 minutes in seconds
+		RestMax = 300,       -- 5 minutes in seconds
+	}
+}
+
+return EventVariantConfig
+```
+
+### B. Server-Side: Player Event Loop (`EventVariantManager.luau`)
 Located under `src/ServerScriptService/eventvariantmanager/EventVariantManager.luau`.
 * When a player joins (`Players.PlayerAdded`), the server starts an asynchronous event loop for that player.
 * **Initial State Roll**:
   * **30% Chance**: Start in the **Active** state immediately.
   * **70% Chance**: Start in the **Rest** state.
-* **State Transition Loop**:
+* **State Transition Loop** (using values from `EventVariantConfig`):
   * **Active State**:
-    * Duration: Exactly 5 minutes (300 seconds).
+    * Duration: `EventVariantConfig.Durations.Active` (300 seconds).
     * Randomly select a variant from the 5 supported variants: `Rainy`, `Shiny`, `Golden`, `Rainbow`, `Frostbite`.
-    * Apply +25% boost.
+    * Apply boost value defined in `EventVariantConfig`.
     * Replicate to player attributes.
     * Wait 300 seconds (or until player leaves).
   * **Rest State**:
-    * Duration: Randomly chosen between 3 and 5 minutes (180 to 300 seconds).
+    * Duration: Randomly chosen between `EventVariantConfig.Durations.RestMin` (180s) and `EventVariantConfig.Durations.RestMax` (300s).
     * Pre-select the next variant for display.
     * Apply 0% boost.
     * Replicate to player attributes.
@@ -58,7 +122,7 @@ Located under `src/ServerScriptService/eventvariantmanager/EventVariantManager.l
 * **Cleanup on Leave**:
   * When a player leaves (`Players.PlayerRemoving`), the player's event loop automatically terminates.
 
-### B. Server-Side: Gacha Chance Modification (`SpawnerBoxManager.luau`)
+### C. Server-Side: Gacha Chance Modification (`SpawnerBoxManager.luau`)
 In `src/ServerScriptService/SpawnerBoxManager/SpawnerBoxManager.luau`:
 * During `spawnBox` gacha calculation, look up the `player` attributes:
   ```luau
@@ -69,7 +133,7 @@ In `src/ServerScriptService/SpawnerBoxManager/SpawnerBoxManager.luau`:
   end
   ```
 
-### C. Client-Side: Local BillboardGui & Visual Effects (`EventVariantClient.luau`)
+### D. Client-Side: Local BillboardGui & Visual Effects (`EventVariantClient.luau`)
 Located under `src/StarterPlayer/StarterPlayerScripts/EventVariantClient.luau` (loaded as part of the client initialization).
 * Runs locally for each client.
 * Monitors attributes of the `LocalPlayer`: `ActiveEventVariant`, `EventStatus`, `EventEndTime`, `EventNextVariant`.
@@ -80,21 +144,21 @@ Located under `src/StarterPlayer/StarterPlayerScripts/EventVariantClient.luau` (
   * `MaxDistance` set to `200` studs, and `AlwaysOnTop = false` to allow distance viewing while maintaining occlusion behind physical buildings.
 * **UI Layout (English text)**:
   * **Header/Title**:
-    * Active: `🌈 RAINBOW EVENT!` or `👑 GOLDEN EVENT!` in large colored fonts.
+    * Active: `🌈 RAINBOW EVENT!` or `👑 GOLDEN EVENT!` (reads config display names/icons).
     * Rest: `💤 RESTING` and small `(Next: Frostbite ❄️)`.
   * **Progress Bar**:
     * Sleek horizontal bar displaying elapsed/remaining time.
     * Filled width is updated on every render frame (`RunService.RenderStepped`) by comparing `workspace:GetServerTimeNow()` to `EventEndTime`.
-    * Filled color matches the variant theme (e.g. gold for Golden, ice-blue for Frostbite, rainbow gradient for Rainbow) or neutral grey/green for Rest.
+    * Filled color matches the variant theme (reads `Color` from `EventVariantConfig`) or neutral grey/green for Rest.
     * Text overlay shows time remaining (e.g. `04:12`).
 * **Visual Effects Rendering (Local to client only)**:
   * **Clean Up previous effects**: Whenever the state changes, destroy any active local Sky or local Rain tools.
   * **Sky Effects**:
-    * If an event is active, search for an asset in `ReplicatedStorage.eventassets` matching the active variant (e.g., `Shiny`, `Golden`, `Rainbow`, `Frostbite`).
+    * If an event is active and the config lists `AssetType = "Sky"`, search for `ReplicatedStorage.eventassets[AssetName]`.
     * If found (e.g., a `Sky` object), clone it and parent it to `game.Lighting`.
   * **Rainy Event**:
-    * If the active variant is `Rainy`, search for a `Tool` named `Rain` in `ReplicatedStorage.eventassets`.
-    * If found, clone the `Rain` tool and parent it to the plot's baseplate (`plot:FindFirstChild("baseplate")` or `plot:FindFirstChild("Baseplate")` or fallback to `plot`).
+    * If the active variant config lists `AssetType = "Rain"`, search for a `Tool` matching `AssetName` (default: `"Rain"`) in `ReplicatedStorage.eventassets`.
+    * If found, clone the tool and parent it to the plot's baseplate (`plot:FindFirstChild("baseplate")` or `plot:FindFirstChild("Baseplate")` or fallback to `plot`).
     * Align position: Keep the original Y coordinate of the template `Rain` tool, but update its X and Z coordinates to match the center pivot of the player's plot.
     ```luau
     local plotCFrame = plot:GetPivot()
@@ -103,19 +167,14 @@ Located under `src/StarterPlayer/StarterPlayerScripts/EventVariantClient.luau` (
     clonedRain:PivotTo(targetPivot)
     ```
 
-### D. Client-Side: HUD Custom Stats (`CustomStats.luau`)
+### E. Client-Side: HUD Custom Stats (`CustomStats.luau`)
 In `src/StarterPlayer/StarterPlayerScripts/components/MainHUD/CustomStats.luau`:
 * Update the React state hook or read the player attributes directly to render a new row in the stats list when `EventStatus == "Active"`:
-  * **Varian Icons**:
-    * `Rainy` -> 🌧️
-    * `Shiny` -> ✨
-    * `Golden` -> 🪙
-    * `Rainbow` -> 🌈
-    * `Frostbite` -> ❄️
-  * **Stat Card Details (English text)**:
-    * Name: `Event [VariantName] Boost`
-    * Value: `+25%`
-    * Description: `Increases the chance of unboxing [VariantName] boxes from spawners.`
+  * Reads details directly from `EventVariantConfig.Variants[activeVariantName]`:
+    * Icon: `config.Icon`
+    * Name: `Event [DisplayName] Boost` (e.g. `Event Golden Boost`)
+    * Value: `+[Boost]%` (e.g. `+25%`)
+    * Description: `Increases the chance of unboxing [DisplayName] boxes from spawners.`
   * When `EventStatus == "Rest"`, this stat card is automatically hidden.
 
 ---
