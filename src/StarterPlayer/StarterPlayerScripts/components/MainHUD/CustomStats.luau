@@ -2,6 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local React = require(ReplicatedStorage.Packages.React)
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
+local EventVariantConfig = require(ReplicatedStorage:WaitForChild("EventVariantConfig") :: ModuleScript)
 
 local e = React.createElement
 local useState = React.useState
@@ -25,6 +26,12 @@ local function CustomStats(props: { IsMobile: boolean })
 	local rainbowBoost, setRainbowBoost = useState(0)
 	local galaxyBoost, setGalaxyBoost = useState(0)
 	local hellfireBoost, setHellfireBoost = useState(0)
+
+	-- State untuk event variant loop
+	local activeEventVariant, setActiveEventVariant = useState(player:GetAttribute("ActiveEventVariant") or "None")
+	local activeEventBoost, setActiveEventBoost = useState(player:GetAttribute("ActiveEventBoost") or 0)
+	local eventStatus, setEventStatus = useState(player:GetAttribute("EventStatus") or "Rest")
+	local remainingTime, setRemainingTime = useState(0)
 
 	-- State tooltip yang sedang aktif dibuka
 	local activeTooltip, setActiveTooltip = useState(nil :: string?)
@@ -69,6 +76,60 @@ local function CustomStats(props: { IsMobile: boolean })
 			for _, conn in ipairs(connections) do
 				conn:Disconnect()
 			end
+		end
+	end, {})
+
+	-- Helper function to format time
+	local function formatTime(seconds: number): string
+		local mins = math.floor(seconds / 60)
+		local secs = seconds % 60
+		return string.format("%02d:%02d", mins, secs)
+	end
+
+	-- Sync player event attributes
+	useEffect(function()
+		local connections = {}
+		local function sync()
+			setActiveEventVariant(player:GetAttribute("ActiveEventVariant") or "None")
+			setActiveEventBoost(player:GetAttribute("ActiveEventBoost") or 0)
+			setEventStatus(player:GetAttribute("EventStatus") or "Rest")
+		end
+		sync()
+		table.insert(connections, player:GetAttributeChangedSignal("ActiveEventVariant"):Connect(sync))
+		table.insert(connections, player:GetAttributeChangedSignal("ActiveEventBoost"):Connect(sync))
+		table.insert(connections, player:GetAttributeChangedSignal("EventStatus"):Connect(sync))
+		return function()
+			for _, conn in ipairs(connections) do
+				conn:Disconnect()
+			end
+		end
+	end, {})
+
+	-- Heartbeat sync for event timer ticking
+	useEffect(function()
+		local running = true
+		local function updateTimer()
+			if not running then return end
+			local endTime = player:GetAttribute("EventEndTime") or 0
+			local serverTime = workspace:GetServerTimeNow()
+			local diff = math.max(0, math.ceil(endTime - serverTime))
+			setRemainingTime(diff)
+		end
+		updateTimer()
+
+		task.spawn(function()
+			while running do
+				task.wait(1)
+				if running then
+					updateTimer()
+				end
+			end
+		end)
+
+		local conn = player:GetAttributeChangedSignal("EventEndTime"):Connect(updateTimer)
+		return function()
+			running = false
+			conn:Disconnect()
 		end
 	end, {})
 
@@ -139,6 +200,27 @@ local function CustomStats(props: { IsMobile: boolean })
 		{ Key = "Galaxy", Name = "Galaxy Boost", Icon = "🌌", Value = galaxyBoost, Description = "Meningkatkan peluang mendapatkan mobil varian Galaxy." },
 		{ Key = "Hellfire", Name = "Hellfire Boost", Icon = "🔥", Value = hellfireBoost, Description = "Meningkatkan peluang mendapatkan mobil varian Hellfire." },
 	}
+
+	-- If active event is running, append it to the buffConfigs list
+	if eventStatus == "Active" and activeEventVariant ~= "None" then
+		local eventIcon = "📢"
+		local eventName = "Event Boost"
+		local eventDesc = "An active event is running on your plot!"
+		local varConfig = EventVariantConfig.Variants[activeEventVariant]
+		if varConfig then
+			eventIcon = varConfig.Icon
+			eventName = varConfig.DisplayName .. " Event"
+			eventDesc = varConfig.DisplayName .. " event active! Grants +" .. tostring(varConfig.Boost) .. "% gacha luck for rare variants."
+		end
+
+		table.insert(buffConfigs, {
+			Key = "ActiveEvent",
+			Name = eventName,
+			Icon = eventIcon,
+			Value = activeEventBoost,
+			Description = eventDesc
+		})
+	end
 
 	-- Render Barisan Buff
 	local activeBuffElements = {}
@@ -231,8 +313,30 @@ local function CustomStats(props: { IsMobile: boolean })
 	local containerPos = props.IsMobile and UDim2.new(0, 10, 0.45, 0) or UDim2.new(0, 15, 0.5, 0)
 	local anchorPoint = Vector2.new(0, 0.5)
 
+	-- Calculate event text and color for the main stats panel
+	local eventRowColor = Color3.fromRGB(180, 180, 180)
+	local eventRowText = "💤  Resting"
+	if eventStatus == "Active" and activeEventVariant ~= "None" then
+		local varConfig = EventVariantConfig.Variants[activeEventVariant]
+		if varConfig then
+			eventRowColor = varConfig.Color
+			eventRowText = varConfig.Icon .. "  " .. varConfig.DisplayName .. " Event: " .. formatTime(remainingTime)
+		else
+			eventRowText = "📢  Event: " .. activeEventVariant .. " " .. formatTime(remainingTime)
+		end
+	else
+		local nextVar = player:GetAttribute("EventNextVariant") or "None"
+		if nextVar ~= "None" then
+			local varConfig = EventVariantConfig.Variants[nextVar]
+			local icon = varConfig and varConfig.Icon or "🌟"
+			eventRowText = "💤  Resting (Next: " .. icon .. ")"
+		else
+			eventRowText = "💤  Resting"
+		end
+	end
+
 	return e("Frame", {
-		Size = UDim2.new(0, 220, 0, 185),
+		Size = UDim2.new(0, 220, 0, 205),
 		Position = containerPos,
 		AnchorPoint = anchorPoint,
 		BackgroundTransparency = 1,
@@ -247,7 +351,7 @@ local function CustomStats(props: { IsMobile: boolean })
 
 		-- KARTU UTAMA STATISTIK (SEKARANG POLOS TANPA CARD BACKGROUND)
 		StatsCard = e("Frame", {
-			Size = UDim2.new(1, 0, 0, 100),
+			Size = UDim2.new(1, 0, 0, 120),
 			BackgroundTransparency = 1,
 			BorderSizePixel = 0,
 			LayoutOrder = 1,
@@ -310,6 +414,20 @@ local function CustomStats(props: { IsMobile: boolean })
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
 				LayoutOrder = 4,
+				TextStrokeTransparency = 0.5,
+				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
+			}),
+
+			-- Row 5: Event Status
+			EventRow = e("TextLabel", {
+				Text = eventRowText,
+				Size = UDim2.new(1, 0, 0, 20),
+				BackgroundTransparency = 1,
+				TextColor3 = eventRowColor,
+				TextSize = 13,
+				Font = Enum.Font.GothamBold,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				LayoutOrder = 5,
 				TextStrokeTransparency = 0.5,
 				TextStrokeColor3 = Color3.fromRGB(0, 0, 0),
 			}),

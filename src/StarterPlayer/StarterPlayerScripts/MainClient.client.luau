@@ -23,6 +23,7 @@ local FEATURE_MODULES: {string} = {
 	"MountAdminEventPanel",
 	"MountRacePanel",
 	"MountTradeGui",
+	"EventVariantClient",
 }
 
 -- Fungsi pembantu untuk memuat dan menginisialisasi ModuleScript secara aman

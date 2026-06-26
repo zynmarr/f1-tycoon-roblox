@@ -19,6 +19,7 @@ local ParkingAreaManager = safeRequire(script.Parent.ParkingAreaManager.ParkingA
 local RebirthManager = safeRequire(script.Parent.RebirthManager.RebirthManager, "RebirthManager")
 local RaceManager = safeRequire(script.Parent.RaceManager.RaceManager, "RaceManager")
 local ShopManager = safeRequire(script.Parent.ShopManager.ShopManager, "ShopManager")
+local EventVariantManager = safeRequire(script.Parent.EventVariantManager.EventVariantManager, "EventVariantManager")
 
 -- New Managers
 local DeveloperBoostManager = safeRequire(script.Parent.DeveloperBoostManager.DeveloperBoostManager, "DeveloperBoostManager")
@@ -310,6 +311,7 @@ local function onPlayerAdded(player: Player)
 
 	-- Tandai bahwa data awal pemain selesai dimuat (membuka kunci DataStore syncData dan menginisialisasi mesin)
 	player:SetAttribute("DataLoaded", true)
+	EventVariantManager.startPlayerLoop(player)
 end
 
 local function onPlayerRemoving(player: Player)
@@ -317,6 +319,7 @@ local function onPlayerRemoving(player: Player)
 	print(`[MainServer] Pemain keluar: {player.Name}. Menyimpan data...`)
 	DataManager.saveData(player)
 	PlotManager.releasePlot(player)
+	EventVariantManager.stopPlayerLoop(player)
 end
 
 -- ==========================================================
