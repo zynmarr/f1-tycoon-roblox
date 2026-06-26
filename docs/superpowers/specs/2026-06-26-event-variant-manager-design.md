@@ -7,6 +7,10 @@ Currently, variant boxes and variant cars are obtained based on fixed base rarit
 * The event loops are stateless (no save/load data needed, timers start fresh when joining and are destroyed upon leaving).
 * The active event must be displayed via a 3D **BillboardGui** floating high above the player's plot (visible from a distance but only visible to the owner of the plot).
 * The active event must also dynamically update the client's React HUD under the **Custom Stats** panel, displaying the active boost percentage and matching variant icon.
+* **Text in GUI/HUD** must be written in **English**.
+* **Visual Effects**:
+  * When an event is active, apply a localized sky effect matching the variant from `ReplicatedStorage.eventassets`.
+  * The `Rainy` event is unique and will spawn a specific `Rain` tool from `ReplicatedStorage.eventassets` onto the client's local plot baseplate, aligning the X and Z coordinates with the plot center while preserving the template's Y coordinate.
 
 ---
 
@@ -21,8 +25,9 @@ We will follow a clean **Server-Replicated State & Client-Side Rendering** archi
          ▼                                                                                           ▼
 [Gacha Logic] (SpawnerBoxManager)                                                         [Client Renderer] (EventVariantClient)
 Reads player attributes and applies                                                       Listens to attribute changes,
-+25% chance to the active variant                                                          renders BillboardGui locally above plot
-                                                                                           and updates CustomStats React HUD
++25% chance to the active variant                                                          renders BillboardGui locally above plot,
+                                                                                           updates CustomStats React HUD,
+                                                                                           and applies local sky/rain effects
 ```
 
 ### A. Server-Side: Player Event Loop (`EventVariantManager.luau`)
@@ -64,7 +69,7 @@ In `src/ServerScriptService/SpawnerBoxManager/SpawnerBoxManager.luau`:
   end
   ```
 
-### C. Client-Side: Local BillboardGui Rendering (`EventVariantClient.luau`)
+### C. Client-Side: Local BillboardGui & Visual Effects (`EventVariantClient.luau`)
 Located under `src/StarterPlayer/StarterPlayerScripts/EventVariantClient.luau` (loaded as part of the client initialization).
 * Runs locally for each client.
 * Monitors attributes of the `LocalPlayer`: `ActiveEventVariant`, `EventStatus`, `EventEndTime`, `EventNextVariant`.
@@ -72,8 +77,8 @@ Located under `src/StarterPlayer/StarterPlayerScripts/EventVariantClient.luau` (
 * Places a transparent pivot part at the center of the local plot, floating approximately 25 studs above the plot.
 * Clones/Creates a `BillboardGui` attached to this pivot part:
   * Since it is created locally, it is **only visible to the local player** on their own plot.
-  * `MaxDistance` set to `150` studs, and `AlwaysOnTop = false` to allow distance viewing while maintaining occlusion behind physical buildings.
-* **UI Layout**:
+  * `MaxDistance` set to `200` studs, and `AlwaysOnTop = false` to allow distance viewing while maintaining occlusion behind physical buildings.
+* **UI Layout (English text)**:
   * **Header/Title**:
     * Active: `🌈 RAINBOW EVENT!` or `👑 GOLDEN EVENT!` in large colored fonts.
     * Rest: `💤 RESTING` and small `(Next: Frostbite ❄️)`.
@@ -82,6 +87,21 @@ Located under `src/StarterPlayer/StarterPlayerScripts/EventVariantClient.luau` (
     * Filled width is updated on every render frame (`RunService.RenderStepped`) by comparing `workspace:GetServerTimeNow()` to `EventEndTime`.
     * Filled color matches the variant theme (e.g. gold for Golden, ice-blue for Frostbite, rainbow gradient for Rainbow) or neutral grey/green for Rest.
     * Text overlay shows time remaining (e.g. `04:12`).
+* **Visual Effects Rendering (Local to client only)**:
+  * **Clean Up previous effects**: Whenever the state changes, destroy any active local Sky or local Rain tools.
+  * **Sky Effects**:
+    * If an event is active, search for an asset in `ReplicatedStorage.eventassets` matching the active variant (e.g., `Shiny`, `Golden`, `Rainbow`, `Frostbite`).
+    * If found (e.g., a `Sky` object), clone it and parent it to `game.Lighting`.
+  * **Rainy Event**:
+    * If the active variant is `Rainy`, search for a `Tool` named `Rain` in `ReplicatedStorage.eventassets`.
+    * If found, clone the `Rain` tool and parent it to the plot's baseplate (`plot:FindFirstChild("baseplate")` or `plot:FindFirstChild("Baseplate")` or fallback to `plot`).
+    * Align position: Keep the original Y coordinate of the template `Rain` tool, but update its X and Z coordinates to match the center pivot of the player's plot.
+    ```luau
+    local plotCFrame = plot:GetPivot()
+    local originalPivot = rainTemplate:GetPivot()
+    local targetPivot = CFrame.new(plotCFrame.Position.X, originalPivot.Position.Y, plotCFrame.Position.Z) * originalPivot.Rotation
+    clonedRain:PivotTo(targetPivot)
+    ```
 
 ### D. Client-Side: HUD Custom Stats (`CustomStats.luau`)
 In `src/StarterPlayer/StarterPlayerScripts/components/MainHUD/CustomStats.luau`:
@@ -92,7 +112,7 @@ In `src/StarterPlayer/StarterPlayerScripts/components/MainHUD/CustomStats.luau`:
     * `Golden` -> 🪙
     * `Rainbow` -> 🌈
     * `Frostbite` -> ❄️
-  * **Stat Card Details**:
+  * **Stat Card Details (English text)**:
     * Name: `Event [VariantName] Boost`
     * Value: `+25%`
     * Description: `Increases the chance of unboxing [VariantName] boxes from spawners.`
@@ -127,7 +147,7 @@ In `src/StarterPlayer/StarterPlayerScripts/components/MainHUD/CustomStats.luau`:
 
 ### C. Client UI & HUD Test
 1. **Local Visibility**:
-   * Join with two players. Verify that Player 1 only sees Player 1's billboard above Plot 1, and Player 2 only sees Player 2's billboard above Player 2's plot.
+   * Join with two players. Verify that Player 1 only sees Player 1's billboard and local sky/rain effects, and Player 2 only sees Player 2's billboard and local sky/rain effects.
 2. **Progress Bar Updates**:
    * Confirm the progress bar shrinks smoothly and turns green/grey during rest, and matches variant colors during active events.
 3. **HUD Reaction**:
