@@ -129,17 +129,17 @@ GameConfig.Variants = {
 		Multiplier = 1.0,
 		Color = Color3.fromRGB(255, 255, 255),
 	},
-	["Carbon"] = {
-		Chance = 15,
-		Multiplier = 1.5,
-		Color = Color3.fromRGB(30, 30, 30),
-		Material = Enum.Material.CorrodedMetal,
-		Effect = "WaterAura",
-	},
-	["Water"] = {
+	["Rainy"] = {
 		Chance = 12,
 		Multiplier = 2.0,
 		Color = Color3.fromRGB(0, 157, 255),
+		Material = Enum.Material.Neon,
+		-- Effect = "Shiny",
+	},
+	["Luck"] = {
+		Chance = 12,
+		Multiplier = 2.0,
+		Color = Color3.fromRGB(10, 245, 2),
 		Material = Enum.Material.Neon,
 		-- Effect = "Shiny",
 	},
@@ -149,6 +149,13 @@ GameConfig.Variants = {
 		Color = Color3.fromRGB(255, 255, 255),
 		Material = Enum.Material.Neon,
 		Effect = "Shiny",
+	},
+	["Carbon"] = {
+		Chance = 15,
+		Multiplier = 1.5,
+		Color = Color3.fromRGB(30, 30, 30),
+		Material = Enum.Material.CorrodedMetal,
+		Effect = "WaterAura",
 	},
 	["Golden"] = {
 		Chance = 5,

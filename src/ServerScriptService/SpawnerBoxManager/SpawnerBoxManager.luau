@@ -154,6 +154,10 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 				rebirthUpgrades["VariantChance_" .. vName] or 0
 			)
 
+			local activeVariantEvent = player:GetAttribute("ActiveEventVariant")
+			local activeEventBoost = player:GetAttribute("ActiveEventBoost") or 0
+			local activeBoostChance = (activeVariantEvent == vName) and activeEventBoost or 0
+
 			local totalChance = vData.Chance
 				+ specUpgrade
 				+ allUpgrade
@@ -161,6 +165,7 @@ local function spawnBox(player: Player, machineArea: Folder, boxData: any, boxPo
 				+ specVariantBoost
 				+ rebirthSpecBonus
 				+ rebirthAllVariantsBonus
+				+ activeBoostChance
 
 			-- MENGGUNAKAN LOGIKA RANDOM YANG LEBIH PRESISI UNTUK DESIMAL
 			local rng = math.random() * 100

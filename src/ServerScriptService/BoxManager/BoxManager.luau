@@ -143,6 +143,49 @@ local function updateBoxVisual(box: Tool)
 	handle.Transparency = 1
 end
 
+local function updateModelSize(box: Tool, onHand: boolean)
+	local handle: BasePart = box:FindFirstChild("Handle") :: BasePart
+	local currentModel: Model = box:FindFirstChild("Model") :: Model
+	local primaryPart = currentModel and currentModel.PrimaryPart
+	local machine = box.Parent :: BasePart?
+	local machineArea = machine and machine.Parent :: Folder?
+
+	local level = box:GetAttribute("Level") or 1
+
+	if onHand == false then
+		if machineArea and machineArea:GetAttribute("IsRunning") == nil then
+			return
+		end
+		if not currentModel or not primaryPart or not machine then
+			return
+		end
+	end
+
+	local mainWeld: WeldConstraint = primaryPart:FindFirstChild("MainWeld") :: WeldConstraint
+	if mainWeld then
+		mainWeld:Destroy()
+	end
+
+	if level >= 8 then
+		currentModel:ScaleTo(handle.Size.X / 3.5)
+	else
+		currentModel:ScaleTo(handle.Size.X / 2)
+	end
+
+	-- local baseOffset = 0.5
+	-- local dynamicY = baseOffset + (handle.Size.Y / 2)
+
+	-- Pengaturan CFrame handle ditangani sepenuhnya oleh SpawnerBoxManager (Box Manager)
+	-- handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
+	currentModel:PivotTo(handle.CFrame * CFrame.new(0, -(handle.Size.Y / 2), 0))
+
+	mainWeld = Instance.new("WeldConstraint")
+	mainWeld.Name = "MainWeld"
+	mainWeld.Part0 = handle
+	mainWeld.Part1 = primaryPart
+	mainWeld.Parent = primaryPart
+end
+
 -- ==========================================
 -- 1. FUNGSI PENGAMBILAN (PICKUP)
 -- ==========================================
@@ -461,13 +504,13 @@ local function setupBox(box: Tool)
 	if not box then
 		return
 	end
-	local handle = box:FindFirstChild("Handle") :: Part?
+	local handle: BasePart = box:FindFirstChild("Handle") :: BasePart
 	local prompt = handle and handle:FindFirstChildOfClass("ProximityPrompt")
-
-	updateBoxVisual(box)
 
 	-- Store connections for cleanup
 	local connections = {}
+
+	updateBoxVisual(box)
 
 	box.Equipped:Connect(function()
 		local character = box.Parent
@@ -479,6 +522,8 @@ local function setupBox(box: Tool)
 		--if not box:GetAttribute("HasPicked") then
 		--	processPickup(player)
 		--end
+		handle.Size = Vector3.new(2, 2, 2)
+		updateModelSize(box, true)
 
 		local boxSize = handle.Size or Vector3.new(2, 2, 2)
 		box.Grip = CFrame.new(0, 0, boxSize.Z / 2)
@@ -524,43 +569,9 @@ local function setupBox(box: Tool)
 		table.insert(
 			connections,
 			handle:GetPropertyChangedSignal("Size"):Connect(function()
-				local currentModel: Model = box:FindFirstChild("Model") :: Model
-				local primaryPart = currentModel and currentModel.PrimaryPart
-				local machine = box.Parent :: BasePart?
-				local machineArea = machine and machine.Parent :: Folder?
-
-				if machineArea and machineArea:GetAttribute("IsRunning") == nil then
-					return
-				end
-				if not currentModel or not primaryPart or not machine then
-					return
-				end
-
-				local mainWeld: WeldConstraint = primaryPart:FindFirstChild("MainWeld") :: WeldConstraint
-				if mainWeld then
-					mainWeld:Destroy()
-				end
-
-				currentModel:ScaleTo(handle.Size.X / 3)
-
-				-- local baseOffset = 0.5
-				-- local dynamicY = baseOffset + (handle.Size.Y / 2)
-
-				-- Pengaturan CFrame handle ditangani sepenuhnya oleh SpawnerBoxManager (Box Manager)
-				-- handle.CFrame = machine.CFrame * CFrame.new(0, dynamicY, 0)
-				currentModel:PivotTo(handle.CFrame * CFrame.new(0, -(handle.Size.Y / 2), 0))
-
-				mainWeld = Instance.new("WeldConstraint")
-				mainWeld.Name = "MainWeld"
-				mainWeld.Part0 = handle
-				mainWeld.Part1 = primaryPart
-				mainWeld.Parent = primaryPart
+				updateModelSize(box, false)
 			end)
 		)
-
-		-- handle:GetAttributeChangedSignal("Variants"):Connect(function()
-
-		-- end)
 	end
 
 	-- Cleanup all connections when box is destroyed

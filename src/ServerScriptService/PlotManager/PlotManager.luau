@@ -16,7 +16,7 @@ local function plotArea(plot: Folder)
 
 	for _, child in pairs(plot:GetDescendants()) do
 		if child:IsA("BasePart") then
-			child.CanCollide = true
+			-- child.CanCollide = true
 			child.Anchored = true
 		end
 	end
