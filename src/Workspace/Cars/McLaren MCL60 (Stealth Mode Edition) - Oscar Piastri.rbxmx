@@ -1,7 +1,7 @@
 <roblox xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
 	<External>null</External>
 	<External>nil</External>
-	<Item class="Model" referent="RBX39227A014F7645B9B350C1F0640BB7E9">
+	<Item class="Model" referent="RBX73C017BC93A642B9A726D7EECD89C20E">
 		<Properties>
 			<bool name="DefinesCapabilities">false</bool>
 			<token name="LevelOfDetail">0</token>
@@ -27,14 +27,14 @@
 				</CFrame>
 			</OptionalCoordinateFrame>
 		</Properties>
-		<Item class="Model" referent="RBXAECECE4F21154F95ABDF6EAFD2394414">
+		<Item class="Model" referent="RBXF684BD0EA1994E10AD504220E863A35C">
 			<Properties>
 				<bool name="DefinesCapabilities">false</bool>
 				<token name="LevelOfDetail">0</token>
 				<token name="ModelStreamingMode">0</token>
 				<string name="Name">Wheels</string>
 				<bool name="NeedsPivotMigration">false</bool>
-				<Ref name="PrimaryPart">RBX28933EC758E14B1887DFC5966682105D</Ref>
+				<Ref name="PrimaryPart">RBXCF33E8CB9C694822892D5CCA31C8AE93</Ref>
 				<float name="ScaleFactor">1</float>
 				<OptionalCoordinateFrame name="WorldPivotData">
 					<CFrame>
@@ -53,7 +53,7 @@
 					</CFrame>
 				</OptionalCoordinateFrame>
 			</Properties>
-			<Item class="Part" referent="RBX80144F420D6243169E32EAC83D86A62E">
+			<Item class="Part" referent="RBX958270A23D4D4B608122A1F765ECEBC3">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<bool name="AudioCanCollide">true</bool>
@@ -150,7 +150,7 @@
 						<Z>2.99968338</Z>
 					</Vector3>
 				</Properties>
-				<Item class="Model" referent="RBXB04B5BC9651A4F1784914E0E3778BDEF">
+				<Item class="Model" referent="RBXEADE7AC181C34B10BCEFF6D417D43FC1">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -176,7 +176,7 @@
 							</CFrame>
 						</OptionalCoordinateFrame>
 					</Properties>
-					<Item class="MeshPart" referent="RBXE8303C7CA13E45CEBDB46A542ABCDEB8">
+					<Item class="MeshPart" referent="RBXF952A2F095574CC08E21848D64DB3C63">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -296,9 +296,9 @@
 								<Y>0.739554048</Y>
 								<Z>0.124896109</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461085255</url></Content><Content name="TextureID"><url>rbxassetid://914065945</url></Content></Properties>
+						<Content name="MeshContent"><url>rbxassetid://4461085255</url></Content><Content name="TextureContent"><url>rbxassetid://914065945</url></Content></Properties>
 					</Item>
-					<Item class="MeshPart" referent="RBXE55BFC5E6B87446DBCA0CFA3B041FC27">
+					<Item class="MeshPart" referent="RBX6A1DDC0237904C5F9F5905F1F96515A5">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -418,10 +418,10 @@
 								<Y>1.4856571</Y>
 								<Z>1.48425388</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461079780</url></Content><Content name="TextureID"><url>http://www.roblox.com/asset/?id=4461050437</url></Content></Properties>
+						<Content name="MeshContent"><url>rbxassetid://4461079780</url></Content><Content name="TextureContent"><url>http://www.roblox.com/asset/?id=4461050437</url></Content></Properties>
 					</Item>
 				</Item>
-				<Item class="Model" referent="RBXD31E0891070E44F4A180827FD04B307A">
+				<Item class="Model" referent="RBX88F365402C1B41C69953132CE7512B64">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -448,7 +448,7 @@
 						</OptionalCoordinateFrame>
 					</Properties>
 				</Item>
-				<Item class="CylinderMesh" referent="RBXDB9FA9EF84DB43DF871C741835844656">
+				<Item class="CylinderMesh" referent="RBX1665F02A7D7A46D1B78B116C849156E2">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<string name="Name">Mesh</string>
@@ -469,7 +469,7 @@
 						</Vector3>
 					</Properties>
 				</Item>
-				<Item class="Model" referent="RBX384F30280A394104A85F0FD310417F42">
+				<Item class="Model" referent="RBX1C4B7E9542C44A658CEB8B1DE4B637AB">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -495,7 +495,7 @@
 							</CFrame>
 						</OptionalCoordinateFrame>
 					</Properties>
-					<Item class="MeshPart" referent="RBX1488561339EB47E387F36B0800E2DFF0">
+					<Item class="MeshPart" referent="RBX2E33A1DC0B1541B9AB593A143DF7BDF3">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -615,8 +615,8 @@
 								<Y>3.08025622</Y>
 								<Z>3.08025622</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461080857</url></Content><Content name="TextureID"><url>rbxassetid://9228797411</url></Content></Properties>
-						<Item class="Weld" referent="RBXD5FA079865754B969DAEA9A51BB36C1A">
+						<Content name="MeshContent"><url>rbxassetid://4461080857</url></Content><Content name="TextureContent"><url>rbxassetid://9228797411</url></Content></Properties>
+						<Item class="Weld" referent="RBX5C948F577E4F4E549CCF82E8BA4DC201">
 							<Properties>
 								<CoordinateFrame name="C0">
 									<X>0</X>
@@ -649,12 +649,12 @@
 								<bool name="DefinesCapabilities">false</bool>
 								<bool name="Enabled">true</bool>
 								<string name="Name">Weld</string>
-								<Ref name="Part0">RBX1488561339EB47E387F36B0800E2DFF0</Ref>
+								<Ref name="Part0">RBX2E33A1DC0B1541B9AB593A143DF7BDF3</Ref>
 								<Ref name="Part1">null</Ref>
 							</Properties>
 						</Item>
 					</Item>
-					<Item class="MeshPart" referent="RBX9697005F0891423D83E4C3AEA02FC20F">
+					<Item class="MeshPart" referent="RBXBFB451BB716D4C8FB8407B7292A15B16">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -774,9 +774,9 @@
 								<Y>1.65424991</Y>
 								<Z>1.65424991</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461082682</url></Content><Content name="TextureID"><url>rbxassetid://9256916448</url></Content></Properties>
+						<Content name="MeshContent"><url>rbxassetid://4461082682</url></Content><Content name="TextureContent"><url>rbxassetid://9256916448</url></Content></Properties>
 					</Item>
-					<Item class="Model" referent="RBXB8B397BDC9524BC9B8853A0DE0A26395">
+					<Item class="Model" referent="RBXEE8204BF09934150B934ED6A9DCF0923">
 						<Properties>
 							<bool name="DefinesCapabilities">false</bool>
 							<token name="LevelOfDetail">0</token>
@@ -802,7 +802,7 @@
 								</CFrame>
 							</OptionalCoordinateFrame>
 						</Properties>
-						<Item class="MeshPart" referent="RBX59BA69A9D11D472F9B6F4A0E4CD5E941">
+						<Item class="MeshPart" referent="RBX8B60BD8C162944708A5D6A3F921709DE">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -922,9 +922,9 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110330336</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110330336</url></Content><Content name="TextureContent"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX49EC85E4D68049119026F2DB8ABC374D">
+						<Item class="MeshPart" referent="RBX4F1619368729433C87D87ED959D2BB63">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -1044,9 +1044,9 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110330181</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110330181</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX3BF965B635704F5D81F1DF8810135A77">
+						<Item class="MeshPart" referent="RBXF2AFB9F012CE4E8CB9874BD5A70BDBBA">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -1166,8 +1166,8 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110329744</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
-							<Item class="Decal" referent="RBXB6E0DD3A4BB94680A73536EE0229D8A1">
+							<Content name="MeshContent"><url>rbxassetid://9110329744</url></Content><Content name="TextureContent"><url>rbxassetid://9111196909</url></Content></Properties>
+							<Item class="Decal" referent="RBXB1CDF0F58C4D45D8A40FBD14F7DAFCC8">
 								<Properties>
 									<Color3 name="Color3">
 										<R>1</R>
@@ -1193,7 +1193,7 @@
 								</Properties>
 							</Item>
 						</Item>
-						<Item class="MeshPart" referent="RBX09E8D0CAF6AA4406B76BB13A8A39F538">
+						<Item class="MeshPart" referent="RBX46BACAF8F67C4080A5DE1047CA97AB8E">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -1313,9 +1313,9 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110329990</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110329990</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX8D19DB42AFAD4F439052E832B44B083A">
+						<Item class="MeshPart" referent="RBXB0A3BC034FEF4C01AFA685221BC2652A">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -1435,9 +1435,9 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318544</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318544</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBXC70C480817EA4DF09EC426D1DD52C750">
+						<Item class="MeshPart" referent="RBXA080C5AA40C64F8C8E44594ABCB3376C">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -1557,9 +1557,9 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318356</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318356</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBXA76E772E03AC46F0897CB46FF8CA3C18">
+						<Item class="MeshPart" referent="RBX51519B1EEEDA4F74A8AE8EB1B6D50F3D">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -1679,9 +1679,9 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318108</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318108</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX906BE1B0BEC7460FA9F3B0EC339F4A07">
+						<Item class="MeshPart" referent="RBXC17200C0F27D4D40A3561DB13CF542B7">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -1801,12 +1801,12 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110317704</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110317704</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
 					</Item>
 				</Item>
 			</Item>
-			<Item class="Part" referent="RBXD0D1C1B9DEF24F3DBE5031699EA90AB1">
+			<Item class="Part" referent="RBX1B63A3C457AD49FA93F542799668D395">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<bool name="AudioCanCollide">true</bool>
@@ -1903,7 +1903,7 @@
 						<Z>2.99968338</Z>
 					</Vector3>
 				</Properties>
-				<Item class="Model" referent="RBXB827B628D6FD42B2A8EB6A4443ACD4F6">
+				<Item class="Model" referent="RBX5A25DA458BD044BFB7E24B69EE21B508">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -1930,7 +1930,7 @@
 						</OptionalCoordinateFrame>
 					</Properties>
 				</Item>
-				<Item class="Model" referent="RBXC34E7530169144798704A1EF842C4977">
+				<Item class="Model" referent="RBXE1C388C0ED9F493DA346D07B0F8A95CA">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -1957,7 +1957,7 @@
 						</OptionalCoordinateFrame>
 					</Properties>
 				</Item>
-				<Item class="CylinderMesh" referent="RBX39801794093B40F1919A41E619BAAF4B">
+				<Item class="CylinderMesh" referent="RBX909E17149B6A410A87EDA2DF4596C1FA">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<string name="Name">Mesh</string>
@@ -1978,7 +1978,7 @@
 						</Vector3>
 					</Properties>
 				</Item>
-				<Item class="Model" referent="RBXF4E7C84EF4ED425C8031F0E55FA3531B">
+				<Item class="Model" referent="RBX2D788E29A3F840FF8B4D612D8C468C8C">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -2004,7 +2004,7 @@
 							</CFrame>
 						</OptionalCoordinateFrame>
 					</Properties>
-					<Item class="MeshPart" referent="RBXC10170137E7D44CC87391BB9616E6865">
+					<Item class="MeshPart" referent="RBXCA7C25206D7A40E49FC31C435D51032F">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -2124,9 +2124,9 @@
 								<Y>1.64773798</Y>
 								<Z>1.64773798</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461083194</url></Content><Content name="TextureID"><url>rbxassetid://9256916448</url></Content></Properties>
+						<Content name="MeshContent"><url>rbxassetid://4461083194</url></Content><Content name="TextureContent"><url>rbxassetid://9256916448</url></Content></Properties>
 					</Item>
-					<Item class="MeshPart" referent="RBX4B057EE5B2E44770BAA6F131CC0B5A95">
+					<Item class="MeshPart" referent="RBXA6F3BE913D1C4441876644E125F35B7F">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -2246,8 +2246,8 @@
 								<Y>3.08655</Y>
 								<Z>3.08655</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461081716</url></Content><Content name="TextureID"><url>rbxassetid://9228797411</url></Content></Properties>
-						<Item class="Weld" referent="RBXAC1B564B314A4AF09D483F46592B2648">
+						<Content name="MeshContent"><url>rbxassetid://4461081716</url></Content><Content name="TextureContent"><url>rbxassetid://9228797411</url></Content></Properties>
+						<Item class="Weld" referent="RBXDF6D135471AC44B0ADF6A2F5567CC498">
 							<Properties>
 								<CoordinateFrame name="C0">
 									<X>0</X>
@@ -2280,12 +2280,12 @@
 								<bool name="DefinesCapabilities">false</bool>
 								<bool name="Enabled">true</bool>
 								<string name="Name">Weld</string>
-								<Ref name="Part0">RBX4B057EE5B2E44770BAA6F131CC0B5A95</Ref>
+								<Ref name="Part0">RBXA6F3BE913D1C4441876644E125F35B7F</Ref>
 								<Ref name="Part1">null</Ref>
 							</Properties>
 						</Item>
 					</Item>
-					<Item class="Model" referent="RBX08CDD633413C47BF91183387D5597BF3">
+					<Item class="Model" referent="RBXDE51B28FC8D145C39A67642FF378A88A">
 						<Properties>
 							<bool name="DefinesCapabilities">false</bool>
 							<token name="LevelOfDetail">0</token>
@@ -2311,7 +2311,7 @@
 								</CFrame>
 							</OptionalCoordinateFrame>
 						</Properties>
-						<Item class="MeshPart" referent="RBX8B6A666D56094551887BA4CA6CD27097">
+						<Item class="MeshPart" referent="RBXDAB8979B20764841A33EAAE19478DF8A">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -2431,9 +2431,9 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110330336</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110330336</url></Content><Content name="TextureContent"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX82487CF006A64FD4B8F770A434095DC7">
+						<Item class="MeshPart" referent="RBXF2B0514BC6EC46A89843FF34D9D434AE">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -2553,9 +2553,9 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110330181</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110330181</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX71170F4889544DDD850739E60BDCE316">
+						<Item class="MeshPart" referent="RBX19A97D166F9A4FBFA1BDB10D5A513CBB">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -2675,8 +2675,8 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110329744</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
-							<Item class="Decal" referent="RBXC82D139BFD65447E986360FE47543C21">
+							<Content name="MeshContent"><url>rbxassetid://9110329744</url></Content><Content name="TextureContent"><url>rbxassetid://9111196909</url></Content></Properties>
+							<Item class="Decal" referent="RBX9B4CEF539DD04AA09D9F4A18185B79D7">
 								<Properties>
 									<Color3 name="Color3">
 										<R>1</R>
@@ -2702,7 +2702,7 @@
 								</Properties>
 							</Item>
 						</Item>
-						<Item class="MeshPart" referent="RBXB72A2AAA04FD4D7880EF3477BA2FC16B">
+						<Item class="MeshPart" referent="RBX9E43FC8BDCF64DD6B03E89B73FB60C5B">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -2822,9 +2822,9 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110329990</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110329990</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBXFAD5FD978CD1483DB60FB25774988A33">
+						<Item class="MeshPart" referent="RBX39E24BF85E7E493DBE23058FBFD3365B">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -2944,9 +2944,9 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318544</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318544</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX31FD6244E58A420E8AE0CB12E0476619">
+						<Item class="MeshPart" referent="RBXCAE8FB339C024043B26F605BDC964257">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -3066,9 +3066,9 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318356</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318356</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX86F7F027BCA349B0817251E8B7535E15">
+						<Item class="MeshPart" referent="RBXFAA0AC91C40840CABECDB876935C3E12">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -3188,9 +3188,9 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318108</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318108</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBXB2F6F0D1D4334922B9804B46CC90C49D">
+						<Item class="MeshPart" referent="RBX3E907193DBAC40778B129C2BC4D8CC3E">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -3310,12 +3310,12 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110317704</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110317704</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
 					</Item>
 				</Item>
 			</Item>
-			<Item class="Part" referent="RBX3E0C922A88B444BA81E441FBC5DE8FAB">
+			<Item class="Part" referent="RBXE0997D4E4317475DA47B03084F811AFA">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<bool name="AudioCanCollide">true</bool>
@@ -3412,7 +3412,7 @@
 						<Z>2.99968338</Z>
 					</Vector3>
 				</Properties>
-				<Item class="Model" referent="RBX067E3FB12B50419A9E231CF2064CFA8A">
+				<Item class="Model" referent="RBX013496104AB14284B7BB3BB2672E4345">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -3438,7 +3438,7 @@
 							</CFrame>
 						</OptionalCoordinateFrame>
 					</Properties>
-					<Item class="MeshPart" referent="RBXA57D071501E44558A498435476A23A39">
+					<Item class="MeshPart" referent="RBX79849866C44D4542AC6EE0728E215F75">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -3558,9 +3558,9 @@
 								<Y>0.739554048</Y>
 								<Z>0.124896109</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461084095</url></Content><Content name="TextureID"><url>rbxassetid://914065945</url></Content></Properties>
+						<Content name="MeshContent"><url>rbxassetid://4461084095</url></Content><Content name="TextureContent"><url>rbxassetid://914065945</url></Content></Properties>
 					</Item>
-					<Item class="MeshPart" referent="RBX67497D1E15F54EB6A185A98D12EF5C19">
+					<Item class="MeshPart" referent="RBX41D925C338FD448597E35C485491C2C1">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -3680,10 +3680,10 @@
 								<Y>1.4856571</Y>
 								<Z>1.48425388</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461079531</url></Content><Content name="TextureID"><url>http://www.roblox.com/asset/?id=4461050437</url></Content></Properties>
+						<Content name="MeshContent"><url>rbxassetid://4461079531</url></Content><Content name="TextureContent"><url>http://www.roblox.com/asset/?id=4461050437</url></Content></Properties>
 					</Item>
 				</Item>
-				<Item class="Model" referent="RBX80864E3C8C5C4483829CE1EDDD0320B8">
+				<Item class="Model" referent="RBX98FB9018EB53469EA9E7CC9ACC0F01FB">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -3710,7 +3710,7 @@
 						</OptionalCoordinateFrame>
 					</Properties>
 				</Item>
-				<Item class="CylinderMesh" referent="RBX031855D1BE5644A2B4D0BF595E699B44">
+				<Item class="CylinderMesh" referent="RBX97BE0FE86D614A079512B1B04C3FBA44">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<string name="Name">Mesh</string>
@@ -3731,7 +3731,7 @@
 						</Vector3>
 					</Properties>
 				</Item>
-				<Item class="Model" referent="RBX054B3E01335C459994C8FD2CCD1DA4C7">
+				<Item class="Model" referent="RBXF943ECE502124FA9B4E3E6D836FC1CC7">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -3757,7 +3757,7 @@
 							</CFrame>
 						</OptionalCoordinateFrame>
 					</Properties>
-					<Item class="MeshPart" referent="RBX891660D0931A4DA196093D60B41A00A0">
+					<Item class="MeshPart" referent="RBX35C2CF38B4F448A084CEC4373A0B25A4">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -3877,8 +3877,8 @@
 								<Y>3.08025622</Y>
 								<Z>3.08025622</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461080857</url></Content><Content name="TextureID"><url>rbxassetid://9228797411</url></Content></Properties>
-						<Item class="Weld" referent="RBX9D2E4A53655346BAA6EBB79578AEC46D">
+						<Content name="MeshContent"><url>rbxassetid://4461080857</url></Content><Content name="TextureContent"><url>rbxassetid://9228797411</url></Content></Properties>
+						<Item class="Weld" referent="RBX88CB3788AC09409F9A9BBE097C86CB8F">
 							<Properties>
 								<CoordinateFrame name="C0">
 									<X>0</X>
@@ -3911,12 +3911,12 @@
 								<bool name="DefinesCapabilities">false</bool>
 								<bool name="Enabled">true</bool>
 								<string name="Name">Weld</string>
-								<Ref name="Part0">RBX891660D0931A4DA196093D60B41A00A0</Ref>
+								<Ref name="Part0">RBX35C2CF38B4F448A084CEC4373A0B25A4</Ref>
 								<Ref name="Part1">null</Ref>
 							</Properties>
 						</Item>
 					</Item>
-					<Item class="MeshPart" referent="RBXE99211A10E594A4ABD4D858FA41C0462">
+					<Item class="MeshPart" referent="RBXC33C647C674047F1AF4CD8BEF303DAB5">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -4036,9 +4036,9 @@
 								<Y>1.65424991</Y>
 								<Z>1.65424991</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461082682</url></Content><Content name="TextureID"><url>rbxassetid://9256916448</url></Content></Properties>
+						<Content name="MeshContent"><url>rbxassetid://4461082682</url></Content><Content name="TextureContent"><url>rbxassetid://9256916448</url></Content></Properties>
 					</Item>
-					<Item class="Model" referent="RBX192619A9721F44BDBD655A4EED74588A">
+					<Item class="Model" referent="RBX2EC7B226D3D2476CAC453984CBA1EC76">
 						<Properties>
 							<bool name="DefinesCapabilities">false</bool>
 							<token name="LevelOfDetail">0</token>
@@ -4064,7 +4064,7 @@
 								</CFrame>
 							</OptionalCoordinateFrame>
 						</Properties>
-						<Item class="MeshPart" referent="RBX1619A943C79F47CB85943AEC9341A0C1">
+						<Item class="MeshPart" referent="RBX4EA9D7BE1B6C41D7BC47E5FE5A070109">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -4184,9 +4184,9 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110330336</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110330336</url></Content><Content name="TextureContent"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBXF1D521D2F725486481F88C0922AE500E">
+						<Item class="MeshPart" referent="RBXF29CABBA5EB1460CAC5C3E47E51B539A">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -4306,9 +4306,9 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110330181</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110330181</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX8F5ABFC98C6D44AD8849AEE00902FE8B">
+						<Item class="MeshPart" referent="RBXFAF4708A38B14983B8E9B057D40F9A0D">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -4428,8 +4428,8 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110329744</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
-							<Item class="Decal" referent="RBX4348CBB298E043BB91116534DF5D8858">
+							<Content name="MeshContent"><url>rbxassetid://9110329744</url></Content><Content name="TextureContent"><url>rbxassetid://9111196909</url></Content></Properties>
+							<Item class="Decal" referent="RBX2552B3050C1B4DB7B16E38C16F14AA90">
 								<Properties>
 									<Color3 name="Color3">
 										<R>1</R>
@@ -4455,7 +4455,7 @@
 								</Properties>
 							</Item>
 						</Item>
-						<Item class="MeshPart" referent="RBX1D80A39DA2B94A48B9D7719E12DD9A42">
+						<Item class="MeshPart" referent="RBX91458BFEAB5A4D8D98CA2702BF2DD7BD">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -4575,9 +4575,9 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110329990</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110329990</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBXF250F14DCBE343B8B9047EBE34FD91DA">
+						<Item class="MeshPart" referent="RBXE46F9D53A87842B1A6B53FB8A492E051">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -4697,9 +4697,9 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318544</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318544</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX7BFFBBB86DBF4EE4B62AE9FA79D72CE1">
+						<Item class="MeshPart" referent="RBX762418E357BE4011ABB5C3B36BA2F036">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -4819,9 +4819,9 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318356</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318356</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX32764EB817A240E7A05E3DAE8BF37416">
+						<Item class="MeshPart" referent="RBX952B13E842824039A7794F2ADE17F57F">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -4941,9 +4941,9 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318108</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318108</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX1A558871422C49F3B5E0A2975F8DA15C">
+						<Item class="MeshPart" referent="RBX8376C16A7FDE4F57A84691EFBC5C058C">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -5063,12 +5063,12 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110317704</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110317704</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
 					</Item>
 				</Item>
 			</Item>
-			<Item class="Part" referent="RBX28933EC758E14B1887DFC5966682105D">
+			<Item class="Part" referent="RBXCF33E8CB9C694822892D5CCA31C8AE93">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<bool name="AudioCanCollide">true</bool>
@@ -5165,7 +5165,7 @@
 						<Z>2.99968338</Z>
 					</Vector3>
 				</Properties>
-				<Item class="Model" referent="RBXEE5B25AAA16D4218BBC08B641298DBDA">
+				<Item class="Model" referent="RBX56A3026FED4A4671B5F2FB8F9D45140E">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -5192,7 +5192,7 @@
 						</OptionalCoordinateFrame>
 					</Properties>
 				</Item>
-				<Item class="Model" referent="RBXCD96E8D1EE80416D8911A28AEFD39781">
+				<Item class="Model" referent="RBX0377F61C89E748BD9C692756E6BDAF63">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -5219,7 +5219,7 @@
 						</OptionalCoordinateFrame>
 					</Properties>
 				</Item>
-				<Item class="CylinderMesh" referent="RBXED85AF897A134C2AACF7EAA520158CA3">
+				<Item class="CylinderMesh" referent="RBX1E94FDDC64074FB193BF967BBD8D7463">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<string name="Name">Mesh</string>
@@ -5240,7 +5240,7 @@
 						</Vector3>
 					</Properties>
 				</Item>
-				<Item class="Model" referent="RBXE0B3009BEFBC4935AABD69AB226D3EE2">
+				<Item class="Model" referent="RBXE08BD36C01D045D982ACB7E7B1CB345E">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -5266,7 +5266,7 @@
 							</CFrame>
 						</OptionalCoordinateFrame>
 					</Properties>
-					<Item class="MeshPart" referent="RBX19459CE7EA3843A5A7D8C1F4960E615A">
+					<Item class="MeshPart" referent="RBX8C0774AD7D954154A4037FD43C374A04">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -5386,9 +5386,9 @@
 								<Y>1.64773798</Y>
 								<Z>1.64773798</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461083194</url></Content><Content name="TextureID"><url>rbxassetid://9256916448</url></Content></Properties>
+						<Content name="MeshContent"><url>rbxassetid://4461083194</url></Content><Content name="TextureContent"><url>rbxassetid://9256916448</url></Content></Properties>
 					</Item>
-					<Item class="MeshPart" referent="RBX07CC91B755944F7B98F7938F164B6B17">
+					<Item class="MeshPart" referent="RBX14E1FDFD3DA04E3B8A3262D08BF63533">
 						<Properties>
 							<bool name="Anchored">true</bool>
 							<bool name="AudioCanCollide">true</bool>
@@ -5508,8 +5508,8 @@
 								<Y>3.08655</Y>
 								<Z>3.08655</Z>
 							</Vector3>
-						<Content name="MeshId"><url>rbxassetid://4461081716</url></Content><Content name="TextureID"><url>rbxassetid://9228797411</url></Content></Properties>
-						<Item class="Weld" referent="RBXAFA17CF022704921B79641B98A23D0BA">
+						<Content name="MeshContent"><url>rbxassetid://4461081716</url></Content><Content name="TextureContent"><url>rbxassetid://9228797411</url></Content></Properties>
+						<Item class="Weld" referent="RBX1B8C7D714AA445DCB7BB596BE8F018A4">
 							<Properties>
 								<CoordinateFrame name="C0">
 									<X>0</X>
@@ -5542,12 +5542,12 @@
 								<bool name="DefinesCapabilities">false</bool>
 								<bool name="Enabled">true</bool>
 								<string name="Name">Weld</string>
-								<Ref name="Part0">RBX07CC91B755944F7B98F7938F164B6B17</Ref>
+								<Ref name="Part0">RBX14E1FDFD3DA04E3B8A3262D08BF63533</Ref>
 								<Ref name="Part1">null</Ref>
 							</Properties>
 						</Item>
 					</Item>
-					<Item class="Model" referent="RBX795A7CE786AD476EA0B9CADB3E1A451B">
+					<Item class="Model" referent="RBXBB3C538F94B944A18F177222F654ADC7">
 						<Properties>
 							<bool name="DefinesCapabilities">false</bool>
 							<token name="LevelOfDetail">0</token>
@@ -5573,7 +5573,7 @@
 								</CFrame>
 							</OptionalCoordinateFrame>
 						</Properties>
-						<Item class="MeshPart" referent="RBX8ABC58157B2A43EEAAD08AC04396C682">
+						<Item class="MeshPart" referent="RBX4FD70FEE00554A3A9A8D1FFE17F9F1EB">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -5693,9 +5693,9 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110330336</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110330336</url></Content><Content name="TextureContent"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX27395ED28EC74C32A3EEC7FB8FEFE104">
+						<Item class="MeshPart" referent="RBX39F003B5F0DE4A5A86C689F7F6599224">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -5815,9 +5815,9 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110330181</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110330181</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX1F393100B767411695C1A4110EB5205D">
+						<Item class="MeshPart" referent="RBX8FA5AA908FA445A6977BB2A2F1F1AFA9">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -5937,8 +5937,8 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110329744</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
-							<Item class="Decal" referent="RBX6CEE4F9D48DA456B911C7C2361A912FC">
+							<Content name="MeshContent"><url>rbxassetid://9110329744</url></Content><Content name="TextureContent"><url>rbxassetid://9111196909</url></Content></Properties>
+							<Item class="Decal" referent="RBX80EBCB3DD69B410FAA647D72FB0F14A5">
 								<Properties>
 									<Color3 name="Color3">
 										<R>1</R>
@@ -5964,7 +5964,7 @@
 								</Properties>
 							</Item>
 						</Item>
-						<Item class="MeshPart" referent="RBX6E8840634E6D46FBBB87ED0F04A68826">
+						<Item class="MeshPart" referent="RBX0A897CC9DB7643EDA4C0235253CE3B48">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -6084,9 +6084,9 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110329990</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110329990</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBXE3E194A7B873462B9B907BD24956C225">
+						<Item class="MeshPart" referent="RBXD29E5920C113445F9FC21573B33289CE">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -6206,9 +6206,9 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318544</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318544</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX80BF66DF78DD4AA8A7FD97B526BAD51C">
+						<Item class="MeshPart" referent="RBXEA547DD53A5C4B5FA8406F85649FFF57">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -6328,9 +6328,9 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318356</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318356</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBXB7E953A944774F40B05DAEC3BBC4613A">
+						<Item class="MeshPart" referent="RBX36D0408A051E4ED88EB9CDD16EC53107">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -6450,9 +6450,9 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110318108</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110318108</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
-						<Item class="MeshPart" referent="RBX8282C11B7D6C4E5AB6033A6A44BB7CDF">
+						<Item class="MeshPart" referent="RBXB2E8DCD6E30F4FA2BCF7038706067596">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -6572,13 +6572,13 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://9110317704</url></Content><Content name="TextureID"><null /></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://9110317704</url></Content><Content name="TextureContent"><null /></Content></Properties>
 						</Item>
 					</Item>
 				</Item>
 			</Item>
 		</Item>
-		<Item class="Model" referent="RBX7CA366C5B37D463A8499CAE12C771461">
+		<Item class="Model" referent="RBXB20FD0184DF6483BABFEC3556E757080">
 			<Properties>
 				<bool name="DefinesCapabilities">false</bool>
 				<token name="LevelOfDetail">0</token>
@@ -6604,7 +6604,7 @@
 					</CFrame>
 				</OptionalCoordinateFrame>
 			</Properties>
-			<Item class="Part" referent="RBXE060D26483444D24BA52BBFE6FF10531">
+			<Item class="Part" referent="RBXB65AF16856BF463BB815462FA427DCB3">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<bool name="AudioCanCollide">true</bool>
@@ -6697,7 +6697,7 @@
 					</Vector3>
 				</Properties>
 			</Item>
-			<Item class="Model" referent="RBX778F171C951045019DE51C335232AB75">
+			<Item class="Model" referent="RBXD6671A13DE3B485D825C95E582067E5A">
 				<Properties>
 					<bool name="DefinesCapabilities">false</bool>
 					<token name="LevelOfDetail">0</token>
@@ -6723,7 +6723,7 @@
 						</CFrame>
 					</OptionalCoordinateFrame>
 				</Properties>
-				<Item class="MeshPart" referent="RBX416C8C8E3D914F2495FA2CC29A95640F">
+				<Item class="MeshPart" referent="RBX18E8D21AB175418B92627D6C15F97A45">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -6843,9 +6843,9 @@
 							<Y>0.25980413</Y>
 							<Z>0.70282191</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846718198</url></Content><Content name="TextureID"><url>rbxassetid://8846718281</url></Content></Properties>
+					<Content name="MeshContent"><url>rbxassetid://8846718198</url></Content><Content name="TextureContent"><url>rbxassetid://8846718281</url></Content></Properties>
 				</Item>
-				<Item class="MeshPart" referent="RBXC18C7709A0E64DD08D49385A7F795CF2">
+				<Item class="MeshPart" referent="RBX685C80A60B2047C280D87949FF32A7C5">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -6965,8 +6965,8 @@
 							<Y>0.706707358</Y>
 							<Z>0.706926107</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846725874</url></Content><Content name="TextureID"><url>rbxassetid://8846725927</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBX43BBFE5BF5C64CA1B2E1040AC2BA8547">
+					<Content name="MeshContent"><url>rbxassetid://8846725874</url></Content><Content name="TextureContent"><url>rbxassetid://8846725927</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBX386B49085EF248DCB2DD61E92ED5D691">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -6987,7 +6987,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBXEDD80D05AE3E435486AFBB0967D8659A">
+				<Item class="MeshPart" referent="RBXD462D10648B64A749B232B2E96D7BC03">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -7107,8 +7107,8 @@
 							<Y>1.85204363</Y>
 							<Z>2.44053721</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846725707</url></Content><Content name="TextureID"><url>rbxassetid://8846725749</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBXF3D5154BC7A540C291BF53F66F3386F3">
+					<Content name="MeshContent"><url>rbxassetid://8846725707</url></Content><Content name="TextureContent"><url>rbxassetid://8846725749</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBXC0A1F3FC927149129F1FC4E37AE4594E">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -7129,7 +7129,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBX743E540E465246C19F8065041B78350D">
+				<Item class="MeshPart" referent="RBX365269C9FF814D15BCB37D1A06A3576C">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -7249,8 +7249,8 @@
 							<Y>0.344361395</Y>
 							<Z>0.437826723</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846738866</url></Content><Content name="TextureID"><url>rbxassetid://8846739070</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBX51F09175858A475C9BCAF0ACF8CAD156">
+					<Content name="MeshContent"><url>rbxassetid://8846738866</url></Content><Content name="TextureContent"><url>rbxassetid://8846739070</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBXE82A7B58B3084E99AC4A968CD44C93A9">
 						<Properties>
 							<token name="AlphaMode">1</token>
 							<Color3 name="Color">
@@ -7271,7 +7271,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBXB6D247C3B1A64FE4A1AAD15379EF4882">
+				<Item class="MeshPart" referent="RBX9DF1B4E5D88D44C49BB9AA918E2F5B36">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -7391,8 +7391,8 @@
 							<Y>0.368509531</Y>
 							<Z>0.462646842</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846739155</url></Content><Content name="TextureID"><url>rbxassetid://8846739183</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBX53193BE47A6948A88D3392500F9592AF">
+					<Content name="MeshContent"><url>rbxassetid://8846739155</url></Content><Content name="TextureContent"><url>rbxassetid://8846739183</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBXEB1F261337EB476AAB230B532D10355D">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -7413,7 +7413,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBXCDDC2D2C01764A7482D22CDFCFC87D57">
+				<Item class="MeshPart" referent="RBXFBDD92F1191C40E5A2B228AEDE47A049">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -7533,8 +7533,8 @@
 							<Y>0.189396247</Y>
 							<Z>0.157894433</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846719645</url></Content><Content name="TextureID"><url>rbxassetid://8846719681</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBX7D9EFE96E3324EE5A50F2F9212C333B2">
+					<Content name="MeshContent"><url>rbxassetid://8846719645</url></Content><Content name="TextureContent"><url>rbxassetid://8846719681</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBX9D5462D20A8A4C6DB2D9711DBBD42EF2">
 						<Properties>
 							<token name="AlphaMode">1</token>
 							<Color3 name="Color">
@@ -7555,7 +7555,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBX629F0E8830584F789005919C60482AA0">
+				<Item class="MeshPart" referent="RBX7D5346FCDC704EFE81A58CA729CDE358">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -7675,8 +7675,8 @@
 							<Y>0.189396247</Y>
 							<Z>0.157894433</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846719772</url></Content><Content name="TextureID"><url>rbxassetid://8846719825</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBXB3FA9832F3174BB4A2F45A14392EDA30">
+					<Content name="MeshContent"><url>rbxassetid://8846719772</url></Content><Content name="TextureContent"><url>rbxassetid://8846719825</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBXFE73CBDE07A14B90AFE0AD03891E2ED0">
 						<Properties>
 							<token name="AlphaMode">1</token>
 							<Color3 name="Color">
@@ -7697,7 +7697,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBX58477D7DDF574BAE8335FAFA4C767B49">
+				<Item class="MeshPart" referent="RBX3504FACDDD4C4014803713FA45610D03">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -7817,8 +7817,8 @@
 							<Y>0.81377387</Y>
 							<Z>1.85467994</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846718091</url></Content><Content name="TextureID"><url>rbxassetid://8846718155</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBX3434D601A3DD4253B0B724CD9C82CC26">
+					<Content name="MeshContent"><url>rbxassetid://8846718091</url></Content><Content name="TextureContent"><url>rbxassetid://8846718155</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBX4FFA856D76C84846BE397F51E3693F4C">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -7839,7 +7839,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBX6391EAC1C1FB4C018B4A927D559D3467">
+				<Item class="MeshPart" referent="RBX221826CFE50E4229837F9C8D9F1ED4DE">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -7959,9 +7959,9 @@
 							<Y>0.843021691</Y>
 							<Z>0.882719278</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846728105</url></Content><Content name="TextureID"><url>rbxassetid://8846728174</url></Content></Properties>
+					<Content name="MeshContent"><url>rbxassetid://8846728105</url></Content><Content name="TextureContent"><url>rbxassetid://8846728174</url></Content></Properties>
 				</Item>
-				<Item class="MeshPart" referent="RBX9618BF5A9920458DB00B851A1DD1F159">
+				<Item class="MeshPart" referent="RBXDB6DCF7F1BE74A39B3263EF4C88B1876">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -8081,8 +8081,8 @@
 							<Y>1.46145475</Y>
 							<Z>1.5152961</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846728282</url></Content><Content name="TextureID"><url>rbxassetid://8846728428</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBX7B9EB992741740D993B79FF23BE70C8D">
+					<Content name="MeshContent"><url>rbxassetid://8846728282</url></Content><Content name="TextureContent"><url>rbxassetid://8846728428</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBXD6E7EB7E8B9E40DEB1A91829387646DE">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -8103,7 +8103,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBX9F9624E3D6744132926FF49C92DAC3E2">
+				<Item class="MeshPart" referent="RBXC0F328195D1044EFA221F1F6AA9CE2A5">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -8223,8 +8223,8 @@
 							<Y>1.58287406</Y>
 							<Z>3.09079146</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846728535</url></Content><Content name="TextureID"><url>rbxassetid://8846728630</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBX84742D7F4B1348A680F031C3E9EE8481">
+					<Content name="MeshContent"><url>rbxassetid://8846728535</url></Content><Content name="TextureContent"><url>rbxassetid://8846728630</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBXD14E7E2841C64F2D9904AE03D9AED295">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -8245,7 +8245,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBX4A36390040374F93A07562570A9DBE52">
+				<Item class="MeshPart" referent="RBX5076A821A7954DA9A3705E1678C780D6">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -8365,8 +8365,8 @@
 							<Y>2.72516632</Y>
 							<Z>3.28408718</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846728729</url></Content><Content name="TextureID"><url>rbxassetid://8846728831</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBXDD1C04D92A7D41DEB29929AE2B963DD5">
+					<Content name="MeshContent"><url>rbxassetid://8846728729</url></Content><Content name="TextureContent"><url>rbxassetid://8846728831</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBXFD4A3928D90F415A926E5C62C350B018">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -8387,7 +8387,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBXD2B4D9D48268406B8EC6DBC04D5AC555">
+				<Item class="MeshPart" referent="RBX288C3F0E10994298B43B82DEAA7B03D5">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -8507,8 +8507,8 @@
 							<Y>2.11759233</Y>
 							<Z>7.32170916</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846729000</url></Content><Content name="TextureID"><url>rbxassetid://8846729072</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBXEDE292BE681C48A0BDE92836723DD95E">
+					<Content name="MeshContent"><url>rbxassetid://8846729000</url></Content><Content name="TextureContent"><url>rbxassetid://8846729072</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBXE17F8F97052B4C859ACFB448337F70E7">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -8529,7 +8529,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBX36E4C26DAA424A12AD4239D317A4D458">
+				<Item class="MeshPart" referent="RBX09FCEB514CD24127BA79591152A6EC61">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -8649,8 +8649,8 @@
 							<Y>0.93588376</Y>
 							<Z>0.703841269</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846717941</url></Content><Content name="TextureID"><url>rbxassetid://8846718002</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBX8FB6679B21B746E6B8FF41AF3F0DF022">
+					<Content name="MeshContent"><url>rbxassetid://8846717941</url></Content><Content name="TextureContent"><url>rbxassetid://8846718002</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBXFB4B0D980ED0413C8509D704F3BC9E3D">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -8671,7 +8671,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBXB2F8A5FC17EF4A10AE0494E85A451068">
+				<Item class="MeshPart" referent="RBXA994EB86FE044AC4A6F1EC9724E0F5EC">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -8791,8 +8791,8 @@
 							<Y>0.124752767</Y>
 							<Z>1.59948015</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846737034</url></Content><Content name="TextureID"><url>rbxassetid://8846737184</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBXCB4898E2655444A68B0C5A9B57D44F77">
+					<Content name="MeshContent"><url>rbxassetid://8846737034</url></Content><Content name="TextureContent"><url>rbxassetid://8846737184</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBX4CE256FC9FB947A19272C4C48F0A40A7">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -8813,7 +8813,7 @@
 						</Properties>
 					</Item>
 				</Item>
-				<Item class="MeshPart" referent="RBX5742F038661D44A0883F6997EE35BC49">
+				<Item class="MeshPart" referent="RBX5092CAB7BF144E4A87F562C421D22FEA">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -8933,9 +8933,9 @@
 							<Y>0.0730550885</Y>
 							<Z>0.0595947951</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846745861</url></Content><Content name="TextureID"><url>rbxassetid://8846745888</url></Content></Properties>
+					<Content name="MeshContent"><url>rbxassetid://8846745861</url></Content><Content name="TextureContent"><url>rbxassetid://8846745888</url></Content></Properties>
 				</Item>
-				<Item class="MeshPart" referent="RBX3AFF3F53FDE54903B5E72E196B6AB751">
+				<Item class="MeshPart" referent="RBX4A8CD6A2929C4241B6CBD1078F18D47E">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
@@ -9055,8 +9055,8 @@
 							<Y>0.0150633994</Y>
 							<Z>0.0189436097</Z>
 						</Vector3>
-					<Content name="MeshId"><url>rbxassetid://8846745968</url></Content><Content name="TextureID"><url>rbxassetid://8846746028</url></Content></Properties>
-					<Item class="SurfaceAppearance" referent="RBX551B5693546B499A81E56321023F103A">
+					<Content name="MeshContent"><url>rbxassetid://8846745968</url></Content><Content name="TextureContent"><url>rbxassetid://8846746028</url></Content></Properties>
+					<Item class="SurfaceAppearance" referent="RBX79784C0A40E34F15992510D353C52EBB">
 						<Properties>
 							<token name="AlphaMode">0</token>
 							<Color3 name="Color">
@@ -9078,7 +9078,7 @@
 					</Item>
 				</Item>
 			</Item>
-			<Item class="MeshPart" referent="RBXEEDA69B103474C7593F7AF452E98F44E">
+			<Item class="MeshPart" referent="RBX9E0CBB58C6D544199A3AC598B698BB06">
 				<Properties>
 					<bool name="Anchored">true</bool>
 					<bool name="AudioCanCollide">true</bool>
@@ -9203,8 +9203,8 @@
 						<Y>5.30000019</Y>
 						<Z>26.5750008</Z>
 					</Vector3>
-				<Content name="MeshId"><url>rbxassetid://14636990538</url></Content><Content name="TextureID"><url>http://www.roblox.com/asset/?id=14774270682</url></Content></Properties>
-				<Item class="WeldConstraint" referent="RBXF113539CB2F74F4896DE90CB3591FF05">
+				<Content name="MeshContent"><url>rbxassetid://14636990538</url></Content><Content name="TextureContent"><url>http://www.roblox.com/asset/?id=14774270682</url></Content></Properties>
+				<Item class="WeldConstraint" referent="RBXB8FAC105B2344BE4BCB0711AE87CA64F">
 					<Properties>
 						<CoordinateFrame name="CFrame0">
 							<X>-1.02612305</X>
@@ -9222,21 +9222,21 @@
 						</CoordinateFrame>
 						<bool name="DefinesCapabilities">false</bool>
 						<string name="Name">WeldConstraint</string>
-						<Ref name="Part0Internal">RBXEEDA69B103474C7593F7AF452E98F44E</Ref>
+						<Ref name="Part0Internal">RBX9E0CBB58C6D544199A3AC598B698BB06</Ref>
 						<Ref name="Part1Internal">null</Ref>
 						<int name="State">3</int>
 					</Properties>
 				</Item>
 			</Item>
 		</Item>
-		<Item class="Model" referent="RBX7744F3CAEFEC4F2C9A0239CF653F8538">
+		<Item class="Model" referent="RBX6A8C71E6FD034E09A6963710DCDD04C8">
 			<Properties>
 				<bool name="DefinesCapabilities">false</bool>
 				<token name="LevelOfDetail">0</token>
 				<token name="ModelStreamingMode">0</token>
 				<string name="Name">Misc</string>
 				<bool name="NeedsPivotMigration">false</bool>
-				<Ref name="PrimaryPart">RBX1788A3453B2947C7900812DA265CC94A</Ref>
+				<Ref name="PrimaryPart">RBX42041C80B18342FB8B8EA8C1A35589ED</Ref>
 				<float name="ScaleFactor">1</float>
 				<OptionalCoordinateFrame name="WorldPivotData">
 					<CFrame>
@@ -9255,14 +9255,14 @@
 					</CFrame>
 				</OptionalCoordinateFrame>
 			</Properties>
-			<Item class="Model" referent="RBX2DEEB35E705D4668ABB8335E17C86692">
+			<Item class="Model" referent="RBXBB680DBB6A0B46CF8E76F55F32EF8D99">
 				<Properties>
 					<bool name="DefinesCapabilities">false</bool>
 					<token name="LevelOfDetail">0</token>
 					<token name="ModelStreamingMode">0</token>
 					<string name="Name">Wheel</string>
 					<bool name="NeedsPivotMigration">false</bool>
-					<Ref name="PrimaryPart">RBX1788A3453B2947C7900812DA265CC94A</Ref>
+					<Ref name="PrimaryPart">RBX42041C80B18342FB8B8EA8C1A35589ED</Ref>
 					<float name="ScaleFactor">1</float>
 					<OptionalCoordinateFrame name="WorldPivotData">
 						<CFrame>
@@ -9281,7 +9281,7 @@
 						</CFrame>
 					</OptionalCoordinateFrame>
 				</Properties>
-				<Item class="Model" referent="RBX110483B7043E4E1BA4AAF64D082B168A">
+				<Item class="Model" referent="RBXE902CDA3FF1A4897B6A4ADD2781A0C5D">
 					<Properties>
 						<bool name="DefinesCapabilities">false</bool>
 						<token name="LevelOfDetail">0</token>
@@ -9307,7 +9307,7 @@
 							</CFrame>
 						</OptionalCoordinateFrame>
 					</Properties>
-					<Item class="Model" referent="RBX940D970A58AB44E3B17DA87086177D91">
+					<Item class="Model" referent="RBX87CDF799631F4F8183DD1508EF3B60DD">
 						<Properties>
 							<bool name="DefinesCapabilities">false</bool>
 							<token name="LevelOfDetail">0</token>
@@ -9333,7 +9333,7 @@
 								</CFrame>
 							</OptionalCoordinateFrame>
 						</Properties>
-						<Item class="MeshPart" referent="RBXFD440772086C415C9E92DF07CCAEBF6E">
+						<Item class="MeshPart" referent="RBXF67AA9E0E8B6422BA2A2D75848D23666">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -9453,9 +9453,9 @@
 									<Y>0.658568203</Y>
 									<Z>0.344398081</Z>
 								</Vector3>
-							<Content name="MeshId"><url>rbxassetid://4614547894</url></Content><Content name="TextureID"><url>http://www.roblox.com/asset/?id=4614404866</url></Content></Properties>
+							<Content name="MeshContent"><url>rbxassetid://4614547894</url></Content><Content name="TextureContent"><url>http://www.roblox.com/asset/?id=4614404866</url></Content></Properties>
 						</Item>
-						<Item class="Part" referent="RBXF1F3A96FCCB0413B9ECD6A3A4A433A8B">
+						<Item class="Part" referent="RBX8941063384C64E93A43D2C2D8B94CCD9">
 							<Properties>
 								<bool name="Anchored">true</bool>
 								<bool name="AudioCanCollide">true</bool>
@@ -9552,7 +9552,7 @@
 									<Z>0.377440006</Z>
 								</Vector3>
 							</Properties>
-							<Item class="SurfaceGui" referent="RBX071445CDA55F4FA389C0446ADE28C7DF">
+							<Item class="SurfaceGui" referent="RBX5F746DBEB9B54C26923C77C81663E623">
 								<Properties>
 									<bool name="Active">true</bool>
 									<Ref name="Adornee">null</Ref>
@@ -9583,7 +9583,7 @@
 									<token name="ZIndexBehavior">0</token>
 									<float name="ZOffset">0</float>
 								</Properties>
-								<Item class="Frame" referent="RBX63844ED60E7E4FDBADDB5FFB4BD83779">
+								<Item class="Frame" referent="RBX6F28FC03DA344502A617FA14140D9343">
 									<Properties>
 										<bool name="Active">false</bool>
 										<Vector2 name="AnchorPoint">
@@ -9643,7 +9643,7 @@
 										<bool name="Visible">true</bool>
 										<int name="ZIndex">1</int>
 									</Properties>
-									<Item class="Frame" referent="RBX5D572B75A1584CDD94B57EF0175CD585">
+									<Item class="Frame" referent="RBXEF9D5B4B30E942AB8DE045017011BA10">
 										<Properties>
 											<bool name="Active">false</bool>
 											<Vector2 name="AnchorPoint">
@@ -9703,7 +9703,7 @@
 											<bool name="Visible">true</bool>
 											<int name="ZIndex">1</int>
 										</Properties>
-										<Item class="ImageLabel" referent="RBXC0C58413AC8C491DA1CA03FB9CF5D089">
+										<Item class="ImageLabel" referent="RBX463F95A907F4462C94F010C9D20B7178">
 											<Properties>
 												<bool name="Active">false</bool>
 												<Vector2 name="AnchorPoint">
@@ -9796,7 +9796,7 @@
 												<int name="ZIndex">1</int>
 											</Properties>
 										</Item>
-										<Item class="ImageLabel" referent="RBX6AF65661287F4A768759D2624AD012C2">
+										<Item class="ImageLabel" referent="RBXF64FF25B19A64B328FD00366EC13AF8C">
 											<Properties>
 												<bool name="Active">false</bool>
 												<Vector2 name="AnchorPoint">
@@ -9889,7 +9889,7 @@
 												<int name="ZIndex">1</int>
 											</Properties>
 										</Item>
-										<Item class="ImageLabel" referent="RBX89DFD004B0194CAD91BE7D7232917C3F">
+										<Item class="ImageLabel" referent="RBX092DB26993B84DE1AF8719EBCD9E4EBA">
 											<Properties>
 												<bool name="Active">false</bool>
 												<Vector2 name="AnchorPoint">
@@ -9982,7 +9982,7 @@
 												<int name="ZIndex">1</int>
 											</Properties>
 										</Item>
-										<Item class="Script" referent="RBXDE26E83D91F140D5A7F06C3408FBC02A">
+										<Item class="Script" referent="RBXDF7A5E0ECA094954A704BEEAE80E890E">
 											<Properties>
 												<bool name="DefinesCapabilities">true</bool>
 												<bool name="Disabled">false</bool>
@@ -10030,7 +10030,7 @@ end
 						</Item>
 					</Item>
 				</Item>
-				<Item class="Part" referent="RBX1788A3453B2947C7900812DA265CC94A">
+				<Item class="Part" referent="RBX42041C80B18342FB8B8EA8C1A35589ED">
 					<Properties>
 						<bool name="Anchored">true</bool>
 						<bool name="AudioCanCollide">true</bool>
