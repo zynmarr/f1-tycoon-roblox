@@ -49,6 +49,9 @@
     "SoundService": {
       "$properties": {
         "DefaultListenerLocation": "Camera",
+        "DiffractionEnabled": {
+          "Bool": true
+        },
         "ListenerCFrame": {
           "CFrame": {
             "position": [
@@ -78,7 +81,13 @@
         "ListenerType": {
           "Enum": 0
         },
-        "RespectFilteringEnabled": true
+        "OcclusionEnabled": {
+          "Bool": true
+        },
+        "RespectFilteringEnabled": true,
+        "ReverbEnabled": {
+          "Bool": true
+        }
       }
     },
     "StarterGui": {
@@ -99,7 +108,10 @@
         "CameraMaxZoomDistance": 128.0,
         "CharacterBreakJointsOnDeath": false,
         "CharacterUseJumpPower": false,
-        "CharacterWalkSpeed": 30.0
+        "CharacterWalkSpeed": 30.0,
+        "PlayerModuleStatus": {
+          "Int32": 0
+        }
       }
     },
     "Workspace": {
