@@ -1,4 +1,4 @@
-<roblox xmlns:xmime="http://www.w3.org/2005/05/xmlmime" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
+<roblox xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://www.roblox.com/roblox.xsd" version="4">
 	<External>null</External>
 	<External>nil</External>
 	<Item class="Model" referent="RBX6AB77592CAB74409881C144EFAC0CE59">
@@ -108,7 +108,7 @@
 					<bool name="Locked">false</bool>
 					<bool name="Massless">false</bool>
 					<token name="Material">1088</token>
-					<string name="MaterialVariantSerialized"></string>
+					<string name="MaterialVariantSerialized" />
 					<string name="Name">FL</string>
 					<CoordinateFrame name="PivotOffset">
 						<X>0</X>
@@ -241,7 +241,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">true</bool>
 							<token name="Material">1088</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Chassis</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -299,7 +299,7 @@
 								<Y>0.739554048</Y>
 								<Z>0.124896109</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461085255</url></Content><Content name="TextureID"><url>rbxassetid://914065945</url></Content></Properties>
 					</Item>
 					<Item class="MeshPart" referent="RBX58044BF067034CC7BC0DA9F697CD22ED">
 						<Properties>
@@ -363,7 +363,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">1088</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Wheelguard</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -421,7 +421,7 @@
 								<Y>1.4856571</Y>
 								<Z>1.48425388</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461079780</url></Content><Content name="TextureID"><url>http://www.roblox.com/asset/?id=4461050437</url></Content></Properties>
 					</Item>
 				</Item>
 				<Item class="Model" referent="RBXBDF1B8AE7268462B853101FF8C51937D">
@@ -562,7 +562,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">272</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Tyre</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -620,7 +620,7 @@
 								<Y>3.08025622</Y>
 								<Z>3.08025622</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461080857</url></Content><Content name="TextureID"><url>rbxassetid://9228797411</url></Content></Properties>
 						<Item class="Weld" referent="RBX6E36BD2F0BE24CBC8D5427A02A22BD42">
 							<Properties>
 								<CoordinateFrame name="C0">
@@ -721,7 +721,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">1088</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Rim</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -779,7 +779,7 @@
 								<Y>1.65424991</Y>
 								<Z>1.65424991</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461082682</url></Content><Content name="TextureID"><url>rbxassetid://9256916448</url></Content></Properties>
 					</Item>
 					<Item class="Model" referent="RBX38F03C5673AE4962BB108A3805010755">
 						<Properties>
@@ -870,7 +870,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB4_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -928,7 +928,7 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110330336</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBXA36C1D2541DA4A539CA6C03144066DD1">
 							<Properties>
@@ -992,7 +992,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB3_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -1050,7 +1050,7 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110330181</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX718AB2C19E644F0595AC05BBF99CFD63">
 							<Properties>
@@ -1114,7 +1114,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB0_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -1172,7 +1172,7 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110329744</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX1B893B51B5BC4C93921858E0216F6E58">
 							<Properties>
@@ -1236,7 +1236,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB2_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -1294,7 +1294,7 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110329990</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBXB4C059F84A204458A4F25F977526C57C">
 							<Properties>
@@ -1358,7 +1358,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB4_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -1416,7 +1416,7 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318544</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX2E70345C9112408D94AE29EBD5DF25E2">
 							<Properties>
@@ -1480,7 +1480,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB3_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -1538,7 +1538,7 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318356</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX8D2D75DBF3C24581B8EF12A4C3CBD342">
 							<Properties>
@@ -1602,7 +1602,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB2_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -1660,7 +1660,7 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318108</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBXDD2D27631B94431C8652C88A11CC2E98">
 							<Properties>
@@ -1724,7 +1724,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB0_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -1782,7 +1782,7 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110317704</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 					</Item>
 				</Item>
@@ -1840,7 +1840,7 @@
 					<bool name="Locked">false</bool>
 					<bool name="Massless">false</bool>
 					<token name="Material">1088</token>
-					<string name="MaterialVariantSerialized"></string>
+					<string name="MaterialVariantSerialized" />
 					<string name="Name">FR</string>
 					<CoordinateFrame name="PivotOffset">
 						<X>0</X>
@@ -1973,7 +1973,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">true</bool>
 							<token name="Material">1088</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Chassis</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -2031,7 +2031,7 @@
 								<Y>0.739554048</Y>
 								<Z>0.124896109</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461084095</url></Content><Content name="TextureID"><url>rbxassetid://914065945</url></Content></Properties>
 					</Item>
 					<Item class="MeshPart" referent="RBX2EAF9AE8061A43188B960046B3CE5974">
 						<Properties>
@@ -2095,7 +2095,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">1088</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Wheelguard</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -2153,7 +2153,7 @@
 								<Y>1.4856571</Y>
 								<Z>1.48425388</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461079531</url></Content><Content name="TextureID"><url>http://www.roblox.com/asset/?id=4461050437</url></Content></Properties>
 					</Item>
 				</Item>
 				<Item class="Model" referent="RBX40EB7C5DEFFD44648770AE8AE696CC26">
@@ -2294,7 +2294,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">272</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Tyre</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -2352,7 +2352,7 @@
 								<Y>3.08025622</Y>
 								<Z>3.08025622</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461080857</url></Content><Content name="TextureID"><url>rbxassetid://9228797411</url></Content></Properties>
 						<Item class="Weld" referent="RBX86AB824BD58B4D7CA552A839DD0B24A0">
 							<Properties>
 								<CoordinateFrame name="C0">
@@ -2453,7 +2453,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">1088</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Rim</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -2511,7 +2511,7 @@
 								<Y>1.65424991</Y>
 								<Z>1.65424991</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461082682</url></Content><Content name="TextureID"><url>rbxassetid://9256916448</url></Content></Properties>
 					</Item>
 					<Item class="Model" referent="RBX08F815129E844A1D9E2D059F71ED84A9">
 						<Properties>
@@ -2602,7 +2602,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB4_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -2660,7 +2660,7 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110330336</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX22DFBB5511CE4C5CABFEE2F395F48779">
 							<Properties>
@@ -2724,7 +2724,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB3_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -2782,7 +2782,7 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110330181</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX967B43BA92EB4A478B6EB6655B4B5766">
 							<Properties>
@@ -2846,7 +2846,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB0_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -2904,7 +2904,7 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110329744</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX4CFCC27490E74E7B96DBC3A4D0D2E8CC">
 							<Properties>
@@ -2968,7 +2968,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB2_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -3026,7 +3026,7 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110329990</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX31DA3E92C2524036948A6049D6E97700">
 							<Properties>
@@ -3090,7 +3090,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB4_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -3148,7 +3148,7 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318544</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX10EE925473E546A9A86CD658F6F20F72">
 							<Properties>
@@ -3212,7 +3212,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB3_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -3270,7 +3270,7 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318356</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX82C96C8828E1474ABF39098D1C188451">
 							<Properties>
@@ -3334,7 +3334,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB2_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -3392,7 +3392,7 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318108</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX7B0D060EE9D847D9A16BCF29BD206ACC">
 							<Properties>
@@ -3456,7 +3456,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB0_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -3514,7 +3514,7 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110317704</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 					</Item>
 				</Item>
@@ -3572,7 +3572,7 @@
 					<bool name="Locked">false</bool>
 					<bool name="Massless">false</bool>
 					<token name="Material">1088</token>
-					<string name="MaterialVariantSerialized"></string>
+					<string name="MaterialVariantSerialized" />
 					<string name="Name">RL</string>
 					<CoordinateFrame name="PivotOffset">
 						<X>0</X>
@@ -3782,7 +3782,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">1088</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Rim</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -3840,7 +3840,7 @@
 								<Y>1.64773798</Y>
 								<Z>1.64773798</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461083194</url></Content><Content name="TextureID"><url>rbxassetid://9256916448</url></Content></Properties>
 					</Item>
 					<Item class="MeshPart" referent="RBXC753AD650846430B8874AA041C671E55">
 						<Properties>
@@ -3904,7 +3904,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">272</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Tyre</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -3962,7 +3962,7 @@
 								<Y>3.08655</Y>
 								<Z>3.08655</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461081716</url></Content><Content name="TextureID"><url>rbxassetid://9228797411</url></Content></Properties>
 						<Item class="Weld" referent="RBX0511606EEC694553A347D656471AFA93">
 							<Properties>
 								<CoordinateFrame name="C0">
@@ -4090,7 +4090,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB4_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -4148,7 +4148,7 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110330336</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX82632FE49D6149AD806181DC3502A914">
 							<Properties>
@@ -4212,7 +4212,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB3_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -4270,7 +4270,7 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110330181</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBXD9357D2E4FDA4A71A37A5F32924C11D5">
 							<Properties>
@@ -4334,7 +4334,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB0_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -4392,7 +4392,7 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110329744</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX8BFE118BFD44433DAEBBC66B83945E88">
 							<Properties>
@@ -4456,7 +4456,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB2_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -4514,7 +4514,7 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110329990</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX23560B0139144F179C356578869B5C00">
 							<Properties>
@@ -4578,7 +4578,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB4_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -4636,7 +4636,7 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318544</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBXF8D73301F4A549A98293BB8605DC9BD6">
 							<Properties>
@@ -4700,7 +4700,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB3_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -4758,7 +4758,7 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318356</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX5DD01A5FA5BC4E9BB24596289EAB6256">
 							<Properties>
@@ -4822,7 +4822,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB2_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -4880,7 +4880,7 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318108</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX03128EB8149249D5B4E99026D30E7C30">
 							<Properties>
@@ -4944,7 +4944,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB0_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -5002,7 +5002,7 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110317704</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 					</Item>
 				</Item>
@@ -5060,7 +5060,7 @@
 					<bool name="Locked">false</bool>
 					<bool name="Massless">false</bool>
 					<token name="Material">1088</token>
-					<string name="MaterialVariantSerialized"></string>
+					<string name="MaterialVariantSerialized" />
 					<string name="Name">RR</string>
 					<CoordinateFrame name="PivotOffset">
 						<X>0</X>
@@ -5270,7 +5270,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">1088</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Rim</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -5328,7 +5328,7 @@
 								<Y>1.64773798</Y>
 								<Z>1.64773798</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461083194</url></Content><Content name="TextureID"><url>rbxassetid://9256916448</url></Content></Properties>
 					</Item>
 					<Item class="MeshPart" referent="RBX8FE0546F3EBB45EC8ED0D97538171E8D">
 						<Properties>
@@ -5392,7 +5392,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">272</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Tyre</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -5450,7 +5450,7 @@
 								<Y>3.08655</Y>
 								<Z>3.08655</Z>
 							</Vector3>
-						</Properties>
+						<Content name="MeshId"><url>rbxassetid://4461081716</url></Content><Content name="TextureID"><url>rbxassetid://9228797411</url></Content></Properties>
 						<Item class="Weld" referent="RBXCECE6506E22143858C70E66337FCBFA4">
 							<Properties>
 								<CoordinateFrame name="C0">
@@ -5578,7 +5578,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB4_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -5636,7 +5636,7 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110330336</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBXD4F01A7D6B684D33BD3E7813EEBE39DF">
 							<Properties>
@@ -5700,7 +5700,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB3_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -5758,7 +5758,7 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110330181</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX2840F16B891A46B487532959C9B8A1F2">
 							<Properties>
@@ -5822,7 +5822,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB0_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -5880,7 +5880,7 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110329744</url></Content><Content name="TextureID"><url>rbxassetid://9111196909</url></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX6C3BDC9CBB61433BA46B5C71329E9DFC">
 							<Properties>
@@ -5944,7 +5944,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_LF_SUB2_RIM_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -6002,7 +6002,7 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110329990</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX5BC0391B721C44339B0F24A0191C007F">
 							<Properties>
@@ -6066,7 +6066,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB4_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -6124,7 +6124,7 @@
 									<Y>0.699570715</Y>
 									<Z>0.701215208</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318544</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX2363AFD01D1446CA96CDA2DD11431E39">
 							<Properties>
@@ -6188,7 +6188,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB3_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -6246,7 +6246,7 @@
 									<Y>0.384595901</Y>
 									<Z>0.379692435</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318356</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX0D89EFD967524FE5A0DF7937D522C77A">
 							<Properties>
@@ -6310,7 +6310,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB2_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -6368,7 +6368,7 @@
 									<Y>0.208213031</Y>
 									<Z>0.207278326</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110318108</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX8F6A5B50AE4947C498A1C0B046BA9EFA">
 							<Properties>
@@ -6432,7 +6432,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">272</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">Meshes/gp_2022_f175_lod_b_ZMhack_RIM_BLUR_LF_SUB0_RIM_BLUR_LF</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -6490,7 +6490,7 @@
 									<Y>2.33051348</Y>
 									<Z>2.23026681</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://9110317704</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 					</Item>
 				</Item>
@@ -6612,7 +6612,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/INT_Band</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -6670,7 +6670,7 @@
 							<Y>0.25980413</Y>
 							<Z>0.70282191</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846718198</url></Content><Content name="TextureID"><url>rbxassetid://8846718281</url></Content></Properties>
 				</Item>
 				<Item class="MeshPart" referent="RBX54ADAE7095574E8AB9AA2703D2C4EFDE">
 					<Properties>
@@ -6734,7 +6734,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/Geo_Metals_SeatbeltOn_Geo_Metals_on</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -6792,7 +6792,7 @@
 							<Y>0.706707358</Y>
 							<Z>0.706926107</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846725874</url></Content><Content name="TextureID"><url>rbxassetid://8846725927</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBX58E65802CF6149F8A59E34709444BE81">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -6876,7 +6876,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/Geo_Metals_SeatbeltOn_GEO_SeatBeltOn</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -6934,7 +6934,7 @@
 							<Y>1.85204363</Y>
 							<Z>2.44053721</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846725707</url></Content><Content name="TextureID"><url>rbxassetid://8846725749</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBXADAB1B41FF964831A89639143FDEFC9C">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -7018,7 +7018,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/Geo_Belts_ON_LOGO</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -7076,7 +7076,7 @@
 							<Y>0.344361395</Y>
 							<Z>0.437826723</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846738866</url></Content><Content name="TextureID"><url>rbxassetid://8846739070</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBX0CDD758D7DA744DF825B8E58588982A1">
 						<Properties>
 							<token name="AlphaMode">1</token>
@@ -7160,7 +7160,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/Geo_Belt_Pads</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -7218,7 +7218,7 @@
 							<Y>0.368509531</Y>
 							<Z>0.462646842</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846739155</url></Content><Content name="TextureID"><url>rbxassetid://8846739183</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBX3372C85BA75C429FB88D2B419C37B385">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -7302,7 +7302,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/GLASS_DEFAULT_SUB1</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -7360,7 +7360,7 @@
 							<Y>0.189396247</Y>
 							<Z>0.157894433</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846719645</url></Content><Content name="TextureID"><url>rbxassetid://8846719681</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBXDD24F54963374091964121D0CB264CFA">
 						<Properties>
 							<token name="AlphaMode">1</token>
@@ -7444,7 +7444,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/GLASS_DEFAULT_SUB0</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -7502,7 +7502,7 @@
 							<Y>0.189396247</Y>
 							<Z>0.157894433</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846719772</url></Content><Content name="TextureID"><url>rbxassetid://8846719825</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBXA6D719BCEFC0477F8B96AF3DFEFC64DC">
 						<Properties>
 							<token name="AlphaMode">1</token>
@@ -7586,7 +7586,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/INT_DIALS</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -7644,7 +7644,7 @@
 							<Y>0.81377387</Y>
 							<Z>1.85467994</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846718091</url></Content><Content name="TextureID"><url>rbxassetid://8846718155</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBXC68C1BC232E849E88AD959D325CB31EC">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -7728,7 +7728,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/GEO_LABELS</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -7786,7 +7786,7 @@
 							<Y>0.843021691</Y>
 							<Z>0.882719278</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846728105</url></Content><Content name="TextureID"><url>rbxassetid://8846728174</url></Content></Properties>
 				</Item>
 				<Item class="MeshPart" referent="RBXB50FB4151C31480B8BFA5AD62277F48E">
 					<Properties>
@@ -7850,7 +7850,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/GEO_INT_HR_Mesh_SUB3</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -7908,7 +7908,7 @@
 							<Y>1.46145475</Y>
 							<Z>1.5152961</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846728282</url></Content><Content name="TextureID"><url>rbxassetid://8846728428</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBXE25BEE1B5E2F4D3DBC3F3E2BC65FC999">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -7926,7 +7926,7 @@
 							</Color3>
 							<string name="Name">SurfaceAppearance</string>
 							<token name="ResampleMode">0</token>
-							<Content name="TexturePack"><null></null></Content>
+							<Content name="TexturePack"><null /></Content>
 						</Properties>
 					</Item>
 				</Item>
@@ -7992,7 +7992,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/GEO_INT_HR_Mesh_SUB2</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -8050,7 +8050,7 @@
 							<Y>1.58287406</Y>
 							<Z>3.09079146</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846728535</url></Content><Content name="TextureID"><url>rbxassetid://8846728630</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBX14246558CB0A49359A84FA0C6CF73D2F">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -8134,7 +8134,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/GEO_INT_HR_Mesh_SUB1</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -8192,7 +8192,7 @@
 							<Y>2.72516632</Y>
 							<Z>3.28408718</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846728729</url></Content><Content name="TextureID"><url>rbxassetid://8846728831</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBXA34E76A4D4AF44239F0EC15C37239508">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -8276,7 +8276,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/GEO_INT_HR_Mesh_SUB0</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -8334,7 +8334,7 @@
 							<Y>2.11759233</Y>
 							<Z>7.32170916</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846729000</url></Content><Content name="TextureID"><url>rbxassetid://8846729072</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBXA6808F5BB4C140B582CAF2F596DE0EF2">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -8418,7 +8418,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/INT_KNEE_GUARD</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -8476,7 +8476,7 @@
 							<Y>0.93588376</Y>
 							<Z>0.703841269</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846717941</url></Content><Content name="TextureID"><url>rbxassetid://8846718002</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBX6F38661CB9FF424B85B88E0F1F1EB0BB">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -8560,7 +8560,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/GEO_Column</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -8618,7 +8618,7 @@
 							<Y>0.124752767</Y>
 							<Z>1.59948015</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846737034</url></Content><Content name="TextureID"><url>rbxassetid://8846737184</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBX47495379781E44E8BD3DA8090306D855">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -8636,7 +8636,7 @@
 							</Color3>
 							<string name="Name">SurfaceAppearance</string>
 							<token name="ResampleMode">0</token>
-							<Content name="TexturePack"><null></null></Content>
+							<Content name="TexturePack"><null /></Content>
 						</Properties>
 					</Item>
 				</Item>
@@ -8702,7 +8702,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/CATCHES_MESTAL</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -8760,7 +8760,7 @@
 							<Y>0.0730550885</Y>
 							<Z>0.0595947951</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846745861</url></Content><Content name="TextureID"><url>rbxassetid://8846745888</url></Content></Properties>
 				</Item>
 				<Item class="MeshPart" referent="RBX1D680F911FDD4A658C625392DA31C0C8">
 					<Properties>
@@ -8824,7 +8824,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Meshes/ABFS</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -8882,7 +8882,7 @@
 							<Y>0.0150633994</Y>
 							<Z>0.0189436097</Z>
 						</Vector3>
-					</Properties>
+					<Content name="MeshId"><url>rbxassetid://8846745968</url></Content><Content name="TextureID"><url>rbxassetid://8846746028</url></Content></Properties>
 					<Item class="SurfaceAppearance" referent="RBX2D50DFB811944374AB7C02C97C681EA4">
 						<Properties>
 							<token name="AlphaMode">0</token>
@@ -8972,7 +8972,7 @@
 					<bool name="Locked">false</bool>
 					<bool name="Massless">true</bool>
 					<token name="Material">272</token>
-					<string name="MaterialVariantSerialized"></string>
+					<string name="MaterialVariantSerialized" />
 					<string name="Name">Car Livery</string>
 					<CoordinateFrame name="PivotOffset">
 						<X>0</X>
@@ -9030,7 +9030,7 @@
 						<Y>5.30000019</Y>
 						<Z>26.5750008</Z>
 					</Vector3>
-				</Properties>
+				<Content name="MeshId"><url>rbxassetid://14636932143</url></Content><Content name="TextureID"><url>rbxassetid://14682823199</url></Content></Properties>
 				<Item class="WeldConstraint" referent="RBXCC649212AB5B4604B77FF19555EC35A3">
 					<Properties>
 						<CoordinateFrame name="CFrame0">
@@ -9130,7 +9130,7 @@
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">272</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">Helmet</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -9246,7 +9246,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">272</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Handle</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -9306,7 +9306,7 @@
 									<Y>0.0649999976</Y>
 									<Z>0.0649999976</Z>
 								</Vector3>
-								<Content name="TextureId"><null></null></Content>
+								<Content name="TextureId"><null /></Content>
 								<Vector3 name="VertexColor">
 									<X>1</X>
 									<Y>1</Y>
@@ -9363,7 +9363,7 @@
 							<bool name="Locked">false</bool>
 							<bool name="Massless">false</bool>
 							<token name="Material">272</token>
-							<string name="MaterialVariantSerialized"></string>
+							<string name="MaterialVariantSerialized" />
 							<string name="Name">Handle</string>
 							<CoordinateFrame name="PivotOffset">
 								<X>0</X>
@@ -9423,7 +9423,7 @@
 									<Y>0.0700000003</Y>
 									<Z>0.0799999982</Z>
 								</Vector3>
-								<Content name="TextureId"><null></null></Content>
+								<Content name="TextureId"><null /></Content>
 								<Vector3 name="VertexColor">
 									<X>1</X>
 									<Y>1</Y>
@@ -9482,7 +9482,7 @@
 					<bool name="Locked">false</bool>
 					<bool name="Massless">false</bool>
 					<token name="Material">1088</token>
-					<string name="MaterialVariantSerialized"></string>
+					<string name="MaterialVariantSerialized" />
 					<string name="Name">Cam3</string>
 					<CoordinateFrame name="PivotOffset">
 						<X>0</X>
@@ -9689,7 +9689,7 @@
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">1088</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">SpeedGUI</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -10167,7 +10167,7 @@
 											<Properties>
 												<bool name="DefinesCapabilities">true</bool>
 												<bool name="Disabled">false</bool>
-												<Content name="LinkedSource"><null></null></Content>
+												<Content name="LinkedSource"><null /></Content>
 												<string name="Name">Script</string>
 												<token name="RunContext">0</token>
 												<string name="ScriptGuid">{73644046-BBA4-49F8-97B4-AF88B5B9298F}</string>
@@ -10177,29 +10177,29 @@ local numbers={180354176,180354121,180354128,180354131,180354134,180354138,18035
 
 
 while true do
-&#9;wait(0.01)
-&#9;local value=(carSeat.Velocity.magnitude)/1 --This is the velocity so if it was 1.6 it should work. If not PM me! or comment!--
-&#9;if value&lt;10000 then
-&#9;&#9;local nnnn=math.floor(value/1000)
-&#9;&#9;local nnn=(math.floor(value/100))-(nnnn*10)
-&#9;&#9;local nn=(math.floor(value/10)-(nnn*10))-(nnnn*100)
-&#9;&#9;local n=(math.floor(value)-(nn*10)-(nnn*100))-(nnnn*1000)
-&#9;&#9;    script.Parent.A.Image=&quot;http://www.roblox.com/asset/?id=&quot;..numbers[n+1]
-&#9;&#9;if value&gt;=10 then
-&#9;&#9;&#9;script.Parent.B.Image=&quot;http://www.roblox.com/asset/?id=&quot;..numbers[nn+1]
-&#9;&#9;else
-&#9;&#9;&#9;script.Parent.B.Image=&quot;http://www.roblox.com/asset/?id=&quot;..numbers[12]
-&#9;&#9;end
-&#9;&#9;if value&gt;=100 then
-&#9;&#9;&#9;script.Parent.C.Image=&quot;http://www.roblox.com/asset/?id=&quot;..numbers[nnn+1]
-&#9;&#9;else
-&#9;&#9;&#9;script.Parent.C.Image=&quot;http://www.roblox.com/asset/?id=&quot;..numbers[12]
-&#9;&#9;end
-&#9;else
-&#9;&#9;script.Parent.A.Image=&quot;http://www.roblox.com/asset/?id=&quot;..numbers[10]
-&#9;&#9;script.Parent.B.Image=&quot;http://www.roblox.com/asset/?id=&quot;..numbers[10]&#9;
-&#9;&#9;script.Parent.C.Image=&quot;http://www.roblox.com/asset/?id=&quot;..numbers[10]
-&#9;end
+	wait(0.01)
+	local value=(carSeat.Velocity.magnitude)/1 --This is the velocity so if it was 1.6 it should work. If not PM me! or comment!--
+	if value&lt;10000 then
+		local nnnn=math.floor(value/1000)
+		local nnn=(math.floor(value/100))-(nnnn*10)
+		local nn=(math.floor(value/10)-(nnn*10))-(nnnn*100)
+		local n=(math.floor(value)-(nn*10)-(nnn*100))-(nnnn*1000)
+		    script.Parent.A.Image="http://www.roblox.com/asset/?id="..numbers[n+1]
+		if value&gt;=10 then
+			script.Parent.B.Image="http://www.roblox.com/asset/?id="..numbers[nn+1]
+		else
+			script.Parent.B.Image="http://www.roblox.com/asset/?id="..numbers[12]
+		end
+		if value&gt;=100 then
+			script.Parent.C.Image="http://www.roblox.com/asset/?id="..numbers[nnn+1]
+		else
+			script.Parent.C.Image="http://www.roblox.com/asset/?id="..numbers[12]
+		end
+	else
+		script.Parent.A.Image="http://www.roblox.com/asset/?id="..numbers[10]
+		script.Parent.B.Image="http://www.roblox.com/asset/?id="..numbers[10]	
+		script.Parent.C.Image="http://www.roblox.com/asset/?id="..numbers[10]
+	end
 
 end
 </ProtectedString>
@@ -10271,7 +10271,7 @@ end
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">1088</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">MeshPart</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -10329,7 +10329,7 @@ end
 									<Y>0.86000967</Y>
 									<Z>0.547454417</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://2593590477</url></Content><Content name="TextureID"><url>rbxassetid://2593575816</url></Content></Properties>
 						</Item>
 						<Item class="MeshPart" referent="RBX41FC0BEC0E464DDE88B99333CC542139">
 							<Properties>
@@ -10393,7 +10393,7 @@ end
 								<bool name="Locked">false</bool>
 								<bool name="Massless">false</bool>
 								<token name="Material">1088</token>
-								<string name="MaterialVariantSerialized"></string>
+								<string name="MaterialVariantSerialized" />
 								<string name="Name">MeshPart</string>
 								<CoordinateFrame name="PivotOffset">
 									<X>0</X>
@@ -10451,7 +10451,7 @@ end
 									<Y>0.314484715</Y>
 									<Z>0.0482338592</Z>
 								</Vector3>
-							</Properties>
+							<Content name="MeshId"><url>rbxassetid://2593591870</url></Content><Content name="TextureID"><null /></Content></Properties>
 						</Item>
 					</Item>
 				</Item>
@@ -10508,7 +10508,7 @@ end
 						<bool name="Locked">false</bool>
 						<bool name="Massless">false</bool>
 						<token name="Material">1088</token>
-						<string name="MaterialVariantSerialized"></string>
+						<string name="MaterialVariantSerialized" />
 						<string name="Name">A</string>
 						<CoordinateFrame name="PivotOffset">
 							<X>0</X>
@@ -10894,7 +10894,7 @@ JDNwEctlKjk5Cl4bfcBRP2y+Wyvq7wz6Fr+L99Zn8H2lysw/XsN8tXyS7qX6b9Mzh0bXZntu
 2s9/zsW2xYh+yH4VLZZlyXX+9jfdLOoZ6qxZcN9/z9PfG8ynD+9LPuBpfvRudXmZjh0HMxDT
 szDyMvPu4Ej7vQxd+M78naMN2da/7fB2SAkhruh31R3DyW4c/XynEvXRAnYSVFfc6bI9nTnP
 iQy1T73t93ETaouCB23dXwRwiOAiesdhfkmcX9ARHHMsx3pXWDf76Cw++P6C2RI=</SharedString>
-		<SharedString md5="DldRwCblQ7Loqy6wYJnaoQ=="></SharedString>
+		<SharedString md5="DldRwCblQ7Loqy6wYJnaoQ==" />
 		<SharedString md5="GB5oDRxV4zLs9GPIXoaUZg==">Q1NHUEhTCAAAAAIAKLUv/WAoBpUqACRFEQAAAI/aDBSjAQAAOLQGAABIyLTAwvX8wDjhqr+u
 y7RAw/X8QEDhqj/qt1lQaxfKWypvtXjbJ1Duu1zFa1B/sahQbp+l/WxbnLsudkFy96SFoX66
 ik9c3HUtb114BwAAAHqYh0AAcCy5rH69vhTPNEAxONe/EnMSv/KcefTKHb+hKoeLNSG/0VlB
