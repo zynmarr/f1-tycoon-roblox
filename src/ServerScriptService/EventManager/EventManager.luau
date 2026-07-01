@@ -179,51 +179,30 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	local foundTemplate = nil
 	local foundRarity = ""
 
-	-- 1. Cari via tag CarModel di ServerStorage
+	-- Cari template via tag CarModel di ServerStorage
 	for _, carTemplate in ipairs(CollectionService:GetTagged("CarModel")) do
 		if carTemplate:IsDescendantOf(ServerStorage) and carTemplate.Name == carName then
 			foundTemplate = carTemplate
 			break
 		end
 	end
-
-	-- 2. Jika tidak ditemukan, cari di ServerStorage secara langsung (rekursif)
-	if not foundTemplate then
-		for _, child in ipairs(ServerStorage:GetDescendants()) do
-			if (child:IsA("Model") or child:IsA("Tool")) and child.Name == carName then
-				foundTemplate = child
-				break
-			end
-		end
-	end
-
-	-- 3. Cari rarity di GameConfig
-	if foundTemplate then
-		for rName, list in pairs(GameConfig.CarRarityList) do
-			if list[carName] then
-				foundRarity = rName
-				break
-			end
-		end
-		
-		-- Jika tidak ada di list rarity (seperti mobil Admin custom), set rarity ke Admin atau Common
-		if foundRarity == "" then
-			local isUnderAdmin = false
-			local current = foundTemplate.Parent
-			while current and current ~= ServerStorage do
-				if current.Name == "Admin" then
-					isUnderAdmin = true
-					break
-				end
-				current = current.Parent
-			end
-			foundRarity = isUnderAdmin and "Admin" or "Common"
-		end
-	end
 	
 	if not foundTemplate then
 		warn("[EventManager] Mobil dengan nama " .. tostring(carName) .. " tidak ditemukan!")
 		return false
+	end
+
+	-- Cari rarity dari GameConfig
+	for rName, list in pairs(GameConfig.CarRarityList) do
+		if list[carName] then
+			foundRarity = rName
+			break
+		end
+	end
+	
+	-- Jika tidak ada di list rarity (seperti mobil Admin custom baru), default ke "Admin"
+	if foundRarity == "" then
+		foundRarity = "Admin"
 	end
 	
 	local backpack = player:FindFirstChild("Backpack")
@@ -389,14 +368,30 @@ function AdminEventService:getAdminCars(player: Player): { { Name: string } }
 		return {}
 	end
 
+	local CollectionService = game:GetService("CollectionService")
+	local ServerStorage = game:GetService("ServerStorage")
+	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+
 	local cars = {}
-	local f1Cars = game:GetService("ServerStorage"):FindFirstChild("F1 CARS")
-	local adminFolder = f1Cars and f1Cars:FindFirstChild("Admin")
+	local added = {}
 	
-	if adminFolder then
-		for _, item in ipairs(adminFolder:GetChildren()) do
-			if item:IsA("Tool") or item:IsA("Model") then
-				table.insert(cars, { Name = item.Name })
+	for _, carTemplate in ipairs(CollectionService:GetTagged("CarModel")) do
+		if carTemplate:IsDescendantOf(ServerStorage) then
+			local carName = carTemplate.Name
+			if not added[carName] then
+				-- Cek apakah rarity-nya Admin atau tidak terdaftar (berarti custom Admin car)
+				local isAdmin = true
+				for rName, list in pairs(GameConfig.CarRarityList) do
+					if rName ~= "Admin" and list[carName] then
+						isAdmin = false
+						break
+					end
+				end
+				
+				if isAdmin then
+					added[carName] = true
+					table.insert(cars, { Name = carName })
+				end
 			end
 		end
 	end
@@ -494,36 +489,21 @@ function AdminEventService:getAvailableCars(player: Player)
 			if not added[carName] then
 				added[carName] = true
 				
-				local rarity = "Common"
+				local rarity = ""
 				for rName, list in pairs(GameConfig.CarRarityList) do
 					if list[carName] then
 						rarity = rName
 						break
 					end
 				end
+				if rarity == "" then
+					rarity = "Admin"
+				end
 				
 				table.insert(cars, {
 					Name = carName,
 					Rarity = rarity,
 				})
-			end
-		end
-	end
-	
-	-- Tambahan: Cari juga mobil Admin custom dari folder Admin di ServerStorage (untuk admin panel dropdown)
-	local f1Cars = ServerStorage:FindFirstChild("F1 CARS")
-	local adminFolder = ServerStorage:FindFirstChild("Admin") or (f1Cars and f1Cars:FindFirstChild("Admin"))
-	if adminFolder then
-		for _, child in ipairs(adminFolder:GetDescendants()) do
-			if (child:IsA("Model") or child:IsA("Tool")) and child.Name ~= "Car" then
-				local carName = child.Name
-				if not added[carName] then
-					added[carName] = true
-					table.insert(cars, {
-						Name = carName,
-						Rarity = "Admin",
-					})
-				end
 			end
 		end
 	end
