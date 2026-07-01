@@ -16,8 +16,7 @@ local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
 local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
 
-local CARS_STORAGE = ServerStorage:WaitForChild("F1 CARS")
-local BoxModels = ReplicatedStorage:WaitForChild("BoxModels")
+local BoxModels = ServerStorage:WaitForChild("BoxModels")
 
 local BOX_TAG = "Box"
 
@@ -361,16 +360,33 @@ function BoxManager:openBox(player: Player, boxName: string)
 		tierData = GameConfig.Rarities[tier]
 	end
 
-	-- Ambil folder penyimpanan aset mobil dari ServerStorage
-	local rarityFolder = CARS_STORAGE:FindFirstChild(tier)
-	if not rarityFolder or #rarityFolder:GetChildren() == 0 then
-		rarityFolder = CARS_STORAGE:WaitForChild("Common")
+	-- Cari template model mobil via tag CarModel (tidak perlu folder rarity di ServerStorage)
+	local carModelTag = "CarModel"
+	local carTemplates = CollectionService:GetTagged(carModelTag)
+
+	-- Filter hanya mobil yang sesuai dengan rarity yang di-roll
+	local rarityCarNames = GameConfig.CarRarityList[tier]
+	if not rarityCarNames or next(rarityCarNames) == nil then
+		-- Fallback ke Common jika rarity tidak punya mobil terdaftar
 		tier = "Common"
 		tierData = GameConfig.Rarities[tier]
+		rarityCarNames = GameConfig.CarRarityList[tier]
 	end
 
-	local carTemplates = rarityFolder:GetChildren()
-	local chosenCarTemplate = carTemplates[math.random(1, #carTemplates)]
+	-- Kumpulkan template yang namanya ada di CarRarityList tier ini
+	local matchingTemplates = {}
+	for _, model in pairs(carTemplates) do
+		if rarityCarNames[model.Name] then
+			table.insert(matchingTemplates, model)
+		end
+	end
+
+	if #matchingTemplates == 0 then
+		warn("[BoxManager] Tidak ada model CarModel ditemukan untuk tier: " .. tier)
+		return { Success = false, Error = "Tidak ada mobil tersedia untuk tier " .. tier }
+	end
+
+	local chosenCarTemplate = matchingTemplates[math.random(1, #matchingTemplates)]
 	local car = chosenCarTemplate:Clone()
 	CollectionService:AddTag(car, "Car")
 

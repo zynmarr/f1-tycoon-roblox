@@ -1,40 +1,34 @@
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
 local ServerStorage = game:GetService("ServerStorage")
+
+local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local GameUtils = require(ReplicatedStorage.GameUtils)
 local ParkingAreaManager = require(game.ServerScriptService.ParkingAreaManager.ParkingAreaManager)
 
 local CarManager = {}
 local CAR_TAG = "Car"
+local CAR_MODEL_TAG = "CarModel"
 
--- export type CarAttributes = {
--- 	Name: string,
--- 	Rarity: string,
--- 	Variant: string,
--- 	Price: number,
--- 	Amount: number,
--- 	IsPicked: boolean,
--- 	RotationOffset: number,
--- 	Location: string,
--- 	Rider: string,
--- 	Income: number,
--- 	IsParked: boolean,
--- 	[string]: any, -- Mengizinkan atribut dinamis lain yang berupa string
--- }
+-- =============================================================================
+-- HELPER: Cari model mobil berdasarkan nama dari CollectionService (tag CarModel)
+-- Tidak lagi bergantung pada folder ServerStorage "F1 CARS"
+-- =============================================================================
+local function findCarModel(carName: string): Model?
+	for _, model in pairs(CollectionService:GetTagged(CAR_MODEL_TAG)) do
+		if model.Name == carName then
+			return model
+		end
+	end
+	return nil
+end
 
--- -- Deklarasi tipe utama untuk CarData (Struktur Map / JSON dari DataStore)
--- export type CarData = {
--- 	Name: string,
--- 	Location: string,
--- 	Attributes: CarAttributes,
--- }
-
-local function loadlHandle(car: Tool): BasePart
-	local handle = car:FindFirstChild("Handle") :: BasePart?
+-- =============================================================================
+-- HANDLE: Buat atau rebuild Handle transparan yang membungkus model mobil
+-- =============================================================================
+local function loadHandle(car: Tool): BasePart
+	-- Hitung bounding box dari Model jika ada, atau dari seluruh Tool
 	local modelContainer = car:FindFirstChild("Model") :: Model?
-
-	-- Ambil ukuran asli model Car
 	local carCFrame, carSize
 	if modelContainer then
 		carCFrame, carSize = modelContainer:GetBoundingBox()
@@ -42,66 +36,104 @@ local function loadlHandle(car: Tool): BasePart
 		carCFrame, carSize = car:GetBoundingBox()
 	end
 
-	if not handle then
-		handle = Instance.new("Part")
-		handle.Name = "Handle"
-		handle.Parent = car
-	elseif handle then
-		handle:Destroy()
-		handle = Instance.new("Part")
-		handle.Name = "Handle"
-		handle.Parent = car
+	-- Destroy handle lama jika ada, buat yang baru
+	local existingHandle = car:FindFirstChild("Handle")
+	if existingHandle then
+		existingHandle:Destroy()
 	end
 
+	local handle = Instance.new("Part")
+	handle.Name = "Handle"
 	handle.Size = carSize
 	handle.CFrame = carCFrame
 	handle.Transparency = 1
 	handle.CanCollide = false
 	handle.Massless = true
 	handle.Anchored = false
+	handle.Parent = car
 
 	return handle
 end
 
-local function processPickup(player, car)
+-- =============================================================================
+-- VISUAL: Pasang model mobil ke dalam Tool berdasarkan nama atribut
+-- Dipanggil saat Tool pertama kali di-setup atau saat nama mobil berubah
+-- =============================================================================
+local function attachCarModel(car: Tool)
+	local carName = car:GetAttribute("Name") or car.Name
+
+	-- Hapus model lama jika ada
+	local oldModel = car:FindFirstChild("Model")
+	if oldModel then
+		oldModel:Destroy()
+	end
+
+	-- Cari model dari CollectionService via tag CarModel
+	local template = findCarModel(carName)
+	if not template then
+		warn("[CarManager] Model tidak ditemukan untuk mobil: " .. tostring(carName))
+		return
+	end
+
+	local model: Model = template:Clone()
+	model.Name = "Model"
+	model.Parent = car
+end
+
+-- =============================================================================
+-- SETUP: Proses inisialisasi setiap Tool Car
+-- =============================================================================
+local function processPickup(player: Player, car: Tool)
 	local rotationOffset = car:GetAttribute("RotationOffset") or 0
 	local finalRot = math.rad(0 + rotationOffset)
-
 	car.Grip = CFrame.new(0, -0.8, 2) * CFrame.Angles(0, finalRot, 0)
 	GameUtils.updateTextLabel(car)
 end
 
-local function setupCar(car)
+local function setupCar(car: Tool)
 	if car:GetAttribute("IsInitialized") then
 		return
 	end
 	car:SetAttribute("IsInitialized", true)
 
-	local model = car:FindFirstChild("Model") :: Model?
+	-- 1. Pasang model mobil ke dalam Tool (cari via tag CarModel)
+	attachCarModel(car)
 
-	local handle = loadlHandle(car) :: BasePart
+	-- 2. Buat Handle berdasarkan ukuran model
+	local handle = loadHandle(car)
+
+	-- 3. Set PrimaryPart
 	if car:IsA("Model") or car:IsA("Tool") then
 		car.PrimaryPart = handle
+		local model = car:FindFirstChild("Model") :: Model?
 		if model then
 			model.PrimaryPart = handle
 			model:PivotTo(handle.CFrame)
 		end
 	end
 
+	-- 4. Scale mobil ke ukuran kecil untuk inventory
 	if not car:GetAttribute("ScaleFixed") then
 		car:ScaleTo(0.2)
 		car:SetAttribute("ScaleFixed", true)
 	end
 
-	GameConfig.cleanupAndWeldCar(car.Model)
+	-- 5. Weld & cleanup internal model
+	local model = car:FindFirstChild("Model")
+	if model then
+		GameConfig.cleanupAndWeldCar(model)
+	end
 
+	-- 6. Disable ProximityPrompt jika ada
 	local prompt = car:FindFirstChild("ProximityPrompt")
 	if prompt then
 		prompt.Enabled = false
 	end
 
+	-- 7. Terapkan visual rarity & variant
 	GameConfig.ApplyVisuals(car, car:GetAttribute("Rarity"), car:GetAttribute("Variant"))
 
+	-- 8. Equipped / Unequipped events
 	if car:IsA("Tool") then
 		car.Equipped:Connect(function()
 			local billboard = car:FindFirstChild("BillboardGui") :: BillboardGui
@@ -124,7 +156,10 @@ local function setupCar(car)
 	end
 end
 
-local function onCarAdded(car)
+-- =============================================================================
+-- LISTENER: Jalankan setup saat tag Car ditambahkan
+-- =============================================================================
+local function onCarAdded(car: Instance)
 	local function checkStatus(): boolean
 		local inWorkspace = car:IsDescendantOf(workspace)
 		local inPlayer = false
@@ -140,26 +175,23 @@ local function onCarAdded(car)
 			end
 			currentParent = currentParent.Parent
 		end
-
 		return inWorkspace or inPlayer
 	end
 
-	-- 1. Jalankan SETUP jika mobil sudah di tempat yang benar
 	if checkStatus() then
 		task.spawn(setupCar, car)
 	else
-		-- 2. Jika masih di Storage, tunggu sampai pindah ke tempat aktif
+		-- Tunggu sampai mobil pindah ke tempat aktif (Workspace / Backpack)
 		local connection: RBXScriptConnection?
 		connection = car.AncestryChanged:Connect(function()
 			if checkStatus() then
 				if connection then
 					connection:Disconnect()
-				end -- Berhenti memantau jika sudah ketemu
+				end
 				task.spawn(setupCar, car)
 			end
 		end)
 
-		-- Safety measure: Hapus koneksi jika objek hancur sebelum sempat pindah
 		car.Destroying:Connect(function()
 			if connection then
 				connection:Disconnect()
@@ -168,8 +200,12 @@ local function onCarAdded(car)
 	end
 end
 
+-- =============================================================================
+-- PUBLIC: Init
+-- =============================================================================
 function CarManager.Init()
 	print("[CarManager] System Initialized...")
+
 	for _, car in pairs(CollectionService:GetTagged(CAR_TAG)) do
 		task.spawn(onCarAdded, car)
 	end
@@ -179,41 +215,50 @@ function CarManager.Init()
 	end)
 end
 
+-- =============================================================================
+-- PUBLIC: Spawn mobil yang sudah tersimpan di DataStore ke tempat player
+-- Tidak lagi perlu folder rarity di ServerStorage — cukup cari via tag CarModel
+-- =============================================================================
 function CarManager.spawnLoadedCar(player: Player, carData: any, plot: Instance): Model?
-	local carFolder = ServerStorage:WaitForChild("F1 CARS")
-	local carRarity = carFolder:FindFirstChild(carData.Attributes.Rarity)
-	local carTemplate = carRarity:FindFirstChild(carData.Attributes.Name)
+	local carName = carData.Attributes.Name
+
+	-- Cari template model via tag CarModel
+	local carTemplate = findCarModel(carName)
 	if not carTemplate then
-		warn("Mobil tidak ditemukan di ServerStorage: " .. carData.Name)
+		warn("[CarManager] Mobil tidak ditemukan di CollectionService (tag CarModel): " .. tostring(carName))
 		return nil
 	end
 
 	local carModel = carTemplate:Clone()
-	CollectionService:AddTag(carModel, "Car")
+	CollectionService:AddTag(carModel, CAR_TAG)
 	carModel.Name = carData.Name
-	GameUtils.updateTextLabel(carTemplate)
+	GameUtils.updateTextLabel(carModel)
 
+	-- Pasang semua atribut dari data simpanan
 	for attr, val in pairs(carData.Attributes) do
 		if attr ~= "IsInitialized" and attr ~= "OnHand" and attr ~= "ScaleFixed" then
 			carModel:SetAttribute(attr, val)
 		end
 	end
 
+	-- Tempatkan ke Backpack atau Parking
 	if carData.Location == "Backpack" then
 		carModel.Parent = player:WaitForChild("Backpack", 5)
 	else
 		local parkingLots = plot:WaitForChild("AllParkingLots")
 		for _, part in pairs(parkingLots:GetDescendants()) do
-			if part:isA("BasePart") then
-				if part.Name == carData.Location then
-					-- local parkingArea = parkingLots:FindFirstChild(carData.Location)
-					ParkingAreaManager.storeCar(player, part, carModel)
-				end
+			if part:IsA("BasePart") and part.Name == carData.Location then
+				ParkingAreaManager.storeCar(player, part, carModel)
 			end
 		end
 	end
 
 	return carModel
 end
+
+-- =============================================================================
+-- PUBLIC: Expose loadHandle agar bisa dipanggil dari luar jika dibutuhkan
+-- =============================================================================
+CarManager.loadHandle = loadHandle
 
 return CarManager
