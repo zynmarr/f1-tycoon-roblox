@@ -187,12 +187,18 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 		foundTemplate = adminTemplate
 		foundRarity = "Admin"
 	else
-		for _, carTemplate in ipairs(CollectionService:GetTagged("Car")) do
+		for _, carTemplate in ipairs(CollectionService:GetTagged("CarModel")) do
 			if carTemplate:IsDescendantOf(ServerStorage) and carTemplate.Name == carName then
 				foundTemplate = carTemplate
-				local parent = carTemplate.Parent
-				if parent and parent:IsA("Folder") then
-					foundRarity = parent.Name
+				-- Cari rarity dari GameConfig
+				for rName, list in pairs(GameConfig.CarRarityList) do
+					if list[carName] then
+						foundRarity = rName
+						break
+					end
+				end
+				if foundRarity == "" then
+					foundRarity = "Common"
 				end
 				break
 			end
@@ -215,7 +221,18 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 		return false
 	end
 	
-	local car = foundTemplate:Clone()
+	-- Clone Tool "Car" dari ServerStorage
+	local carToolTemplate = ServerStorage:FindFirstChild("Car")
+	if not carToolTemplate then
+		warn("[EventManager] Tool 'Car' tidak ditemukan di ServerStorage!")
+		return false
+	end
+
+	local car = carToolTemplate:Clone()
+	local carModel = foundTemplate:Clone()
+	carModel.Name = "Model"
+	carModel.Parent = car
+
 	CollectionService:AddTag(car, "Car")
 	
 	for _, part in ipairs(car:GetDescendants()) do
@@ -237,9 +254,9 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	car:SetAttribute("Price", sellPrice)
 	car:SetAttribute("Variant", variantStr)
 	car:SetAttribute("Rarity", foundRarity)
-	car:SetAttribute("Name", car.Name)
+	car:SetAttribute("Name", foundTemplate.Name)
 	car:SetAttribute("Type", "Car")
-	car.Name = car.Name .. "_" .. foundRarity .. "_" .. string.gsub(variantStr, ",", "_")
+	car.Name = foundTemplate.Name .. "_" .. foundRarity .. "_" .. string.gsub(variantStr, ",", "_")
 
 	pcall(function()
 		GameConfig.ApplyVisuals(car, foundRarity, variantStr)
@@ -453,16 +470,20 @@ function AdminEventService:getAvailableCars(player: Player)
 	local cars = {}
 	local added = {}
 	
-	for _, carTemplate in ipairs(CollectionService:GetTagged("Car")) do
+	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+	
+	for _, carTemplate in ipairs(CollectionService:GetTagged("CarModel")) do
 		if carTemplate:IsDescendantOf(ServerStorage) and (carTemplate:IsA("Tool") or carTemplate:IsA("Model")) then
 			local carName = carTemplate.Name
 			if not added[carName] then
 				added[carName] = true
 				
 				local rarity = "Common"
-				local parent = carTemplate.Parent
-				if parent and parent:IsA("Folder") then
-					rarity = parent.Name
+				for rName, list in pairs(GameConfig.CarRarityList) do
+					if list[carName] then
+						rarity = rName
+						break
+					end
 				end
 				
 				table.insert(cars, {

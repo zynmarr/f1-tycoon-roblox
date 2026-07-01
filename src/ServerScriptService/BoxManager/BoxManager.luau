@@ -387,7 +387,19 @@ function BoxManager:openBox(player: Player, boxName: string)
 	end
 
 	local chosenCarTemplate = matchingTemplates[math.random(1, #matchingTemplates)]
-	local car = chosenCarTemplate:Clone()
+	
+	-- Clone the Tool "Car" from ServerStorage
+	local carToolTemplate = ServerStorage:FindFirstChild("Car")
+	if not carToolTemplate then
+		warn("[BoxManager] Tool 'Car' tidak ditemukan di ServerStorage!")
+		return { Success = false, Error = "Tool 'Car' tidak ditemukan di ServerStorage!" }
+	end
+
+	local car = carToolTemplate:Clone()
+	local carModel = chosenCarTemplate:Clone()
+	carModel.Name = "Model"
+	carModel.Parent = car
+
 	CollectionService:AddTag(car, "Car")
 
 	-- Pasang atribut finansial dan visual ke mobil baru
@@ -397,9 +409,9 @@ function BoxManager:openBox(player: Player, boxName: string)
 	car:SetAttribute("Price", sellPrice)
 	car:SetAttribute("Variant", variants)
 	car:SetAttribute("Rarity", tier)
-	car:SetAttribute("Name", car.Name)
+	car:SetAttribute("Name", chosenCarTemplate.Name)
 	car:SetAttribute("Type", "Car")
-	car.Name = car.Name .. "_" .. tier .. "_" .. variants
+	car.Name = chosenCarTemplate.Name .. "_" .. tier .. "_" .. variants
 
 	GameConfig.ApplyVisuals(car, tier, variants)
 

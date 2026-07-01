@@ -96,8 +96,10 @@ local function setupCar(car: Tool)
 	end
 	car:SetAttribute("IsInitialized", true)
 
-	-- 1. Pasang model mobil ke dalam Tool (cari via tag CarModel)
-	attachCarModel(car)
+	-- 1. Pasang model mobil ke dalam Tool (cari via tag CarModel) jika belum ada
+	if not car:FindFirstChild("Model") then
+		attachCarModel(car)
+	end
 
 	-- 2. Buat Handle berdasarkan ukuran model
 	local handle = loadHandle(car)
@@ -131,7 +133,7 @@ local function setupCar(car: Tool)
 	end
 
 	-- 7. Terapkan visual rarity & variant
-	GameConfig.ApplyVisuals(car, car:GetAttribute("Rarity"), car:GetAttribute("Variant"))
+	GameConfig.ApplyVisuals(car, car:GetAttribute("Rarity") :: string, car:GetAttribute("Variant") :: string)
 
 	-- 8. Equipped / Unequipped events
 	if car:IsA("Tool") then
@@ -219,7 +221,7 @@ end
 -- PUBLIC: Spawn mobil yang sudah tersimpan di DataStore ke tempat player
 -- Tidak lagi perlu folder rarity di ServerStorage — cukup cari via tag CarModel
 -- =============================================================================
-function CarManager.spawnLoadedCar(player: Player, carData: any, plot: Instance): Model?
+function CarManager.spawnLoadedCar(player: Player, carData: any, plot: Instance): Tool?
 	local carName = carData.Attributes.Name
 
 	-- Cari template model via tag CarModel
@@ -229,31 +231,42 @@ function CarManager.spawnLoadedCar(player: Player, carData: any, plot: Instance)
 		return nil
 	end
 
+	-- Clone Tool "Car" dari ServerStorage
+	local carToolTemplate = ServerStorage:FindFirstChild("Car")
+	if not carToolTemplate then
+		warn("[CarManager] Tool 'Car' tidak ditemukan di ServerStorage!")
+		return nil
+	end
+
+	local carTool = carToolTemplate:Clone()
 	local carModel = carTemplate:Clone()
-	CollectionService:AddTag(carModel, CAR_TAG)
-	carModel.Name = carData.Name
-	GameUtils.updateTextLabel(carModel)
+	carModel.Name = "Model"
+	carModel.Parent = carTool
+
+	CollectionService:AddTag(carTool, CAR_TAG)
+	carTool.Name = carData.Name
+	GameUtils.updateTextLabel(carTool)
 
 	-- Pasang semua atribut dari data simpanan
 	for attr, val in pairs(carData.Attributes) do
 		if attr ~= "IsInitialized" and attr ~= "OnHand" and attr ~= "ScaleFixed" then
-			carModel:SetAttribute(attr, val)
+			carTool:SetAttribute(attr, val)
 		end
 	end
 
 	-- Tempatkan ke Backpack atau Parking
 	if carData.Location == "Backpack" then
-		carModel.Parent = player:WaitForChild("Backpack", 5)
+		carTool.Parent = player:WaitForChild("Backpack", 5)
 	else
 		local parkingLots = plot:WaitForChild("AllParkingLots")
 		for _, part in pairs(parkingLots:GetDescendants()) do
 			if part:IsA("BasePart") and part.Name == carData.Location then
-				ParkingAreaManager.storeCar(player, part, carModel)
+				ParkingAreaManager.storeCar(player, part, carTool)
 			end
 		end
 	end
 
-	return carModel
+	return carTool
 end
 
 -- =============================================================================

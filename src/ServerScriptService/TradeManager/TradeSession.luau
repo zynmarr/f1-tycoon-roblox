@@ -75,7 +75,7 @@ local function addCarToBackpack(player: Player, carFullName: string)
 	local variant = parts[3] or "Admin"
 
 	local foundTemplate = nil
-	for _, carTemplate in ipairs(CollectionService:GetTagged("Car")) do
+	for _, carTemplate in ipairs(CollectionService:GetTagged("CarModel")) do
 		if carTemplate:IsDescendantOf(ServerStorage) and carTemplate.Name == carBaseName then
 			foundTemplate = carTemplate
 			break
@@ -83,11 +83,22 @@ local function addCarToBackpack(player: Player, carFullName: string)
 	end
 
 	if not foundTemplate then
-		warn("[TradeSession] Template car not found in ServerStorage: " .. carBaseName)
+		warn("[TradeSession] Template car model not found in ServerStorage: " .. carBaseName)
 		return
 	end
 
-	local car = foundTemplate:Clone()
+	-- Clone Tool "Car" dari ServerStorage
+	local carToolTemplate = ServerStorage:FindFirstChild("Car")
+	if not carToolTemplate then
+		warn("[TradeSession] Tool 'Car' tidak ditemukan di ServerStorage!")
+		return
+	end
+
+	local car = carToolTemplate:Clone()
+	local carModel = foundTemplate:Clone()
+	carModel.Name = "Model"
+	carModel.Parent = car
+
 	CollectionService:AddTag(car, "Car")
 
 	-- Unanchor and setup physics tags
@@ -105,7 +116,7 @@ local function addCarToBackpack(player: Player, carFullName: string)
 	car:SetAttribute("Price", sellPrice)
 	car:SetAttribute("Variant", variant)
 	car:SetAttribute("Rarity", rarity)
-	car:SetAttribute("Name", car.Name)
+	car:SetAttribute("Name", foundTemplate.Name)
 	car:SetAttribute("Type", "Car")
 	car.Name = carFullName
 
