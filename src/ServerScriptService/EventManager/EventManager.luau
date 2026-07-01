@@ -176,32 +176,48 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	local ServerStorage = game:GetService("ServerStorage")
 	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 	
-	local f1Cars = ServerStorage:FindFirstChild("F1 CARS")
-	local adminFolder = f1Cars and f1Cars:FindFirstChild("Admin")
-	
 	local foundTemplate = nil
 	local foundRarity = ""
 
-	local adminTemplate = adminFolder and adminFolder:FindFirstChild(carName)
-	if adminTemplate then
-		foundTemplate = adminTemplate
-		foundRarity = "Admin"
-	else
-		for _, carTemplate in ipairs(CollectionService:GetTagged("CarModel")) do
-			if carTemplate:IsDescendantOf(ServerStorage) and carTemplate.Name == carName then
-				foundTemplate = carTemplate
-				-- Cari rarity dari GameConfig
-				for rName, list in pairs(GameConfig.CarRarityList) do
-					if list[carName] then
-						foundRarity = rName
-						break
-					end
-				end
-				if foundRarity == "" then
-					foundRarity = "Common"
-				end
+	-- 1. Cari via tag CarModel di ServerStorage
+	for _, carTemplate in ipairs(CollectionService:GetTagged("CarModel")) do
+		if carTemplate:IsDescendantOf(ServerStorage) and carTemplate.Name == carName then
+			foundTemplate = carTemplate
+			break
+		end
+	end
+
+	-- 2. Jika tidak ditemukan, cari di ServerStorage secara langsung (rekursif)
+	if not foundTemplate then
+		for _, child in ipairs(ServerStorage:GetDescendants()) do
+			if (child:IsA("Model") or child:IsA("Tool")) and child.Name == carName then
+				foundTemplate = child
 				break
 			end
+		end
+	end
+
+	-- 3. Cari rarity di GameConfig
+	if foundTemplate then
+		for rName, list in pairs(GameConfig.CarRarityList) do
+			if list[carName] then
+				foundRarity = rName
+				break
+			end
+		end
+		
+		-- Jika tidak ada di list rarity (seperti mobil Admin custom), set rarity ke Admin atau Common
+		if foundRarity == "" then
+			local isUnderAdmin = false
+			local current = foundTemplate.Parent
+			while current and current ~= ServerStorage do
+				if current.Name == "Admin" then
+					isUnderAdmin = true
+					break
+				end
+				current = current.Parent
+			end
+			foundRarity = isUnderAdmin and "Admin" or "Common"
 		end
 	end
 	
