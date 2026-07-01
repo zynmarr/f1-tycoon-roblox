@@ -375,23 +375,14 @@ function AdminEventService:getAdminCars(player: Player): { { Name: string } }
 	local cars = {}
 	local added = {}
 	
+	local adminList = GameConfig.CarRarityList["Admin"] or {}
+
 	for _, carTemplate in ipairs(CollectionService:GetTagged("CarModel")) do
 		if carTemplate:IsDescendantOf(ServerStorage) then
 			local carName = carTemplate.Name
-			if not added[carName] then
-				-- Cek apakah rarity-nya Admin atau tidak terdaftar (berarti custom Admin car)
-				local isAdmin = true
-				for rName, list in pairs(GameConfig.CarRarityList) do
-					if rName ~= "Admin" and list[carName] then
-						isAdmin = false
-						break
-					end
-				end
-				
-				if isAdmin then
-					added[carName] = true
-					table.insert(cars, { Name = carName })
-				end
+			if not added[carName] and adminList[carName] then
+				added[carName] = true
+				table.insert(cars, { Name = carName })
 			end
 		end
 	end
@@ -482,28 +473,28 @@ function AdminEventService:getAvailableCars(player: Player)
 	local added = {}
 	
 	local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+	local adminList = GameConfig.CarRarityList["Admin"] or {}
 	
 	for _, carTemplate in ipairs(CollectionService:GetTagged("CarModel")) do
 		if carTemplate:IsDescendantOf(ServerStorage) and (carTemplate:IsA("Tool") or carTemplate:IsA("Model")) then
 			local carName = carTemplate.Name
-			if not added[carName] then
-				added[carName] = true
-				
-				local rarity = ""
+			if not added[carName] and not adminList[carName] then
+				-- Cari rarity dari GameConfig (selain Admin)
+				local rarity = nil
 				for rName, list in pairs(GameConfig.CarRarityList) do
-					if list[carName] then
+					if rName ~= "Admin" and list[carName] then
 						rarity = rName
 						break
 					end
 				end
-				if rarity == "" then
-					rarity = "Admin"
-				end
 				
-				table.insert(cars, {
-					Name = carName,
-					Rarity = rarity,
-				})
+				if rarity then
+					added[carName] = true
+					table.insert(cars, {
+						Name = carName,
+						Rarity = rarity,
+					})
+				end
 			end
 		end
 	end
