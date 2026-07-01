@@ -2,10 +2,46 @@
 local EventVariantManager = {}
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local EventVariantConfig = require(ReplicatedStorage:WaitForChild("EventVariantConfig") :: ModuleScript)
+local ServerStorage = game:GetService("ServerStorage")
+local EventVariantConfig = require(ReplicatedStorage:WaitForChild("EventVariantConfig"))
 
 -- Track active player loops to prevent duplicate threads and handle clean exits
 local activeLoops: { [Player]: string } = {}
+
+-- Track berapa player sedang dalam state Active (untuk menentukan kapan bersihkan assets)
+local activeEventCount = 0
+
+-- ============================================================
+-- ASSET SYNC: Duplikat EventAssets dari ServerStorage ke
+-- ReplicatedStorage agar bisa diakses client
+-- ============================================================
+local function ensureEventAssetsInReplicated()
+	if ReplicatedStorage:FindFirstChild("EventAssets") then
+		return -- Sudah ada, tidak perlu duplikat lagi
+	end
+
+	local sourceFolder = ServerStorage:FindFirstChild("EventAssets")
+	if not sourceFolder then
+		warn("[EventVariantManager] EventAssets tidak ditemukan di ServerStorage!")
+		return
+	end
+
+	local cloned = sourceFolder:Clone()
+	cloned.Parent = ReplicatedStorage
+	print("[EventVariantManager] EventAssets disalin dari ServerStorage ke ReplicatedStorage")
+end
+
+local function cleanupEventAssetsFromReplicated()
+	if activeEventCount > 0 then
+		return -- Masih ada player dengan event aktif, jangan bersihkan
+	end
+
+	local folder = ReplicatedStorage:FindFirstChild("EventAssets")
+	if folder then
+		folder:Destroy()
+		print("[EventVariantManager] EventAssets dihapus dari ReplicatedStorage (tidak ada event aktif)")
+	end
+end
 
 -- Helper to randomly select a variant key
 local function getRandomVariant(): string
@@ -29,7 +65,7 @@ function EventVariantManager.startPlayerLoop(player: Player)
 		-- Determine initial state (70% Rest, 30% Active)
 		local isInitialRest = math.random(1, 100) <= EventVariantConfig.Chances.Rest
 		local currentState = isInitialRest and "Rest" or "Active"
-		
+
 		-- Pre-roll the next variant if starting in Rest
 		local nextVariant = getRandomVariant()
 
@@ -39,6 +75,10 @@ function EventVariantManager.startPlayerLoop(player: Player)
 				local chosenVariant = getRandomVariant()
 				local varConfig = EventVariantConfig.Variants[chosenVariant]
 				local duration = EventVariantConfig.Durations.Active
+
+				-- Pastikan EventAssets tersedia di ReplicatedStorage untuk client
+				activeEventCount += 1
+				ensureEventAssetsInReplicated()
 
 				player:SetAttribute("ActiveEventVariant", chosenVariant)
 				player:SetAttribute("ActiveEventBoost", varConfig.Boost)
@@ -52,6 +92,10 @@ function EventVariantManager.startPlayerLoop(player: Player)
 					task.wait(1)
 					elapsed = elapsed + 1
 				end
+
+				-- Event selesai untuk player ini, kurangi counter
+				activeEventCount -= 1
+				cleanupEventAssetsFromReplicated()
 
 				-- Transition to Rest next
 				currentState = "Rest"
@@ -87,6 +131,20 @@ end
 -- Cleanup on shutdown
 game:BindToClose(function()
 	table.clear(activeLoops)
+	activeEventCount = 0
+	cleanupEventAssetsFromReplicated()
+end)
+
+-- Cleanup saat player keluar
+Players.PlayerRemoving:Connect(function(player)
+	if activeLoops[player] then
+		-- Jika player yang keluar sedang dalam event Active, kurangi counter
+		if player:GetAttribute("EventStatus") == "Active" then
+			activeEventCount = math.max(0, activeEventCount - 1)
+			cleanupEventAssetsFromReplicated()
+		end
+		activeLoops[player] = nil
+	end
 end)
 
 return EventVariantManager
