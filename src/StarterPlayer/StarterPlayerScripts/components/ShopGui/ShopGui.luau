@@ -1,6 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local MarketplaceService = game:GetService("MarketplaceService")
+-- ServerStorage is server-only, not accessible on client
 local React = require(ReplicatedStorage.Packages.React)
 local Networker = require(ReplicatedStorage.Packages.Networker)
 local ShopConfig = require(ReplicatedStorage:WaitForChild("ShopConfig"))
@@ -49,7 +50,7 @@ end
 -- ===== TOAST STATE COMPONENT FOR FEEDBACK =====
 local function ToastComponent(props)
 	local show, setShow = useState(true)
-	
+
 	useEffect(function()
 		local timer = task.delay(props.duration or 3, function()
 			setShow(false)
@@ -64,7 +65,9 @@ local function ToastComponent(props)
 		end
 	end, {})
 
-	if not show then return nil end
+	if not show then
+		return nil
+	end
 
 	return e("Frame", {
 		Size = UDim2.new(0, 280, 0, 50),
@@ -82,7 +85,7 @@ local function ToastComponent(props)
 			TextSize = 11,
 			Font = Enum.Font.GothamBold,
 			TextWrapped = true,
-		})
+		}),
 	})
 end
 
@@ -91,18 +94,22 @@ local function ShopGui(props)
 	local isStorybook = props.isStorybook or props.IsStorybook or false
 	local activeTab, setActiveTab = useState("Items")
 	local toasts, setToasts = useState({})
-	
+
 	local cache = useRef(nil)
 	if not cache.current then
 		cache.current = ViewportManager.new()
 	end
-	
+
 	-- Pemantauan Ukuran Layar untuk Responsivitas
-	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
+	local viewportSize, setViewportSize =
+		useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
 	useEffect(function()
 		local connection: RBXScriptConnection? = nil
 		local function setupCamera(cam: Camera?)
-			if connection then connection:Disconnect() connection = nil end
+			if connection then
+				connection:Disconnect()
+				connection = nil
+			end
 			if cam then
 				connection = cam:GetPropertyChangedSignal("ViewportSize"):Connect(function()
 					setViewportSize(cam.ViewportSize)
@@ -115,46 +122,58 @@ local function ShopGui(props)
 			setupCamera(workspace.CurrentCamera)
 		end)
 		return function()
-			if connection then connection:Disconnect() end
+			if connection then
+				connection:Disconnect()
+			end
 			camConnection:Disconnect()
 		end
 	end, {})
-	
+
 	local isMobile = viewportSize.X < 650 or viewportSize.Y < 500
-	
+
 	-- Saldo RPM Tokens & Cash Ter-sinkronisasi Otomatis
 	local rpmTokens, setRpmTokens = useState(0)
 	local cash, setCash = useState(0)
-	
+
 	useEffect(function()
 		if isStorybook then
 			setRpmTokens(25)
 			setCash(15000)
 			return
 		end
-		
+
 		local function setupLeaderstats(leaderstats)
-			if not leaderstats then return end
-			
+			if not leaderstats then
+				return
+			end
+
 			local tokenObj = leaderstats:WaitForChild("RPM Tokens") :: IntValue?
 			local cashObj = leaderstats:WaitForChild("Cash") :: IntValue?
-			
+
 			local tokenConn, cashConn
 			if tokenObj then
-				tokenConn = tokenObj.Changed:Connect(function(val) setRpmTokens(val) end)
+				tokenConn = tokenObj.Changed:Connect(function(val)
+					setRpmTokens(val)
+				end)
 				setRpmTokens(tokenObj.Value)
 			end
 			if cashObj then
-				cashConn = cashObj.Changed:Connect(function(val) setCash(val) end)
+				cashConn = cashObj.Changed:Connect(function(val)
+					setCash(val)
+				end)
 				setCash(cashObj.Value)
 			end
-			
+
 			return function()
-				if tokenConn then tokenConn:Disconnect() end
-				if cashConn then cashConn:Disconnect() end
+				if tokenConn then
+					tokenConn:Disconnect()
+				end
+				if cashConn then
+					cashConn:Disconnect()
+				end
 			end
 		end
-		
+
 		local leaderstats = player:FindFirstChild("leaderstats")
 		local cleanup
 		if leaderstats then
@@ -168,21 +187,25 @@ local function ShopGui(props)
 				end
 			end)
 		end
-		
+
 		return function()
-			if cleanup then cleanup() end
+			if cleanup then
+				cleanup()
+			end
 			if cache.current then
 				ViewportManager.clearAllCache(cache.current)
 			end
 		end
 	end, {})
-	
+
 	-- Networker Client
 	local networker = useState(function()
-		if isStorybook then return nil end
+		if isStorybook then
+			return nil
+		end
 		return Networker.client.new("ShopGui", {})
 	end)
-	
+
 	-- Toast Helper
 	local function showToast(message: string, isSuccess: boolean)
 		local id = tostring(os.clock()) .. tostring(math.random())
@@ -192,7 +215,7 @@ local function ShopGui(props)
 			return copy
 		end)
 	end
-	
+
 	local function removeToast(id)
 		setToasts(function(prev)
 			local copy = table.clone(prev)
@@ -200,14 +223,14 @@ local function ShopGui(props)
 			return copy
 		end)
 	end
-	
+
 	-- Handler Beli dengan RPM Tokens
 	local function handleBuyCrateWithTokens(crateLevel)
 		if isStorybook then
 			showToast("Simulator: Berhasil membeli crate!", true)
 			return
 		end
-		
+
 		local result = networker:fetch("buyBox", crateLevel)
 		if result and result.Success then
 			showToast("✅ " .. result.Message, true)
@@ -216,7 +239,7 @@ local function ShopGui(props)
 			showToast("❌ " .. errorMsg, false)
 		end
 	end
-	
+
 	-- Handler Beli dengan Robux
 	local function handleBuyCrateWithRobux(productId)
 		if isStorybook then
@@ -225,7 +248,7 @@ local function ShopGui(props)
 		end
 		MarketplaceService:PromptProductPurchase(player, productId)
 	end
-	
+
 	-- Handler Beli Gamepass
 	local function handleBuyGamepass(passId)
 		if isStorybook then
@@ -234,7 +257,7 @@ local function ShopGui(props)
 		end
 		MarketplaceService:PromptGamePassPurchase(player, passId)
 	end
-	
+
 	-- ===== RENDER CARDS =====
 	local function buildListChildren()
 		local children = {
@@ -251,7 +274,7 @@ local function ShopGui(props)
 				PaddingBottom = UDim.new(0, 4),
 			}),
 		}
-		
+
 		if activeTab == "Items" then
 			for i, item in ipairs(ShopConfig.Items) do
 				children["Item_" .. i] = e("Frame", {
@@ -261,7 +284,7 @@ local function ShopGui(props)
 					LayoutOrder = i,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-					
+
 					-- Judul Box
 					Title = e("TextLabel", {
 						Text = item.Name,
@@ -273,7 +296,7 @@ local function ShopGui(props)
 						Font = Enum.Font.GothamBold,
 						TextWrapped = true,
 					}),
-					
+
 					-- Deskripsi
 					Desc = e("TextLabel", {
 						Text = item.Description,
@@ -286,7 +309,7 @@ local function ShopGui(props)
 						TextWrapped = true,
 						TextYAlignment = Enum.TextYAlignment.Top,
 					}),
-					
+
 					-- Mini Crate Icon Placeholder (Visual 3D model handled at Roblox side)
 					CrateVisual = e("Frame", {
 						Size = UDim2.new(0, 55, 0, 55),
@@ -316,10 +339,10 @@ local function ShopGui(props)
 							TextSize = 8,
 							Font = Enum.Font.GothamBold,
 						}, {
-							Corner = e("UICorner", { CornerRadius = UDim.new(0, 3) })
-						})
+							Corner = e("UICorner", { CornerRadius = UDim.new(0, 3) }),
+						}),
 					}),
-					
+
 					-- Container Tombol Beli
 					ActionArea = e("Frame", {
 						Size = UDim2.new(1, -10, 0, isMobile and 38 or 52),
@@ -331,7 +354,7 @@ local function ShopGui(props)
 							Padding = UDim.new(0, 4),
 							SortOrder = Enum.SortOrder.LayoutOrder,
 						}),
-						
+
 						-- Tombol Tokens
 						TokenBtn = e("TextButton", {
 							Text = `⚙️ {item.Cost} RPM`,
@@ -346,9 +369,9 @@ local function ShopGui(props)
 								handleBuyCrateWithTokens(item.Level)
 							end,
 						}, {
-							Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) })
+							Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
 						}),
-						
+
 						-- Tombol Robux
 						RobuxBtn = e("TextButton", {
 							Text = `💵 {item.CostRobux} R$`,
@@ -363,9 +386,9 @@ local function ShopGui(props)
 								handleBuyCrateWithRobux(item.ProductID)
 							end,
 						}, {
-							Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) })
-						})
-					})
+							Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }),
+						}),
+					}),
 				})
 			end
 		else
@@ -378,7 +401,7 @@ local function ShopGui(props)
 					LayoutOrder = i,
 				}, {
 					Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
-					
+
 					-- Judul Pass
 					Title = e("TextLabel", {
 						Text = pass.Name,
@@ -390,7 +413,7 @@ local function ShopGui(props)
 						Font = Enum.Font.GothamBold,
 						TextWrapped = true,
 					}),
-					
+
 					-- Ikon
 					Icon = e("ImageLabel", {
 						Image = pass.Icon,
@@ -400,9 +423,9 @@ local function ShopGui(props)
 						BackgroundColor3 = Color3.fromRGB(18, 18, 22),
 						BorderSizePixel = 0,
 					}, {
-						Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) })
+						Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 					}),
-					
+
 					-- Deskripsi
 					Desc = e("TextLabel", {
 						Text = pass.Description,
@@ -415,7 +438,7 @@ local function ShopGui(props)
 						TextWrapped = true,
 						TextYAlignment = Enum.TextYAlignment.Top,
 					}),
-					
+
 					-- Tombol Beli Robux
 					BuyBtn = e("TextButton", {
 						Text = `💳 {pass.CostRobux} R$`,
@@ -430,15 +453,15 @@ local function ShopGui(props)
 							handleBuyGamepass(pass.ID)
 						end,
 					}, {
-						Corner = e("UICorner", { CornerRadius = UDim.new(0, 5) })
-					})
+						Corner = e("UICorner", { CornerRadius = UDim.new(0, 5) }),
+					}),
 				})
 			end
 		end
-		
+
 		return children
 	end
-	
+
 	-- Toast Container Layout
 	local function buildToastList()
 		local list = {
@@ -448,7 +471,7 @@ local function ShopGui(props)
 				HorizontalAlignment = Enum.HorizontalAlignment.Center,
 				VerticalAlignment = Enum.VerticalAlignment.Top,
 				SortOrder = Enum.SortOrder.LayoutOrder,
-			})
+			}),
 		}
 		local order = 1
 		for id, data in pairs(toasts) do
@@ -467,7 +490,8 @@ local function ShopGui(props)
 
 	-- Responsive Frame Toko Utama
 	local MainFrame = e("Frame", {
-		Size = isStorybook and UDim2.new(1, 0, 1, 0) or (isMobile and UDim2.new(0.82, 0, 0.82, 0) or UDim2.new(0.9, 0, 0.8, 0)),
+		Size = isStorybook and UDim2.new(1, 0, 1, 0)
+			or (isMobile and UDim2.new(0.82, 0, 0.82, 0) or UDim2.new(0.9, 0, 0.8, 0)),
 		Position = not isStorybook and UDim2.new(0.5, 0, 0.5, 0) or nil,
 		AnchorPoint = not isStorybook and Vector2.new(0.5, 0.5) or nil,
 		BackgroundColor3 = Color3.fromRGB(15, 15, 20),
@@ -479,7 +503,7 @@ local function ShopGui(props)
 			MinSize = Vector2.new(280, 240),
 			MaxSize = isMobile and Vector2.new(9999, 9999) or Vector2.new(540, 700),
 		}) or nil,
-		
+
 		-- HEADER SECTION
 		Header = e("Frame", {
 			Size = UDim2.new(1, 0, 0, 50),
@@ -494,7 +518,7 @@ local function ShopGui(props)
 				BackgroundColor3 = Color3.fromRGB(20, 20, 25),
 				BorderSizePixel = 0,
 			}),
-			
+
 			Title = e("TextLabel", {
 				Text = "🛒 SPEEDWAY SHOP",
 				Size = UDim2.new(0.5, 0, 1, 0),
@@ -505,7 +529,7 @@ local function ShopGui(props)
 				Font = Enum.Font.GothamBold,
 				TextXAlignment = Enum.TextXAlignment.Left,
 			}),
-			
+
 			-- Token Stats Display
 			TokenDisplay = e("TextLabel", {
 				Text = `⚙️ <font color='#00E5FF'><b>{GameUtils.formatCompact(rpmTokens)} RPM</b></font>`,
@@ -519,7 +543,7 @@ local function ShopGui(props)
 				RichText = true,
 				TextXAlignment = Enum.TextXAlignment.Right,
 			}),
-			
+
 			-- Close Button
 			CloseBtn = not isStorybook and e("TextButton", {
 				Text = "X",
@@ -532,13 +556,15 @@ local function ShopGui(props)
 				Font = Enum.Font.GothamBold,
 				TextSize = 11,
 				[React.Event.Activated] = function()
-					if props.onClose then props.onClose() end
+					if props.onClose then
+						props.onClose()
+					end
 				end,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) })
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 			}) or nil,
 		}),
-		
+
 		-- TAB SWITCHER
 		TabArea = e("Frame", {
 			Size = UDim2.new(1, -20, 0, 35),
@@ -549,7 +575,7 @@ local function ShopGui(props)
 				FillDirection = Enum.FillDirection.Horizontal,
 				Padding = UDim.new(0, 8),
 			}),
-			
+
 			ItemsTab = e("TextButton", {
 				Text = "📦 ITEM GAME",
 				Size = UDim2.new(0.5, -4, 1, 0),
@@ -559,26 +585,31 @@ local function ShopGui(props)
 				TextColor3 = activeTab == "Items" and Color3.fromRGB(0, 162, 255) or Color3.fromRGB(180, 180, 190),
 				Font = Enum.Font.GothamBold,
 				TextSize = isMobile and 10 or 12,
-				[React.Event.Activated] = function() setActiveTab("Items") end,
+				[React.Event.Activated] = function()
+					setActiveTab("Items")
+				end,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) })
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 			}),
-			
+
 			PassesTab = e("TextButton", {
 				Text = "🔱 GAMEPASS",
 				Size = UDim2.new(0.5, -4, 1, 0),
-				BackgroundColor3 = activeTab == "Gamepasses" and Color3.fromRGB(30, 30, 40) or Color3.fromRGB(20, 20, 25),
+				BackgroundColor3 = activeTab == "Gamepasses" and Color3.fromRGB(30, 30, 40)
+					or Color3.fromRGB(20, 20, 25),
 				BorderColor3 = activeTab == "Gamepasses" and Color3.fromRGB(255, 80, 80) or Color3.fromRGB(50, 50, 60),
 				BorderSizePixel = 1,
 				TextColor3 = activeTab == "Gamepasses" and Color3.fromRGB(255, 80, 80) or Color3.fromRGB(180, 180, 190),
 				Font = Enum.Font.GothamBold,
 				TextSize = isMobile and 10 or 12,
-				[React.Event.Activated] = function() setActiveTab("Gamepasses") end,
+				[React.Event.Activated] = function()
+					setActiveTab("Gamepasses")
+				end,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) })
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
 			}),
 		}),
-		
+
 		-- GRID CONTENT
 		GridScroll = e("ScrollingFrame", {
 			Size = UDim2.new(1, -20, 1, -115),
@@ -602,7 +633,7 @@ local function ShopGui(props)
 				Size = UDim2.new(1, 0, 1, 0),
 				BackgroundTransparency = 1,
 				Name = "ToastContainer",
-			}, buildToastList())
+			}, buildToastList()),
 		})
 	end
 
@@ -618,7 +649,7 @@ local function ShopGui(props)
 			Size = UDim2.new(1, 0, 1, 0),
 			BackgroundTransparency = 1,
 			Name = "ToastContainer",
-		}, buildToastList())
+		}, buildToastList()),
 	})
 end
 

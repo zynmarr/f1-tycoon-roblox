@@ -744,6 +744,14 @@ end
 function BoxManager.Init()
 	print("[BoxManager] Mengaktifkan kernel sistem Box modern terpusat.")
 
+	-- Copy BoxModels to ReplicatedStorage so client ShopGui/ViewportManager can access it
+	local sourceBoxModels = ServerStorage:FindFirstChild("BoxModels")
+	if sourceBoxModels and not ReplicatedStorage:FindFirstChild("BoxModels") then
+		local cloned = sourceBoxModels:Clone()
+		cloned.Parent = ReplicatedStorage
+		print("[BoxManager] BoxModels replicated to ReplicatedStorage for client use")
+	end
+
 	-- Cleanup rate limiting when player leaves
 	local Players = game:GetService("Players")
 	Players.PlayerRemoving:Connect(function(player)
