@@ -355,11 +355,6 @@ function BoxManager:openBox(player: Player, boxName: string)
 	local tier = GameConfig.RollRarity(totalLuck)
 	local tierData = GameConfig.Rarities[tier]
 
-	if tier == "Admin" then
-		tier = "Celestial"
-		tierData = GameConfig.Rarities[tier]
-	end
-
 	-- Cari template model mobil via tag CarModel (tidak perlu folder rarity di ServerStorage)
 	local carModelTag = "CarModel"
 	local carTemplates = CollectionService:GetTagged(carModelTag)
@@ -387,7 +382,7 @@ function BoxManager:openBox(player: Player, boxName: string)
 	end
 
 	local chosenCarTemplate = matchingTemplates[math.random(1, #matchingTemplates)]
-	
+
 	-- Clone the Tool "Car" from ServerStorage
 	local carToolTemplate = ServerStorage:FindFirstChild("Car")
 	if not carToolTemplate then
