@@ -4,6 +4,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local CollectionService = game:GetService("CollectionService")
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig") :: ModuleScript)
+local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils") :: ModuleScript)
 
 local TradeSession = {}
 TradeSession.__index = TradeSession
@@ -122,25 +123,7 @@ local function addCarToBackpack(player: Player, carFullName: string)
 
 	GameConfig.ApplyVisuals(car, rarity, variant)
 
-	local existingCar = backpack:FindFirstChild(car.Name)
-	if existingCar then
-		local stackFolder = existingCar:FindFirstChild("Stacks") or Instance.new("Folder", existingCar)
-		stackFolder.Name = "Stacks"
-
-		local carData = Instance.new("Configuration")
-		carData.Name = "CarData_" .. (#stackFolder:GetChildren() + 1)
-		for name, value in pairs(car:GetAttributes()) do
-			carData:SetAttribute(name, value)
-		end
-		carData.Parent = stackFolder
-
-		local carAmount = existingCar:GetAttribute("Amount") or 1
-		existingCar:SetAttribute("Amount", (carAmount :: number) + 1)
-		car:Destroy()
-	else
-		car:SetAttribute("Amount", 1)
-		car.Parent = backpack
-	end
+	GameUtils.addCarToInventory(player, car)
 end
 
 function TradeSession.new(id: string, p1: Player, p2: Player): SessionType

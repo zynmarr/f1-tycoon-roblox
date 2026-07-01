@@ -8,6 +8,7 @@ local RoleManager = require(game.ServerScriptService.RoleManager.RoleManager)
 local Networker = require(ReplicatedStorage.Packages.Networker)
 local ParkingAreaManager = require(game.ServerScriptService.ParkingAreaManager.ParkingAreaManager)
 local BoxManager = require(game.ServerScriptService.BoxManager.BoxManager)
+local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 
 -- Variables & Folder Setup
 local announcementEvent = ReplicatedStorage:FindFirstChild("AnnouncementEvent")
@@ -257,25 +258,7 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 		GameConfig.ApplyVisuals(car, foundRarity, variantStr)
 	end)
 	
-	local existingCar = backpack:FindFirstChild(car.Name)
-	if existingCar then
-		local stackFolder = existingCar:FindFirstChild("Stacks") or Instance.new("Folder", existingCar)
-		stackFolder.Name = "Stacks"
-		
-		local carData = Instance.new("Configuration")
-		carData.Name = "CarData_" .. (#stackFolder:GetChildren() + 1)
-		for name, value in pairs(car:GetAttributes()) do
-			carData:SetAttribute(name, value)
-		end
-		carData.Parent = stackFolder
-		
-		local carAmount = existingCar:GetAttribute("Amount") or 1
-		existingCar:SetAttribute("Amount", carAmount + 1)
-		car:Destroy()
-	else
-		car:SetAttribute("Amount", 1)
-		car.Parent = backpack
-	end
+	GameUtils.addCarToInventory(player, car)
 	
 	return true
 end

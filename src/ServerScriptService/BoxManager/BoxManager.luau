@@ -12,6 +12,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local RoleManager = require(ServerScriptService.RoleManager.RoleManager)
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
 local RoleConfig = require(ReplicatedStorage:WaitForChild("RoleConfig"))
 local Networker = require(ReplicatedStorage.Packages.Networker)
@@ -411,26 +412,7 @@ function BoxManager:openBox(player: Player, boxName: string)
 	GameConfig.ApplyVisuals(car, tier, variants)
 
 	-- Serahkan mobil ke inventory backpack/garasi pemain
-	local existingCar = backpack:FindFirstChild(car.Name)
-	if existingCar then
-		local stackFolder: Folder = existingCar:FindFirstChild("Stacks") :: Folder
-			or Instance.new("Folder", existingCar)
-		stackFolder.Name = "Stacks"
-
-		local carData = Instance.new("Configuration")
-		carData.Name = "CarData_" .. (#stackFolder:GetChildren() + 1)
-		for name, value in pairs(car:GetAttributes()) do
-			carData:SetAttribute(name, value)
-		end
-		carData.Parent = stackFolder
-
-		local carAmount: number = existingCar:GetAttribute("Amount") :: number or 1
-		existingCar:SetAttribute("Amount", carAmount + 1)
-		Debris:AddItem(car, 0.1)
-	else
-		car:SetAttribute("Amount", 1)
-		car.Parent = backpack
-	end
+	GameUtils.addCarToInventory(player, car)
 
 	-- 🟥 KONSUMSI ITEM: Update stack box atau hapus kotak jika habis
 	local stackFolder = targetBox:FindFirstChild("Stacks")

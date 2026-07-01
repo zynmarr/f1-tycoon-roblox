@@ -12,13 +12,17 @@ local BoxManager = require(game:GetService("ServerScriptService"):WaitForChild("
 local Networker = require(ReplicatedStorage.Packages.Networker)
 
 local ShopManager = {}
-local MAX_DISTANCE = 50
+local MAX_DISTANCE = 20
 
 -- ===== LOOP WAKTU BERMAIN (RPM TOKENS ACCUMULATION) =====
 local function startPlaytimeLoop(player: Player)
 	task.spawn(function()
 		while player and player.Parent do
 			task.wait(60) -- Tambah 1 Token setiap 1 menit (60 detik)
+			
+			if not player or not player.Parent then
+				break -- Hentikan thread segera jika player keluar saat menunggu
+			end
 			
 			local leaderstats = player:FindFirstChild("leaderstats")
 			local rpmVal = leaderstats and leaderstats:FindFirstChild("RPM Tokens") :: IntValue?

@@ -145,4 +145,39 @@ function GameUtils.getPlayerCars(player: Player): { Tool }
 	return cars
 end
 
+-- =============================================================================
+-- INVENTORY: Centralized helper to safely add/stack a car tool to player backpack
+-- =============================================================================
+function GameUtils.addCarToInventory(player: Player, car: Tool)
+	local backpack = player:FindFirstChild("Backpack")
+	if not backpack then
+		car:Destroy()
+		return
+	end
+
+	local existingCar = backpack:FindFirstChild(car.Name)
+	if existingCar then
+		local stackFolder = existingCar:FindFirstChild("Stacks")
+		if not stackFolder then
+			stackFolder = Instance.new("Folder")
+			stackFolder.Name = "Stacks"
+			stackFolder.Parent = existingCar
+		end
+
+		local carData = Instance.new("Configuration")
+		carData.Name = "CarData_" .. (#stackFolder:GetChildren() + 1)
+		for name, value in pairs(car:GetAttributes()) do
+			carData:SetAttribute(name, value)
+		end
+		carData.Parent = stackFolder
+
+		local carAmount = existingCar:GetAttribute("Amount") or 1
+		existingCar:SetAttribute("Amount", (carAmount :: number) + 1)
+		car:Destroy()
+	else
+		car:SetAttribute("Amount", 1)
+		car.Parent = backpack
+	end
+end
+
 return GameUtils

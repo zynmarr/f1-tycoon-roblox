@@ -412,6 +412,7 @@ local function InitializeServer()
 					pcall(function()
 						DataManager.syncData(player)
 					end)
+					task.wait(0.5) -- Stagger autosave untuk mencegah frame spikes
 				end
 			end
 		end
@@ -425,11 +426,12 @@ local function InitializeServer()
 			end)
 		end
 		
-		-- Tunggu hingga seluruh profil selesai dilepas dan dibersihkan dari cache
-		while next(DataManager.Profiles) ~= nil do
+		-- Tunggu hingga seluruh profil selesai dilepas (dengan 5 detik safety timeout)
+		local startTime = os.clock()
+		while next(DataManager.Profiles) ~= nil and (os.clock() - startTime) < 5 do
 			task.wait(0.1)
 		end
-		print("[MainServer] Seluruh data pemain telah aman dirilis!")
+		print("[MainServer] Seluruh data pemain telah aman dirilis (atau safety timeout terpicu)!")
 	end)
 end
 
