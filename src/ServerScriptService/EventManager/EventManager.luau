@@ -510,6 +510,24 @@ function AdminEventService:getAvailableCars(player: Player)
 		end
 	end
 	
+	-- Tambahan: Cari juga mobil Admin custom dari folder Admin di ServerStorage (untuk admin panel dropdown)
+	local f1Cars = ServerStorage:FindFirstChild("F1 CARS")
+	local adminFolder = ServerStorage:FindFirstChild("Admin") or (f1Cars and f1Cars:FindFirstChild("Admin"))
+	if adminFolder then
+		for _, child in ipairs(adminFolder:GetDescendants()) do
+			if (child:IsA("Model") or child:IsA("Tool")) and child.Name ~= "Car" then
+				local carName = child.Name
+				if not added[carName] then
+					added[carName] = true
+					table.insert(cars, {
+						Name = carName,
+						Rarity = "Admin",
+					})
+				end
+			end
+		end
+	end
+	
 	table.sort(cars, function(a, b)
 		return a.Name < b.Name
 	end)
