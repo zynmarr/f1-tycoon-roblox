@@ -431,32 +431,6 @@ function GameConfig.CanPlayerPickUp(player: Player, item: Instance): (boolean, s
 			return false, "Anda memerlukan Gamepass 'Steal Box' untuk mengambil box pemain lain!"
 		end
 
-		-- Membaca database pemain dari server
-		local DataManager = require(game:GetService("ServerScriptService"):WaitForChild("DataManager"):WaitForChild("DataManager"))
-		local pData = DataManager.getPlayerData(player)
-		if not pData then
-			return false, "Gagal memuat data pemain. Silakan coba lagi nanti."
-		end
-
-		if not pData.DailyStolenBoxes then
-			pData.DailyStolenBoxes = { LastResetTime = os.time(), Count = 0 }
-		end
-
-		-- Logika Reset Harian GMT
-		local now = os.time()
-		local lastReset = pData.DailyStolenBoxes.LastResetTime or 0
-		local lastDate = os.date("!*t", lastReset)
-		local nowDate = os.date("!*t", now)
-
-		if lastDate.yday ~= nowDate.yday or lastDate.year ~= nowDate.year then
-			pData.DailyStolenBoxes.Count = 0
-			pData.DailyStolenBoxes.LastResetTime = now
-		end
-
-		if (pData.DailyStolenBoxes.Count or 0) >= 5 then
-			return false, "Batas pencurian box harian Anda sudah penuh hari ini (5/5 box)!"
-		end
-
 		return true
 	end
 

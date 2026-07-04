@@ -241,6 +241,31 @@ local function processPickup(player: Player, box: Tool)
 			if not pData.DailyStolenBoxes then
 				pData.DailyStolenBoxes = { LastResetTime = os.time(), Count = 0 }
 			end
+
+			-- Logika Reset Harian GMT
+			local now = os.time()
+			local lastReset = pData.DailyStolenBoxes.LastResetTime or 0
+			local lastDate = os.date("!*t", lastReset)
+			local nowDate = os.date("!*t", now)
+
+			if lastDate.yday ~= nowDate.yday or lastDate.year ~= nowDate.year then
+				pData.DailyStolenBoxes.Count = 0
+				pData.DailyStolenBoxes.LastResetTime = now
+			end
+
+			if (pData.DailyStolenBoxes.Count or 0) >= 5 then
+				local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+				if NotifEvent then
+					NotifEvent:FireClient(
+						player,
+						"Akses Ditolak",
+						"Batas pencurian box harian Anda sudah penuh hari ini (5/5 box)!",
+						3
+					)
+				end
+				return
+			end
+
 			pData.DailyStolenBoxes.Count = (pData.DailyStolenBoxes.Count or 0) + 1
 			DataManager.syncData(player)
 
