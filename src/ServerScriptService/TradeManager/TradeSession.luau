@@ -111,7 +111,7 @@ local function addCarToBackpack(player: Player, carFullName: string)
 	end
 
 	local tierData = (GameConfig.Rarities :: any)[rarity] or { BasePrice = 1000 }
-	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, rarity, variant)
+	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, rarity, variant, carBaseName)
 
 	car:SetAttribute("Income", baseIncome)
 	car:SetAttribute("Price", sellPrice)

@@ -244,7 +244,7 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	end
 	
 	local tierData = GameConfig.Rarities[foundRarity] or { BasePrice = 1000 }
-	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, foundRarity, variantStr)
+	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, foundRarity, variantStr, foundTemplate.Name)
 	
 	car:SetAttribute("Income", baseIncome)
 	car:SetAttribute("Price", sellPrice)

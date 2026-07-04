@@ -590,7 +590,7 @@ function GameConfig.RollRarity(luck: number): string
 	return "Common"
 end
 
-function GameConfig.CalculatePrice(base: number?, rName: string, vNameString: string?): (number, number)
+function GameConfig.CalculatePrice(base: number?, rName: string, vNameString: string?, carName: string?): (number, number)
 	local rData = GameConfig.Rarities[rName] or GameConfig.Rarities.Common
 	local totalVariantMulti = 1.0
 
@@ -604,13 +604,26 @@ function GameConfig.CalculatePrice(base: number?, rName: string, vNameString: st
 		end
 	end
 
-	local rawPrice = (base or 1000) * rData.PriceMod * totalVariantMulti
+	local basePrice = base or 1000
+	local baseIncomeVal = nil
 
-	-- Compress values smoothly using f(x) = L * x / (x + k)
-	-- Max sell price = 100,000,000, k = 90,000,000
-	-- Max income = 300,000, k = 3,000,000
+	if carName and GameConfig.CarRarityList[rName] and GameConfig.CarRarityList[rName][carName] then
+		local carStats = GameConfig.CarRarityList[rName][carName]
+		basePrice = carStats.price or basePrice
+		baseIncomeVal = carStats.income
+	end
+
+	local rawPrice = basePrice * rData.PriceMod * totalVariantMulti
 	local sellPrice = math.floor(100000000 * rawPrice / (rawPrice + 90000000))
-	local income = math.floor(300000 * rawPrice / (rawPrice + 3000000))
+
+	local income
+	if baseIncomeVal then
+		-- Terapkan pengali varian & rarity langsung ke income statis
+		income = math.floor(baseIncomeVal * rData.PriceMod * totalVariantMulti)
+	else
+		-- Fallback formula matematis jika tidak ditemukan di list
+		income = math.floor(300000 * rawPrice / (rawPrice + 3000000))
+	end
 
 	return income, sellPrice
 end

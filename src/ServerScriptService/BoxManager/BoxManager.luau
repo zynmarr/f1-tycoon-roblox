@@ -467,7 +467,7 @@ function BoxManager:openBox(player: Player, boxName: string)
 	CollectionService:AddTag(car, "Car")
 
 	-- Pasang atribut finansial dan visual ke mobil baru
-	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, tier, variants)
+	local baseIncome, sellPrice = GameConfig.CalculatePrice(tierData.BasePrice, tier, variants, chosenCarTemplate.Name)
 
 	car:SetAttribute("Income", baseIncome)
 	car:SetAttribute("Price", sellPrice)

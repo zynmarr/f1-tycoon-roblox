@@ -21,7 +21,8 @@ local function getOrCalculateCarIncome(car: Instance): number
 	local rarity: string = car:GetAttribute("Rarity") :: string or "Common"
 	local variant: string? = car:GetAttribute("Variant") :: string? or "Normal"
 	local tierData = GameConfig.Rarities[rarity] or GameConfig.Rarities.Common
-	local baseIncome, _ = GameConfig.CalculatePrice(tierData.BasePrice, rarity, variant)
+	local carName = car:GetAttribute("Name") or car.Name
+	local baseIncome, _ = GameConfig.CalculatePrice(tierData.BasePrice, rarity, variant, carName)
 
 	car:SetAttribute("Income", baseIncome)
 	return baseIncome
