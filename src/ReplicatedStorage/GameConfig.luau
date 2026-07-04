@@ -395,17 +395,72 @@ end
 -- GAME CONFIG: INVENTORY & ITEM MANAGEMENT
 -- =============================================================================
 
-function GameConfig.CanPlayerPickUp(player: Player): boolean
-	local char = player.Character
-	if not char then
-		return false
+function GameConfig.CanPlayerPickUp(player: Player, item: Instance): (boolean, string?)
+	local itemOwner = item:GetAttribute("Owner")
+	local itemType = item:GetAttribute("Type")
+
+	-- Jika item tidak memiliki owner, izinkan
+	if not itemOwner or itemOwner == "" then
+		return true
 	end
-	for _, obj in pairs(char:GetChildren()) do
-		if obj:GetAttribute("ItemName") then
-			return false
+
+	-- Jika item milik sendiri, izinkan
+	if itemOwner == player.Name then
+		return true
+	end
+
+	-- Jika item milik orang lain:
+	if itemType == "Car" then
+		return false, "Anda tidak dapat mengambil mobil milik pemain lain!"
+	elseif itemType == "Box" then
+		local RunService = game:GetService("RunService")
+		if not RunService:IsServer() then
+			return false, "Pengecekan pencurian hanya bisa divalidasi di Server."
 		end
+
+		local MarketplaceService = game:GetService("MarketplaceService")
+		local hasGamepass = false
+		local success, result = pcall(function()
+			return MarketplaceService:UserOwnsGamePassAsync(player.UserId, 1819444793)
+		end)
+		if success then
+			hasGamepass = result
+		end
+
+		if not hasGamepass then
+			return false, "Anda memerlukan Gamepass 'Steal Box' untuk mengambil box pemain lain!"
+		end
+
+		-- Membaca database pemain dari server
+		local DataManager = require(game:GetService("ServerScriptService"):WaitForChild("DataManager"):WaitForChild("DataManager"))
+		local pData = DataManager.getPlayerData(player)
+		if not pData then
+			return false, "Gagal memuat data pemain. Silakan coba lagi nanti."
+		end
+
+		if not pData.DailyStolenBoxes then
+			pData.DailyStolenBoxes = { LastResetTime = os.time(), Count = 0 }
+		end
+
+		-- Logika Reset Harian GMT
+		local now = os.time()
+		local lastReset = pData.DailyStolenBoxes.LastResetTime or 0
+		local lastDate = os.date("!*t", lastReset)
+		local nowDate = os.date("!*t", now)
+
+		if lastDate.yday ~= nowDate.yday or lastDate.year ~= nowDate.year then
+			pData.DailyStolenBoxes.Count = 0
+			pData.DailyStolenBoxes.LastResetTime = now
+		end
+
+		if (pData.DailyStolenBoxes.Count or 0) >= 5 then
+			return false, "Batas pencurian box harian Anda sudah penuh hari ini (5/5 box)!"
+		end
+
+		return true
 	end
-	return true
+
+	return false, "Aksi tidak diizinkan."
 end
 
 function GameConfig.ApplyVisuals(tool: Tool, rarityName: string, variantString: string?)
@@ -479,27 +534,12 @@ function GameConfig.ApplyVisuals(tool: Tool, rarityName: string, variantString: 
 end
 
 function GameConfig.ClearHands(player: Player)
-	local char = player.Character
-	local inv = player:FindFirstChild("ItemInventory")
-	if not char or not inv then
-		return
-	end
+	local character = player.Character
+	if not character then return end
+	local humanoid = character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then return end
 
-	local hotbar = inv:FindFirstChild("Hotbar")
-	local bag = inv:FindFirstChild("Bag")
-	local capacity = inv:FindFirstChild("HotbarCapacity") :: IntValue?
-
-	for _, obj in pairs(char:GetChildren()) do
-		if obj:GetAttribute("ItemName") then
-			if hotbar and capacity and #hotbar:GetChildren() < capacity.Value then
-				GameConfig.StoreItem(obj, hotbar)
-				obj:SetAttribute("LastLocation", "Hotbar")
-			elseif bag then
-				GameConfig.StoreItem(obj, bag)
-				obj:SetAttribute("LastLocation", "Bag")
-			end
-		end
-	end
+	humanoid:UnequipTools()
 end
 
 function GameConfig.StoreItem(item: Instance, targetFolder: Folder)

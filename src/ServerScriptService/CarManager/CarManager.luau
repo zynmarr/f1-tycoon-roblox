@@ -86,7 +86,7 @@ end
 local function processPickup(player: Player, car: Tool)
 	local rotationOffset = car:GetAttribute("RotationOffset") or 0
 	local finalRot = math.rad(0 + rotationOffset)
-	car.Grip = CFrame.new(0, -0.8, 2) * CFrame.Angles(0, finalRot, 0)
+	car.Grip = CFrame.new(0, 0, 1) * CFrame.Angles(0, finalRot, 0)
 	GameUtils.updateTextLabel(car)
 end
 
@@ -106,11 +106,13 @@ local function setupCar(car: Tool)
 
 	-- 3. Set PrimaryPart
 	if car:IsA("Model") or car:IsA("Tool") then
-		car.PrimaryPart = handle
+		if car and car.PrimaryPart then
+			car.PrimaryPart = handle :: BasePart
+		end
 		local model = car:FindFirstChild("Model") :: Model?
 		if model then
-			model.PrimaryPart = handle
-			model:PivotTo(handle.CFrame)
+			model.PrimaryPart = handle :: BasePart
+			model:PivotTo(handle.CFrame :: CFrame)
 		end
 	end
 
@@ -161,7 +163,7 @@ end
 -- =============================================================================
 -- LISTENER: Jalankan setup saat tag Car ditambahkan
 -- =============================================================================
-local function onCarAdded(car: Instance)
+local function onCarAdded(car: Tool)
 	local function checkStatus(): boolean
 		local inWorkspace = car:IsDescendantOf(workspace)
 		local inPlayer = false
@@ -253,6 +255,7 @@ function CarManager.spawnLoadedCar(player: Player, carData: any, plot: Instance)
 			carTool:SetAttribute(attr, val)
 		end
 	end
+	carTool:SetAttribute("Owner", player.Name)
 
 	-- Tempatkan ke Backpack atau Parking
 	if carData.Location == "Backpack" then

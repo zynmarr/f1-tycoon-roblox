@@ -52,7 +52,8 @@ function UpgradeMachineArea.init()
 			if area then
 				local surface = area:WaitForChild("SurfaceGui", 5)
 				if surface then
-					local list = surface:WaitForChild("List", 5)
+					local frame = surface:WaitForChild("Frame", 5)
+					local list = frame:WaitForChild("List", 5)
 					if list then
 						local function setupButtons()
 							for _, item in ipairs(list:GetChildren()) do

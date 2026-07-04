@@ -28,6 +28,15 @@ local function getOrCalculateCarIncome(car: Instance): number
 end
 
 local function processPickup(player: Player, car: Tool)
+	local allowed, errMsg = GameConfig.CanPlayerPickUp(player, car)
+	if not allowed then
+		local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+		if NotifEvent then
+			NotifEvent:FireClient(player, "Akses Ditolak", errMsg or "Tidak dapat mengambil mobil ini!", 3)
+		end
+		return
+	end
+
 	local character = player.Character
 	if not character then
 		return
@@ -40,6 +49,7 @@ local function processPickup(player: Player, car: Tool)
 		handle.CanTouch = true
 	end
 
+	GameConfig.ClearHands(player)
 	car:ScaleTo(0.2)
 	car.Parent = character
 
@@ -67,30 +77,31 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 
 		-- 3. PINDAHKAN PARENT DULU
 		-- (Sangat penting agar koordinat relatif PivotTo dihitung di container yang baru)
-		tool.Parent = myCars
-		local rotation = 0
+		tool.Parent = myCars :: Folder
+		local rotation = -90
 		local angle = CFrame.Angles(0, math.rad(rotation), 0)
+		local areaPosition = area.CFrame.Position :: Vector3
 
-		local targetCFrame = area:GetPivot() * CFrame.new(0, 2.25, 0) * angle
+		local targetCFrame: CFrame = CFrame.new(areaPosition.X, areaPosition.Y + 2.25, areaPosition.Z) * angle
 
 		-- 4. EKSEKUSI POSISI (Gunakan World Pivot agar aman)
 		-- Kita arahkan ke tengah area parkir, naik 2.5 studs (sumbu Y)
 		if isEdition then
 			rotation = 180
 			angle = CFrame.Angles(0, math.rad(rotation), 0)
-			targetCFrame = area:GetPivot() * CFrame.new(0, 2.6, 0) * angle
+			targetCFrame = CFrame.new(areaPosition.X, areaPosition.Y + 2.25, areaPosition.Z) * angle
 		end
 
 		local lotGroup: Folder = area.Parent :: Folder
 		if lotGroup.Name == "Lots1" then
-			rotation = 180
+			rotation = 90
 			angle = CFrame.Angles(0, math.rad(rotation), 0)
-			targetCFrame = area:GetPivot() * CFrame.new(0, 2.25, 0) * angle
+			targetCFrame = CFrame.new(areaPosition.X, areaPosition.Y + 2.25, areaPosition.Z) * angle
 
 			if isEdition then
 				rotation = 360
 				angle = CFrame.Angles(0, math.rad(rotation), 0)
-				targetCFrame = area:GetPivot() * CFrame.new(0, 2.6, 0) * angle
+				targetCFrame = CFrame.new(areaPosition.X, areaPosition.Y + 2.25, areaPosition.Z) * angle
 			end
 		end
 
@@ -103,9 +114,11 @@ local function storeCarToArea(player: Player, area: Part, tool: Tool)
 			return warn("Handle not found in tool: " .. tool.Name)
 		end
 
-		handle.Anchored = true
-		handle.CanCollide = false
-		handle.CanTouch = false
+		if handle then
+			handle.Anchored = true
+			handle.CanCollide = false
+			handle.CanTouch = false
+		end
 
 		-- 5. RESET GRIP & SCALE
 		--tool.Grip = CFrame.new(0, 120, 0)
@@ -133,7 +146,7 @@ end
 local function parkedInArea(area: Part)
 	local prompt: ProximityPrompt? = area:FindFirstChild("ProximityPrompt") :: ProximityPrompt?
 		or (area.Parent and area.Parent:FindFirstChild("ProximityPrompt")) :: ProximityPrompt?
-	if not prompt then
+	if prompt == nil then
 		return
 	end
 
@@ -158,7 +171,7 @@ local function parkedInArea(area: Part)
 		local toolOnCharacter = if character then character:FindFirstChildOfClass("Tool") :: Tool else nil
 		local isActive = prompt:GetAttribute("IsActive")
 
-		local allParkingLots = area:FindFirstAncestor("AllParkingLots") :: Folder? -- Asumsi struktur: Workspace > Plots > Plot1 > AllParkingLots > ParkingArea
+		local allParkingLots: Folder = area:FindFirstAncestor("AllParkingLots") :: Folder -- Asumsi struktur: Workspace > Plots > Plot1 > AllParkingLots > ParkingArea
 		local plot = if allParkingLots then allParkingLots.Parent else nil
 
 		if plot and plot:GetAttribute("Owner") ~= player.Name then
@@ -226,8 +239,8 @@ function ParkingAreaManager.Init()
 			task.wait(1)
 			for player, totalIncome in pairs(playerPassiveIncome) do
 				if player and player.Parent and totalIncome > 0 then
-					local leaderstats = player:FindFirstChild("leaderstats")
-					local cash: IntValue? = leaderstats and leaderstats:FindFirstChild("Cash") :: IntValue?
+					local leaderstats = player:FindFirstChild("leaderstats") :: Folder
+					local cash = leaderstats:FindFirstChild("Cash") :: IntValue
 					if cash then
 						-- Calculate VIP/Staff Multiplier
 						local multiplier = 1.0
@@ -256,7 +269,8 @@ function ParkingAreaManager.Init()
 						local dccChance = RebirthConfig.getUpgradeEffect("DoubleCashChance", dccLevel)
 						local doubleMultiplier = (math.random() * 100 < dccChance) and 2 or 1
 
-						local addedCash = math.floor(totalIncome * multiplier * cashMulBonus * doubleMultiplier)
+						local addedCash =
+							math.floor(totalIncome * multiplier * cashMulBonus * doubleMultiplier :: number)
 						cash.Value = cash.Value + addedCash
 					end
 				end

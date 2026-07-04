@@ -423,7 +423,8 @@ local function setupMachineArea(machineArea: Folder)
 
 	local boardArea = billboardModel and billboardModel:FindFirstChild("Area")
 	local boardSurface = boardArea and boardArea:FindFirstChild("SurfaceGui")
-	local boardList = boardSurface and boardSurface:FindFirstChild("List")
+	local frame = boardSurface and boardSurface:FindFirstChild("Frame")
+	local boardList = frame and frame:FindFirstChild("List")
 	local boardItemTemplate = boardList and boardList:FindFirstChild("Item")
 
 	listOfBoards[machineArea] = {
@@ -790,7 +791,8 @@ function SpawnerBoxManager:buyUpgrade(player, machineArea, upgradeName)
 	-- 6. Hapus UI upgrade di billboard dari server agar sinkron untuk semua player
 	local billArea = billboardGui:FindFirstChild("Area")
 	local surface = billArea and billArea:FindFirstChild("SurfaceGui")
-	local list = surface and surface:FindFirstChild("List")
+	local frame = surface and surface:FindFirstChild("Frame")
+	local list = frame and frame:FindFirstChild("List")
 	local itemUI = list and list:FindFirstChild(upgradeName)
 	if itemUI then
 		itemUI.Visible = false

@@ -119,6 +119,7 @@ local function addCarToBackpack(player: Player, carFullName: string)
 	car:SetAttribute("Rarity", rarity)
 	car:SetAttribute("Name", foundTemplate.Name)
 	car:SetAttribute("Type", "Car")
+	car:SetAttribute("Owner", player.Name)
 	car.Name = carFullName
 
 	GameConfig.ApplyVisuals(car, rarity, variant)

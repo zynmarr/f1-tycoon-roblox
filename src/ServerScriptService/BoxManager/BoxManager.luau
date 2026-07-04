@@ -10,6 +10,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local ServerStorage = game:GetService("ServerStorage")
 
 local RoleManager = require(ServerScriptService.RoleManager.RoleManager)
+local DataManager = require(ServerScriptService.DataManager.DataManager)
 
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
@@ -203,6 +204,20 @@ local function processPickup(player: Player, box: Tool)
 	local rebirthInvBonus = player:GetAttribute("RebirthInventoryBonus") or 0
 	local maxInventorySlots = (GameConfig.MaxInventorySlots or 50) + rebirthInvBonus
 
+	local allowed, errMsg = GameConfig.CanPlayerPickUp(player, box)
+	if not allowed then
+		local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+		if NotifEvent then
+			NotifEvent:FireClient(
+				player,
+				"Akses Ditolak",
+				errMsg or "Tidak dapat mengambil box ini!",
+				3
+			)
+		end
+		return
+	end
+
 	if not existingBox and inventoryCount >= maxInventorySlots then
 		local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
 		if NotifEvent then
@@ -217,6 +232,29 @@ local function processPickup(player: Player, box: Tool)
 	end
 
 	box:SetAttribute("HasPicked", true)
+
+	-- Logika kuota pencurian jika mengambil box orang lain
+	local boxOwner = box:GetAttribute("Owner")
+	if boxOwner and boxOwner ~= player.Name then
+		local pData = DataManager.getPlayerData(player)
+		if pData then
+			if not pData.DailyStolenBoxes then
+				pData.DailyStolenBoxes = { LastResetTime = os.time(), Count = 0 }
+			end
+			pData.DailyStolenBoxes.Count = (pData.DailyStolenBoxes.Count or 0) + 1
+			DataManager.syncData(player)
+
+			local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+			if NotifEvent then
+				NotifEvent:FireClient(
+					player,
+					"Box Dicuri!",
+					"Anda telah mencuri box milik " .. boxOwner .. " (" .. tostring(pData.DailyStolenBoxes.Count) .. "/5 hari ini)",
+					3
+				)
+			end
+		end
+	end
 
 	local handle = box:FindFirstChild("Handle") :: Part?
 	local prompt = handle and handle:FindFirstChildOfClass("ProximityPrompt")
@@ -259,7 +297,12 @@ local function processPickup(player: Player, box: Tool)
 		Debris:AddItem(box, 0.1)
 	else
 		box:SetAttribute("Amount", 1)
-		box.Parent = backpack
+		GameConfig.ClearHands(player)
+		if player.Character and player.Character:FindFirstChild("Humanoid") then
+			box.Parent = player.Character
+		else
+			box.Parent = backpack
+		end
 	end
 end
 
@@ -407,6 +450,7 @@ function BoxManager:openBox(player: Player, boxName: string)
 	car:SetAttribute("Rarity", tier)
 	car:SetAttribute("Name", chosenCarTemplate.Name)
 	car:SetAttribute("Type", "Car")
+	car:SetAttribute("Owner", player.Name)
 	car.Name = chosenCarTemplate.Name .. "_" .. tier .. "_" .. variants
 
 	GameConfig.ApplyVisuals(car, tier, variants)

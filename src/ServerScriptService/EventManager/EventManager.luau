@@ -252,6 +252,7 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	car:SetAttribute("Rarity", foundRarity)
 	car:SetAttribute("Name", foundTemplate.Name)
 	car:SetAttribute("Type", "Car")
+	car:SetAttribute("Owner", player.Name)
 	car.Name = foundTemplate.Name .. "_" .. foundRarity .. "_" .. string.gsub(variantStr, ",", "_")
 
 	pcall(function()

@@ -61,6 +61,13 @@ ShopConfig.Gamepasses = {
 		Description = "Kesempatan 25% mendapatkan Cash 2x lipat saat menjual mobil di area penjualan.",
 		Icon = "rbxassetid://15682855590",
 	},
+	{
+		ID = 1819444793,
+		Name = "Steal Box Pass",
+		CostRobux = 150,
+		Description = "Memungkinkan Anda mencuri hingga 5 box dari plot pemain lain setiap harinya (mobil tidak bisa dicuri).",
+		Icon = "rbxassetid://15682855591",
+	},
 }
 
 -- Helper untuk mencari item berdasarkan level box

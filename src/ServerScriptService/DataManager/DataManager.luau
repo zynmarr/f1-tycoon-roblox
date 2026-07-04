@@ -50,6 +50,10 @@ local DEFAULT_DATA = {
 			ClaimedMilestones = {},
 		},
 	},
+	DailyStolenBoxes = {
+		LastResetTime = 0,
+		Count = 0,
+	},
 }
 
 -- ===== ATTRIBUTE SCHEMA VALIDATION =====
