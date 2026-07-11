@@ -14,6 +14,7 @@ local CustomStats = require(script.Parent.CustomStats)
 local Hotbar = require(script.Parent.Hotbar)
 local InventoryModal = require(script.Parent.InventoryModal)
 local IndexModal = require(script.Parent.IndexModal)
+local FusionModal = require(script.Parent.FusionModal)
 local OpenBoxOverlay = require(script.Parent.OpenBoxOverlay)
 local ViewportManager = require(script.Parent.Parent.ViewportManager)
 
@@ -22,6 +23,7 @@ local player = Players.LocalPlayer
 local function MainHUD(props: { Buttons: any })
 	local inventoryOpen, setInventoryOpen = useState(false)
 	local indexOpen, setIndexOpen = useState(false)
+	local fusionOpen, setFusionOpen = useState(false)
 	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
 
 	-- Cache Viewport Frame untuk preview barang saat di-drag
@@ -391,6 +393,8 @@ local function MainHUD(props: { Buttons: any })
 			SetInventoryOpen = setInventoryOpen,
 			IndexOpen = indexOpen,
 			SetIndexOpen = setIndexOpen,
+			FusionOpen = fusionOpen,
+			SetFusionOpen = setFusionOpen,
 		}),
 
 		-- 3. Custom Stats & Active Buffs
@@ -435,7 +439,15 @@ local function MainHUD(props: { Buttons: any })
 			end,
 		}) or nil,
 
-		-- 8. Drag Preview Thumbnail
+		-- 8. R&D Fusion Lab Modal
+		FusionModal = fusionOpen and e(FusionModal, {
+			IsMobile = isMobile,
+			OnClose = function()
+				setFusionOpen(false)
+			end,
+		}) or nil,
+
+		-- 9. Drag Preview Thumbnail
 		DragThumbnail = dragThumbnail,
 	})
 end

@@ -10,6 +10,8 @@ local function Sidebar(props: {
 	SetInventoryOpen: (boolean) -> (),
 	IndexOpen: boolean,
 	SetIndexOpen: (boolean) -> (),
+	FusionOpen: boolean,
+	SetFusionOpen: (boolean) -> (),
 })
 	-- Menggabungkan tombol internal (Backpack) dengan tombol dinamis dari props
 	local sortedButtons = {}
@@ -24,6 +26,7 @@ local function Sidebar(props: {
 			props.SetInventoryOpen(not props.InventoryOpen)
 			if not props.InventoryOpen then
 				props.SetIndexOpen(false)
+				props.SetFusionOpen(false)
 			end
 		end,
 	})
@@ -33,11 +36,27 @@ local function Sidebar(props: {
 		Name = "CarIndex",
 		Label = "Car Index",
 		Icon = "🏆",
-		Order = 1.5,
+		Order = 1.3,
 		Callback = function()
 			props.SetIndexOpen(not props.IndexOpen)
 			if not props.IndexOpen then
 				props.SetInventoryOpen(false)
+				props.SetFusionOpen(false)
+			end
+		end,
+	})
+
+	-- Tombol CarFusion selalu ditambahkan sebagai built-in
+	table.insert(sortedButtons, {
+		Name = "CarFusion",
+		Label = "Fusion Lab",
+		Icon = "🧪",
+		Order = 1.6,
+		Callback = function()
+			props.SetFusionOpen(not props.FusionOpen)
+			if not props.FusionOpen then
+				props.SetInventoryOpen(false)
+				props.SetIndexOpen(false)
 			end
 		end,
 	})
@@ -59,7 +78,7 @@ local function Sidebar(props: {
 	-- Merender masing-masing tombol
 	local buttonElements = {}
 	for index, btn in ipairs(sortedButtons) do
-		local isActive = (btn.Name == "Backpack" and props.InventoryOpen) or (btn.Name == "CarIndex" and props.IndexOpen)
+		local isActive = (btn.Name == "Backpack" and props.InventoryOpen) or (btn.Name == "CarIndex" and props.IndexOpen) or (btn.Name == "CarFusion" and props.FusionOpen)
 		local size = props.IsMobile and UDim2.fromOffset(36, 36) or UDim2.fromOffset(42, 42)
 
 		buttonElements[btn.Name] = e("TextButton", {
