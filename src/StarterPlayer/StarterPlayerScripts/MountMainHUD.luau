@@ -13,19 +13,6 @@ function MountMainHUD.init()
 	local MainHUD = require(script.Parent.components.MainHUD.MainHUD)
 
 	local player = Players.LocalPlayer
-	local playerGui = player:WaitForChild("PlayerGui")
-
-	-- ===== SCREENGUI INDUK =====
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.Name = "MainHUD"
-	screenGui.ResetOnSpawn = false
-	screenGui.IgnoreGuiInset = true
-	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-	screenGui.Parent = playerGui
-	screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
-
-	-- ===== REACT ROOT =====
-	local root = ReactRoblox.createRoot(screenGui)
 
 	-- ===== DYNAMIC SIDEBAR REGISTRY =====
 	local RegisterSidebarButton: any = ReplicatedStorage:FindFirstChild("RegisterSidebarButton")
@@ -45,14 +32,17 @@ function MountMainHUD.init()
 	end
 
 	local registeredButtons = {}
+	local root = nil
 
 	local function updateUIRender()
-		root:render(React.createElement(MainHUD, {
-			Buttons = registeredButtons,
-		}))
+		if root then
+			root:render(React.createElement(MainHUD, {
+				Buttons = registeredButtons,
+			}))
+		end
 	end
 
-	-- Hubungkan BindableEvents untuk update props dinamis
+	-- Hubungkan BindableEvents secara SINKRONIS sebelum ada yielding / penangguhan thread
 	RegisterSidebarButton.Event:Connect(
 		function(config: { Name: string, Label: string, Icon: string, Callback: () -> (), Order: number? })
 			if config and config.Name then
@@ -68,6 +58,21 @@ function MountMainHUD.init()
 			updateUIRender()
 		end
 	end)
+
+	-- Jalankan yielding WaitForChild aman setelah koneksi terikat
+	local playerGui = player:WaitForChild("PlayerGui")
+
+	-- ===== SCREENGUI INDUK =====
+	local screenGui = Instance.new("ScreenGui")
+	screenGui.Name = "MainHUD"
+	screenGui.ResetOnSpawn = false
+	screenGui.IgnoreGuiInset = true
+	screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	screenGui.Parent = playerGui
+	screenGui.ScreenInsets = Enum.ScreenInsets.DeviceSafeInsets
+
+	-- ===== REACT ROOT =====
+	root = ReactRoblox.createRoot(screenGui)
 
 	-- Render awal
 	updateUIRender()
