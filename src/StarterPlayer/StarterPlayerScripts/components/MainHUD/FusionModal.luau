@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local React = require(ReplicatedStorage.Packages.React)
-local Networker = require(ReplicatedStorage.Packages.Packages.Networker)
+local Networker = require(ReplicatedStorage.Packages.Networker)
 
 local e = React.createElement
 local useState = React.useState
