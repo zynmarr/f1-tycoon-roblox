@@ -381,7 +381,7 @@ local function IndexModal(props: {
 
 			-- Grid Catalogue Scroll Frame
 			GridScroll = e("ScrollingFrame", {
-				Size = UDim2.new(1, 0, 1, -100),
+				Size = UDim2.new(1, 0, 1, -145),
 				BackgroundTransparency = 1,
 				CanvasSize = UDim2.new(0, 0, 0, 0),
 				AutomaticCanvasSize = Enum.AutomaticSize.Y :: any,
