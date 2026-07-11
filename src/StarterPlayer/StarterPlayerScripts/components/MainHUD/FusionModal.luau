@@ -73,7 +73,7 @@ local function FusionModal(props: {
 		task.spawn(function()
 			task.wait(1.5) -- Build suspense
 			local success, res = pcall(function()
-				return fusionService:fuseCars(carFullName)
+				return fusionService:fetch("fuseCars", carFullName)
 			end)
 			
 			setFusingCar(nil)
