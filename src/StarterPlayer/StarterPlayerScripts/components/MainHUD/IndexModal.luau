@@ -243,6 +243,7 @@ local function IndexModal(props: {
 			Size = UDim2.fromScale(1, 1),
 			BackgroundTransparency = 1,
 			Text = "",
+			ZIndex = 1,
 			[React.Event.Activated] = props.OnClose,
 		}),
 
@@ -254,6 +255,7 @@ local function IndexModal(props: {
 			BackgroundColor3 = Color3.fromRGB(15, 15, 18),
 			BackgroundTransparency = 0.15,
 			Active = true,
+			ZIndex = 2,
 		}, {
 			Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
 			Stroke = e("UIStroke", {
