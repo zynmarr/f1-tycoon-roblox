@@ -253,6 +253,7 @@ local function IndexModal(props: {
 			AnchorPoint = Vector2.new(0.5, 0.5),
 			BackgroundColor3 = Color3.fromRGB(15, 15, 18),
 			BackgroundTransparency = 0.15,
+			Active = true,
 		}, {
 			Corner = e("UICorner", { CornerRadius = UDim.new(0, 12) }),
 			Stroke = e("UIStroke", {
