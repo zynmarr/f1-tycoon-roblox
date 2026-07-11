@@ -29,9 +29,9 @@ local function FusionModal(props: {
 	IsMobile: boolean,
 	OnClose: () -> (),
 })
-	local [ownedCars, setOwnedCars] = useState({} :: { Tool })
-	local [fusingCar, setFusingCar] = useState(nil :: string?)
-	local [fusionResult, setFusionResult] = useState(nil :: any)
+	local ownedCars, setOwnedCars = useState({} :: { Tool })
+	local fusingCar, setFusingCar = useState(nil :: string?)
+	local fusionResult, setFusionResult = useState(nil :: any)
 
 	-- Scan player's backpack for eligible duplicate cars (Amount >= 3)
 	local function scanBackpack()
