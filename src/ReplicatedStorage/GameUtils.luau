@@ -155,7 +155,7 @@ function GameUtils.addCarToInventory(player: Player, car: Tool)
 		return
 	end
 
-	local existingCar = backpack:FindFirstChild(car.Name)
+	local existingCar: Tool? = backpack:FindFirstChild(car.Name) :: Tool?
 	if existingCar then
 		local stackFolder = existingCar:FindFirstChild("Stacks")
 		if not stackFolder then

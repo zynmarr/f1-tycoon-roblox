@@ -248,9 +248,23 @@ local function processPickup(player: Player, box: Tool)
 			local lastDate = os.date("!*t", lastReset)
 			local nowDate = os.date("!*t", now)
 
+			local didReset = false
 			if lastDate.yday ~= nowDate.yday or lastDate.year ~= nowDate.year then
 				pData.DailyStolenBoxes.Count = 0
 				pData.DailyStolenBoxes.LastResetTime = now
+				didReset = true
+			end
+
+			if didReset then
+				local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+				if NotifEvent then
+					NotifEvent:FireClient(
+						player,
+						"Kuota Segar",
+						"Batas pencurian box harian Anda telah di-reset (0/5)!",
+						3
+					)
+				end
 			end
 
 			if (pData.DailyStolenBoxes.Count or 0) >= 5 then
