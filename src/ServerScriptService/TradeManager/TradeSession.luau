@@ -125,6 +125,33 @@ local function addCarToBackpack(player: Player, carFullName: string)
 	GameConfig.ApplyVisuals(car, rarity, variant)
 
 	GameUtils.addCarToInventory(player, car)
+
+	-- Unlock in Player collection Index
+	local DataManager = require(ReplicatedStorage.Parent:WaitForChild("ServerScriptService"):WaitForChild("DataManager") :: ModuleScript)
+	local pData = DataManager.getPlayerData(player)
+	if pData then
+		if not pData.CarIndexCollection then
+			pData.CarIndexCollection = {}
+		end
+		
+		local indexKey = carFullName
+		if not pData.CarIndexCollection[indexKey] then
+			pData.CarIndexCollection[indexKey] = true
+			
+			local newMulti = GameConfig.CalculateCollectionMultiplier(pData)
+			player:SetAttribute("CollectionMultiplier", newMulti)
+
+			local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+			if NotifEvent then
+				NotifEvent:FireClient(
+					player,
+					"Index Baru Dibuka!",
+					`Koleksi {foundTemplate.Name} ({rarity}) dibuka! Multiplier Anda sekarang: {string.format("%.1f", (newMulti - 1.0) * 100)}%!`,
+					4
+				)
+			end
+		end
+	end
 end
 
 function TradeSession.new(id: string, p1: Player, p2: Player): SessionType

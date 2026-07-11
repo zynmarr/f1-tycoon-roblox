@@ -261,6 +261,33 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	
 	GameUtils.addCarToInventory(player, car)
 	
+	-- Unlock in Player collection Index
+	local DataManager = require(game:GetService("ServerScriptService"):WaitForChild("DataManager"):WaitForChild("DataManager"))
+	local pData = DataManager.getPlayerData(player)
+	if pData then
+		if not pData.CarIndexCollection then
+			pData.CarIndexCollection = {}
+		end
+		
+		local indexKey = foundTemplate.Name .. "_" .. foundRarity .. "_" .. variantStr
+		if not pData.CarIndexCollection[indexKey] then
+			pData.CarIndexCollection[indexKey] = true
+			
+			local newMulti = GameConfig.CalculateCollectionMultiplier(pData)
+			player:SetAttribute("CollectionMultiplier", newMulti)
+
+			local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+			if NotifEvent then
+				NotifEvent:FireClient(
+					player,
+					"Index Baru Dibuka!",
+					`Koleksi {foundTemplate.Name} ({foundRarity}) dibuka! Multiplier Anda sekarang: {string.format("%.1f", (newMulti - 1.0) * 100)}%!`,
+					4
+				)
+			end
+		end
+	end
+	
 	return true
 end
 

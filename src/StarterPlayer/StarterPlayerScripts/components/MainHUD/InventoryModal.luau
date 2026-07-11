@@ -26,6 +26,7 @@ local function InventoryModal(props: {
 
 	-- State pencarian
 	local searchText, setSearchText = useState("")
+	local selectedTab, setSelectedTab = useState("All") -- "All", "Car", "Box"
 
 	-- State tools
 	local heldTool, setHeldTool = useState(nil :: any)
@@ -109,7 +110,13 @@ local function InventoryModal(props: {
 
 		if not isMappedToHotbar then
 			local name = tool:GetAttribute("Name") or tool.Name
-			if string.find(name:lower(), searchText:lower(), 1, true) then
+			local itemType = tool:GetAttribute("Type") or "Other"
+
+			local matchesTab = (selectedTab == "All")
+				or (selectedTab == "Car" and itemType == "Car")
+				or (selectedTab == "Box" and itemType == "Box")
+
+			if matchesTab and string.find(name:lower(), searchText:lower(), 1, true) then
 				table.insert(filteredTools, tool)
 			end
 		end
@@ -372,17 +379,91 @@ local function InventoryModal(props: {
 				}),
 			}),
 
+			-- Kategori Tabs
+			TabsFrame = e("Frame", {
+				Size = UDim2.new(1, 0, 0, 24),
+				BackgroundTransparency = 1,
+				LayoutOrder = 3,
+			}, {
+				Layout = e("UIListLayout", {
+					FillDirection = Enum.FillDirection.Horizontal,
+					SortOrder = Enum.SortOrder.LayoutOrder,
+					Padding = UDim.new(0, 8),
+					HorizontalAlignment = Enum.HorizontalAlignment.Center,
+				}),
+
+				TabAll = e("TextButton", {
+					Text = "🌐 Semua",
+					Size = UDim2.new(0.31, 0, 1, 0),
+					BackgroundColor3 = selectedTab == "All" and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(25, 25, 30),
+					BackgroundTransparency = selectedTab == "All" and 0.1 or 0.4,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					Font = Enum.Font.GothamBold,
+					TextSize = 10,
+					LayoutOrder = 1,
+					[React.Event.Activated] = function()
+						setSelectedTab("All")
+					end,
+				}, {
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+					Stroke = e("UIStroke", {
+						Color = selectedTab == "All" and Color3.fromRGB(255, 100, 120) or Color3.fromRGB(55, 55, 65),
+						Thickness = 0.8,
+					}),
+				}),
+
+				TabCars = e("TextButton", {
+					Text = "🏎️ Mobil",
+					Size = UDim2.new(0.31, 0, 1, 0),
+					BackgroundColor3 = selectedTab == "Car" and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(25, 25, 30),
+					BackgroundTransparency = selectedTab == "Car" and 0.1 or 0.4,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					Font = Enum.Font.GothamBold,
+					TextSize = 10,
+					LayoutOrder = 2,
+					[React.Event.Activated] = function()
+						setSelectedTab("Car")
+					end,
+				}, {
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+					Stroke = e("UIStroke", {
+						Color = selectedTab == "Car" and Color3.fromRGB(255, 100, 120) or Color3.fromRGB(55, 55, 65),
+						Thickness = 0.8,
+					}),
+				}),
+
+				TabBoxes = e("TextButton", {
+					Text = "📦 Kotak",
+					Size = UDim2.new(0.31, 0, 1, 0),
+					BackgroundColor3 = selectedTab == "Box" and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(25, 25, 30),
+					BackgroundTransparency = selectedTab == "Box" and 0.1 or 0.4,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					Font = Enum.Font.GothamBold,
+					TextSize = 10,
+					LayoutOrder = 3,
+					[React.Event.Activated] = function()
+						setSelectedTab("Box")
+					end,
+				}, {
+					Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+					Stroke = e("UIStroke", {
+						Color = selectedTab == "Box" and Color3.fromRGB(255, 100, 120) or Color3.fromRGB(55, 55, 65),
+						Thickness = 0.8,
+					}),
+				}),
+			}),
+
 			-- Grid Scroll Frame
 			GridScroll = e(
 				"ScrollingFrame",
 				{
-					Size = UDim2.new(1, 0, 1, -95),
+					Size = UDim2.new(1, 0, 1, -125),
 					BackgroundTransparency = 1,
 					CanvasSize = UDim2.new(0, 0, 0, 0),
 					AutomaticCanvasSize = Enum.AutomaticSize.Y :: any, -- Casted to any to prevent Luau type errors
 					ScrollBarThickness = 4,
 					ScrollBarImageColor3 = Color3.fromRGB(255, 35, 85), -- Red scrollbar
-					LayoutOrder = 3,
+					LayoutOrder = 4,
 				},
 				(function()
 						local scrollChildren = {

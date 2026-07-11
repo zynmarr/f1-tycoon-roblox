@@ -270,8 +270,11 @@ function ParkingAreaManager.Init()
 						local dccChance = RebirthConfig.getUpgradeEffect("DoubleCashChance", dccLevel)
 						local doubleMultiplier = (math.random() * 100 < dccChance) and 2 or 1
 
+						-- Collection Index Multiplier
+						local collectionMulti = player:GetAttribute("CollectionMultiplier") or 1.0
+
 						local addedCash =
-							math.floor(totalIncome * multiplier * cashMulBonus * doubleMultiplier :: number)
+							math.floor(totalIncome * multiplier * cashMulBonus * doubleMultiplier * collectionMulti :: number)
 						cash.Value = cash.Value + addedCash
 					end
 				end

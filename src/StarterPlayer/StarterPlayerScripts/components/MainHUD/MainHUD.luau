@@ -13,6 +13,7 @@ local Sidebar = require(script.Parent.Sidebar)
 local CustomStats = require(script.Parent.CustomStats)
 local Hotbar = require(script.Parent.Hotbar)
 local InventoryModal = require(script.Parent.InventoryModal)
+local IndexModal = require(script.Parent.IndexModal)
 local OpenBoxOverlay = require(script.Parent.OpenBoxOverlay)
 local ViewportManager = require(script.Parent.Parent.ViewportManager)
 
@@ -20,6 +21,7 @@ local player = Players.LocalPlayer
 
 local function MainHUD(props: { Buttons: any })
 	local inventoryOpen, setInventoryOpen = useState(false)
+	local indexOpen, setIndexOpen = useState(false)
 	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
 
 	-- Cache Viewport Frame untuk preview barang saat di-drag
@@ -387,6 +389,8 @@ local function MainHUD(props: { Buttons: any })
 			Buttons = props.Buttons,
 			InventoryOpen = inventoryOpen,
 			SetInventoryOpen = setInventoryOpen,
+			IndexOpen = indexOpen,
+			SetIndexOpen = setIndexOpen,
 		}),
 
 		-- 3. Custom Stats & Active Buffs
@@ -423,7 +427,15 @@ local function MainHUD(props: { Buttons: any })
 			OnSlotInputBegan = handleInventoryInputBegan,
 		}) or nil,
 
-		-- 7. Drag Preview Thumbnail
+		-- 7. Index Catalogue Modal
+		IndexModal = indexOpen and e(IndexModal, {
+			IsMobile = isMobile,
+			OnClose = function()
+				setIndexOpen(false)
+			end,
+		}) or nil,
+
+		-- 8. Drag Preview Thumbnail
 		DragThumbnail = dragThumbnail,
 	})
 end

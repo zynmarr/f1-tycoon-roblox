@@ -29,7 +29,9 @@ local OverheadManager = safeRequire(script.Parent.OverheadManager.OverheadManage
 local SellGuiManager = safeRequire(script.Parent.SellGuiManager.SellGuiManager, "SellGuiManager")
 local TeleportManager = safeRequire(script.Parent.TeleportManager.TeleportManager, "TeleportManager")
 local TestRunner = safeRequire(script.Parent.TestRunner.TestRunner, "TestRunner")
--- local GameConfig = require(game:GetService("ReplicatedStorage"):WaitForChild("GameConfig"))
+local FusionManager = safeRequire(script.Parent.FusionManager.FusionManager, "FusionManager")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 
 -- ==========================================================
 -- [1] FUNGSI UTILITY (LOAD ITEMS TO BACKPACK)
@@ -309,6 +311,13 @@ local function onPlayerAdded(player: Player)
 		end
 	end)
 
+	-- Recalculate and set CollectionMultiplier attribute
+	local pData = DataManager.getPlayerData(player)
+	if pData then
+		local newMulti = GameConfig.CalculateCollectionMultiplier(pData)
+		player:SetAttribute("CollectionMultiplier", newMulti)
+	end
+
 	-- Tandai bahwa data awal pemain selesai dimuat (membuka kunci DataStore syncData dan menginisialisasi mesin)
 	player:SetAttribute("DataLoaded", true)
 	EventVariantManager.startPlayerLoop(player)
@@ -393,6 +402,9 @@ local function InitializeServer()
 	end
 	if typeof(TestRunner.Init) == "function" then
 		TestRunner.Init()
+	end
+	if typeof(FusionManager.Init) == "function" then
+		FusionManager.Init()
 	end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)

@@ -54,6 +54,7 @@ local DEFAULT_DATA = {
 		LastResetTime = 0,
 		Count = 0,
 	},
+	CarIndexCollection = {},
 }
 
 -- ===== ATTRIBUTE SCHEMA VALIDATION =====
@@ -348,6 +349,7 @@ function DataManager.syncData(player)
 			profile.Data.Stats.RaceStats or { Wins = 0, Losses = 0, CashEarned = 0, WinStreak = 0, PvPWins = 0 }
 		)
 	)
+	player:SetAttribute("CarIndexCollection", HttpService:JSONEncode(profile.Data.CarIndexCollection or {}))
 
 	return true
 end

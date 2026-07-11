@@ -497,6 +497,32 @@ function BoxManager:openBox(player: Player, boxName: string)
 	-- Serahkan mobil ke inventory backpack/garasi pemain
 	GameUtils.addCarToInventory(player, car)
 
+	-- Unlock in Player collection Index
+	local pData = DataManager.getPlayerData(player)
+	if pData then
+		if not pData.CarIndexCollection then
+			pData.CarIndexCollection = {}
+		end
+		
+		local indexKey = chosenCarTemplate.Name .. "_" .. tier .. "_" .. variants
+		if not pData.CarIndexCollection[indexKey] then
+			pData.CarIndexCollection[indexKey] = true
+			
+			local newMulti = GameConfig.CalculateCollectionMultiplier(pData)
+			player:SetAttribute("CollectionMultiplier", newMulti)
+
+			local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+			if NotifEvent then
+				NotifEvent:FireClient(
+					player,
+					"Index Baru Dibuka!",
+					`Koleksi {chosenCarTemplate.Name} ({tier}) dibuka! Multiplier Anda sekarang: {string.format("%.1f", (newMulti - 1.0) * 100)}%!`,
+					4
+				)
+			end
+		end
+	end
+
 	-- 🟥 KONSUMSI ITEM: Update stack box atau hapus kotak jika habis
 	local stackFolder = targetBox:FindFirstChild("Stacks")
 	if stackFolder and #stackFolder:GetChildren() > 0 then

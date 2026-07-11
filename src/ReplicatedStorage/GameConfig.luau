@@ -687,4 +687,41 @@ function GameConfig.GetColoredVariantList(variantString: string?): string
 	return coloredText
 end
 
+-- =============================================================================
+-- COLLECTION & FUSION CONFIGURATIONS
+-- =============================================================================
+GameConfig.RarityFusionRates = {
+	["Common"] = 0.90,
+	["Uncommon"] = 0.80,
+	["Rare"] = 0.70,
+	["Epic"] = 0.60,
+	["Legendary"] = 0.50,
+	["Mythic"] = 0.40,
+	["God"] = 0.25,
+}
+
+function GameConfig.CalculateCollectionMultiplier(playerData: any): number
+	local multi = 1.0
+	local collection = playerData and playerData.CarIndexCollection
+	if not collection then
+		return multi
+	end
+
+	for key, _ in pairs(collection) do
+		local parts = string.split(key, "_")
+		local rarity = parts[2] or "Common"
+		local variantString = parts[3] or "Normal"
+
+		-- Rarity unlock: +0.2% Cash Multiplier
+		multi = multi + 0.002
+
+		-- Variant unlock: +1.0% Cash Multiplier if not normal
+		if variantString ~= "Normal" then
+			multi = multi + 0.010
+		end
+	end
+
+	return multi
+end
+
 return GameConfig
