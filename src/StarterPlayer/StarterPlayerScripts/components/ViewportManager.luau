@@ -74,13 +74,15 @@ local function setupCarViewport(cache, viewport, carTool, options)
 	end
 
 	if not cache.renderCache[renderKey] then
-		local originalModel = nil
-		local retryCount = 0
-		while not originalModel and retryCount < 20 do
-			originalModel = carTool:FindFirstChild("Model") or carTool:FindFirstChildOfClass("Model")
-			if not originalModel then
-				task.wait(0.1)
-				retryCount = retryCount + 1
+		local originalModel = carTool:FindFirstChild("Model") or carTool:FindFirstChildOfClass("Model")
+		if not originalModel then
+			-- Fast non-blocking lookup attempt
+			local parts = {}
+			for _, child in ipairs(carTool:GetChildren()) do
+				if child:IsA("Model") then
+					originalModel = child
+					break
+				end
 			end
 		end
 
@@ -89,26 +91,8 @@ local function setupCarViewport(cache, viewport, carTool, options)
 			return
 		end
 
-		-- TUNGGU REPLIKASI DESENDAN STABIL (Mengatasi bug render melar / 100% full)
-		local lastDescendantCount = #originalModel:GetDescendants()
-		local stableFrames = 0
-		local maxWaitTime = 0.5
-		local startTime = tick()
-
-		while stableFrames < 3 and (tick() - startTime) < maxWaitTime do
-			task.wait(0.05)
-			local currentCount = #originalModel:GetDescendants()
-			if currentCount == lastDescendantCount and currentCount > 0 then
-				stableFrames = stableFrames + 1
-			else
-				lastDescendantCount = currentCount
-				stableFrames = 0
-			end
-		end
-
 		local carClone = originalModel:Clone()
 		carClone:PivotTo(CFrame.new(0, 0, 0))
-		task.wait(0.05)
 
 		local minX, minY, minZ = math.huge, math.huge, math.huge
 		local maxX, maxY, maxZ = -math.huge, -math.huge, -math.huge
@@ -158,8 +142,6 @@ local function setupCarViewport(cache, viewport, carTool, options)
 			targetFov = 45 -- Zoomed out/wider perspective for boxes
 			distMultiplier = 2 -- Further distance for boxes
 		end
-
-		task.wait(0.05)
 
 		-- Hitung parameter kamera dan CFrame
 		local halfFov = targetFov / 2

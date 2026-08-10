@@ -26,6 +26,16 @@ local function HotbarSlot(props: {
 })
 	local isHovered, setIsHovered = useState(false)
 	local buttonRef = useRef(nil :: any)
+	local viewportRef = useRef(nil :: any)
+
+	local tool = props.Tool
+
+	useEffect(function()
+		local rbx = viewportRef.current
+		if rbx and tool then
+			ViewportManager.setupViewport(props.Cache, rbx, tool, { bgTransparency = 1 })
+		end
+	end, { tool } :: { any })
 
 	-- Animasi pembesaran ukuran slot saat di-hover (micro-animation)
 	useEffect(function()
@@ -158,7 +168,8 @@ local function HotbarSlot(props: {
 			BackgroundTransparency = 1,
 			ZIndex = 2,
 			ref = function(rbx: any)
-				if rbx then
+				viewportRef.current = rbx
+				if rbx and tool then
 					ViewportManager.setupViewport(props.Cache, rbx, tool, { bgTransparency = 1 })
 				end
 			end,
