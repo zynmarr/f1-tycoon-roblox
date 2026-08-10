@@ -1,7 +1,10 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local React = require(ReplicatedStorage.Packages.React)
+local Networker = require(ReplicatedStorage.Packages.Networker)
 local ViewportManager = require(script.Parent.Parent.ViewportManager)
+
+local marketService = Networker.client.new("MarketService", {})
 
 local e = React.createElement
 local useState = React.useState
@@ -223,6 +226,22 @@ local function InventoryModal(props: {
 					TextYAlignment = Enum.TextYAlignment.Center,
 				}),
 			}) or nil,
+
+			-- Tombol Quick List ke Pasar Bursa
+			ListMarketBtn = (itemType == "Car") and e("TextButton", {
+				Text = "🏛️",
+				Size = UDim2.fromOffset(16, 16),
+				Position = UDim2.new(0, 4, 0, 4),
+				BackgroundColor3 = Color3.fromRGB(255, 130, 0),
+				TextColor3 = Color3.fromRGB(255, 255, 255),
+				TextSize = 8,
+				ZIndex = 6,
+				[React.Event.Activated] = function()
+					task.spawn(function()
+						marketService:fetch("createListing", item.Name, 10000, 50000)
+					end)
+				end,
+			}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 4) }) }) or nil,
 
 			-- Aksen Neon Merah untuk item aktif
 			ActiveIndicator = isEquipped and e("Frame", {

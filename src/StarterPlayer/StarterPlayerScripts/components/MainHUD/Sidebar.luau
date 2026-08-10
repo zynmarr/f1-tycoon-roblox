@@ -75,6 +75,26 @@ local function Sidebar(props: {
 					props.SetInventoryOpen(false)
 					props.SetIndexOpen(false)
 					props.SetFusionOpen(false)
+					if props.SetMarketOpen then props.SetMarketOpen(false) end
+				end
+			end
+		end,
+	})
+
+	-- Tombol TradeMarket selalu ditambahkan sebagai built-in
+	table.insert(sortedButtons, {
+		Name = "TradeMarket",
+		Label = "Pasar Bursa",
+		Icon = "🏛️",
+		Order = 2.0,
+		Callback = function()
+			if props.SetMarketOpen then
+				props.SetMarketOpen(not props.MarketOpen)
+				if not props.MarketOpen then
+					props.SetInventoryOpen(false)
+					props.SetIndexOpen(false)
+					props.SetFusionOpen(false)
+					if props.SetTeamOpen then props.SetTeamOpen(false) end
 				end
 			end
 		end,
@@ -97,7 +117,7 @@ local function Sidebar(props: {
 	-- Merender masing-masing tombol
 	local buttonElements = {}
 	for index, btn in ipairs(sortedButtons) do
-		local isActive = (btn.Name == "Backpack" and props.InventoryOpen) or (btn.Name == "CarIndex" and props.IndexOpen) or (btn.Name == "CarFusion" and props.FusionOpen) or (btn.Name == "TeamManager" and props.TeamOpen)
+		local isActive = (btn.Name == "Backpack" and props.InventoryOpen) or (btn.Name == "CarIndex" and props.IndexOpen) or (btn.Name == "CarFusion" and props.FusionOpen) or (btn.Name == "TeamManager" and props.TeamOpen) or (btn.Name == "TradeMarket" and props.MarketOpen)
 		local size = props.IsMobile and UDim2.fromOffset(36, 36) or UDim2.fromOffset(42, 42)
 
 		buttonElements[btn.Name] = e("TextButton", {
