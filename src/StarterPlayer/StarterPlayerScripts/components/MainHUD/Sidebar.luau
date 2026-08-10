@@ -57,6 +57,25 @@ local function Sidebar(props: {
 			if not props.FusionOpen then
 				props.SetInventoryOpen(false)
 				props.SetIndexOpen(false)
+				if props.SetTeamOpen then props.SetTeamOpen(false) end
+			end
+		end,
+	})
+
+	-- Tombol TeamManager selalu ditambahkan sebagai built-in
+	table.insert(sortedButtons, {
+		Name = "TeamManager",
+		Label = "Team Manager",
+		Icon = "🏎️",
+		Order = 1.8,
+		Callback = function()
+			if props.SetTeamOpen then
+				props.SetTeamOpen(not props.TeamOpen)
+				if not props.TeamOpen then
+					props.SetInventoryOpen(false)
+					props.SetIndexOpen(false)
+					props.SetFusionOpen(false)
+				end
 			end
 		end,
 	})
@@ -78,7 +97,7 @@ local function Sidebar(props: {
 	-- Merender masing-masing tombol
 	local buttonElements = {}
 	for index, btn in ipairs(sortedButtons) do
-		local isActive = (btn.Name == "Backpack" and props.InventoryOpen) or (btn.Name == "CarIndex" and props.IndexOpen) or (btn.Name == "CarFusion" and props.FusionOpen)
+		local isActive = (btn.Name == "Backpack" and props.InventoryOpen) or (btn.Name == "CarIndex" and props.IndexOpen) or (btn.Name == "CarFusion" and props.FusionOpen) or (btn.Name == "TeamManager" and props.TeamOpen)
 		local size = props.IsMobile and UDim2.fromOffset(36, 36) or UDim2.fromOffset(42, 42)
 
 		buttonElements[btn.Name] = e("TextButton", {

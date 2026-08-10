@@ -646,6 +646,29 @@ function RaceManager.Init()
 			end
 		end
 	end)
+
+	-- 5-Minute Automated Server Championship Loop (Task 6)
+	task.spawn(function()
+		while true do
+			task.wait(300) -- Setiap 5 menit
+			print("[RaceManager] 🏁 Memulai Kejuaraan Otomatis Server F1 Championship!")
+			for _, player in ipairs(Players:GetPlayers()) do
+				local teamAttr = player:GetAttribute("TeamManager")
+				if teamAttr then
+					local success, teamData = pcall(HttpService.JSONDecode, HttpService, teamAttr)
+					if success and teamData and (teamData.Driver1 ~= "" or teamData.Driver2 ~= "") then
+						local rewardCash = 50000 + (teamData.PitBuff or 0) * 1000
+						DataManager.addMoney(player, rewardCash)
+						
+						local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+						if NotifEvent then
+							NotifEvent:FireClient(player, "F1 Championship Selesai", `Tim F1 Anda menyelesaikan balapan otomatis dan memperoleh ${rewardCash}!`, 5)
+						end
+					end
+				end
+			end
+		end
+	end)
 end
 
 return RaceManager

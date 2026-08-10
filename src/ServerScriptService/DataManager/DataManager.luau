@@ -55,6 +55,12 @@ local DEFAULT_DATA = {
 		Count = 0,
 	},
 	CarIndexCollection = {},
+	TeamManager = {
+		Driver1 = "",
+		Driver2 = "",
+		Strategy = "Balanced", -- "Aggressive", "Balanced", "Conservative"
+		PitBuff = 0,
+	},
 }
 
 -- ===== ATTRIBUTE SCHEMA VALIDATION =====
@@ -350,6 +356,7 @@ function DataManager.syncData(player)
 		)
 	)
 	player:SetAttribute("CarIndexCollection", HttpService:JSONEncode(profile.Data.CarIndexCollection or {}))
+	player:SetAttribute("TeamManager", HttpService:JSONEncode(profile.Data.TeamManager or { Driver1 = "", Driver2 = "", Strategy = "Balanced", PitBuff = 0 }))
 
 	return true
 end

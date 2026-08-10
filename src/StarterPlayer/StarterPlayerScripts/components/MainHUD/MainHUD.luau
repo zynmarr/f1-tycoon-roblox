@@ -15,6 +15,7 @@ local Hotbar = require(script.Parent.Hotbar)
 local InventoryModal = require(script.Parent.InventoryModal)
 local IndexModal = require(script.Parent.IndexModal)
 local FusionModal = require(script.Parent.FusionModal)
+local TeamManagerModal = require(script.Parent.TeamManagerModal)
 local TrackHUD = require(script.Parent.TrackHUD)
 local OpenBoxOverlay = require(script.Parent.OpenBoxOverlay)
 local ViewportManager = require(script.Parent.Parent.ViewportManager)
@@ -25,6 +26,7 @@ local function MainHUD(props: { Buttons: any })
 	local inventoryOpen, setInventoryOpen = useState(false)
 	local indexOpen, setIndexOpen = useState(false)
 	local fusionOpen, setFusionOpen = useState(false)
+	local teamOpen, setTeamOpen = useState(false)
 	local viewportSize, setViewportSize = useState(workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(800, 600))
 
 	-- Cache Viewport Frame untuk preview barang saat di-drag
@@ -396,6 +398,8 @@ local function MainHUD(props: { Buttons: any })
 			SetIndexOpen = setIndexOpen,
 			FusionOpen = fusionOpen,
 			SetFusionOpen = setFusionOpen,
+			TeamOpen = teamOpen,
+			SetTeamOpen = setTeamOpen,
 		}),
 
 		-- 3. Custom Stats & Active Buffs
@@ -445,6 +449,14 @@ local function MainHUD(props: { Buttons: any })
 			IsMobile = isMobile,
 			OnClose = function()
 				setFusionOpen(false)
+			end,
+		}) or nil,
+
+		-- 9. F1 Team Manager Modal
+		TeamManagerModal = teamOpen and e(TeamManagerModal, {
+			IsMobile = isMobile,
+			OnClose = function()
+				setTeamOpen(false)
 			end,
 		}) or nil,
 
