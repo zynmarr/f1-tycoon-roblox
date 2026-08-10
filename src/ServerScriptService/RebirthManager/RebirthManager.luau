@@ -74,7 +74,22 @@ local function resetPlayerPlotAndAssets(player: Player)
 		end
 	end
 	
-	-- 4. Reset Plot Area & Parked Cars
+	-- 4. Clear Profile Data PlotData.MyCars cache for non-Admin cars
+	local data = DataManager.getPlayerData(player)
+	if data and data.PlotData and data.PlotData.MyCars then
+		local remainingSavedCars = {}
+		for _, savedCar in ipairs(data.PlotData.MyCars) do
+			local carAttrs = savedCar.Attributes or {}
+			local isVariantAdmin = carAttrs.Variant == "Admin"
+			local hasAdminName = string.find(string.lower(savedCar.Name or ""), "admin") ~= nil
+			if isVariantAdmin or hasAdminName then
+				table.insert(remainingSavedCars, savedCar)
+			end
+		end
+		data.PlotData.MyCars = remainingSavedCars
+	end
+
+	-- 5. Reset Plot Area & Parked Cars
 	local myPlot = GameUtils.getPlayerPlot(player)
 	if myPlot then
 		local parkingLots = myPlot:FindFirstChild("AllParkingLots")
