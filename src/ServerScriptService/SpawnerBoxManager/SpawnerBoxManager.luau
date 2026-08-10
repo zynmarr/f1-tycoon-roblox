@@ -614,6 +614,18 @@ local function setupMachineArea(machineArea: Folder)
 			end
 		end)
 
+		machineArea:GetAttributeChangedSignal("Active"):Connect(function()
+			if not machineArea:GetAttribute("Active") then
+				local ownerName = plotModel:GetAttribute("Owner")
+				local player = ownerName and ownerName ~= "" and Players:FindFirstChild(ownerName)
+				if player then
+					task.defer(function()
+						startLogic(player, plotModel)
+					end)
+				end
+			end
+		end)
+
 		-- Immediate check in case owner is already set
 		local ownerName = plotModel:GetAttribute("Owner")
 		local player = ownerName and ownerName ~= "" and Players:FindFirstChild(ownerName)

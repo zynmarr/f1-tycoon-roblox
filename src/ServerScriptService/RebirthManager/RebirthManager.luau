@@ -116,6 +116,8 @@ local function resetPlayerPlotAndAssets(player: Player)
 						machineArea:SetAttribute(attr, nil)
 					end
 				end
+				machineArea:SetAttribute("Active", false)
+				machineArea:SetAttribute("IsRunning", false)
 				local machinePart = nil
 				for _, child in ipairs(machineArea:GetChildren()) do
 					if child:IsA("BasePart") and string.find(child.Name, "Machine") then
