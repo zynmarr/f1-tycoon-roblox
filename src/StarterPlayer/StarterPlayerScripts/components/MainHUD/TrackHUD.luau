@@ -22,10 +22,13 @@ local function TrackHUD(props: { IsMobile: boolean })
 				return
 			end
 
-			local tool = character:FindFirstChildOfClass("Tool")
-			if tool and tool:GetAttribute("Type") == "Car" then
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			local seat = humanoid and humanoid.SeatPart
+
+			if seat and (seat:IsA("VehicleSeat") or seat.Name == "DriveSeat") then
 				setIsDriving(true)
-				local driveSpeed = tool:GetAttribute("DriveSpeed") or 80
+				local carModel = seat:FindFirstAncestorOfClass("Model")
+				local driveSpeed = carModel and (carModel:GetAttribute("DriveSpeed") or carModel:GetAttribute("Speed")) or 120
 				setCurrentSpeed(driveSpeed)
 				setLapTime(function(prev) return prev + dt end)
 			else
