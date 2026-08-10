@@ -52,6 +52,14 @@ local function processPickup(player: Player, car: Tool)
 
 	GameConfig.ClearHands(player)
 	car:ScaleTo(0.2)
+
+	-- Bind drive speed attribute based on Rarity and Variant
+	local rarity = car:GetAttribute("Rarity") or "Common"
+	local variant = car:GetAttribute("Variant") or "Normal"
+	local carName = car:GetAttribute("Name") or car.Name
+	local speed = GameConfig.CalculateDriveSpeed(rarity, variant, carName)
+	car:SetAttribute("DriveSpeed", speed)
+
 	car.Parent = character
 
 	-- Hook: Subtract income from player passive income cache

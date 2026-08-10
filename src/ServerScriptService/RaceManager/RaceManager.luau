@@ -595,6 +595,24 @@ function RaceManager:getRaceOutcome(player: Player, raceId: string)
 	return { Success = true, Ranks = ranks, PlayerRank = playerRank, RewardCash = rewardCash }
 end
 
+function RaceManager.validateTrackPosition(player: Player, position: Vector3): boolean
+	local trackArea = workspace:FindFirstChild("CommunityTrack")
+	if not trackArea then
+		return true -- Fallback jika objek visual track belum dikonfigurasi di workspace
+	end
+
+	local boundingBox = trackArea:FindFirstChild("TrackBounds") :: BasePart?
+	if boundingBox then
+		local localPos = boundingBox.CFrame:PointToObjectSpace(position)
+		local halfSize = boundingBox.Size / 2
+		return math.abs(localPos.X) <= halfSize.X
+			and math.abs(localPos.Y) <= halfSize.Y
+			and math.abs(localPos.Z) <= halfSize.Z
+	end
+
+	return true
+end
+
 -- =====================================================
 -- Bootstrap
 -- =====================================================

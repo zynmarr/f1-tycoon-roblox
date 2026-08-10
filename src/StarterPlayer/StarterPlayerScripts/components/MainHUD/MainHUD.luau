@@ -15,6 +15,7 @@ local Hotbar = require(script.Parent.Hotbar)
 local InventoryModal = require(script.Parent.InventoryModal)
 local IndexModal = require(script.Parent.IndexModal)
 local FusionModal = require(script.Parent.FusionModal)
+local TrackHUD = require(script.Parent.TrackHUD)
 local OpenBoxOverlay = require(script.Parent.OpenBoxOverlay)
 local ViewportManager = require(script.Parent.Parent.ViewportManager)
 
@@ -447,7 +448,12 @@ local function MainHUD(props: { Buttons: any })
 			end,
 		}) or nil,
 
-		-- 9. Drag Preview Thumbnail
+		-- 9. Track Speedometer & Lap HUD
+		TrackHUD = e(TrackHUD, {
+			IsMobile = isMobile,
+		}),
+
+		-- 10. Drag Preview Thumbnail
 		DragThumbnail = dragThumbnail,
 	})
 end

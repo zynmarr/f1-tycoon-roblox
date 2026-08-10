@@ -628,6 +628,49 @@ function GameConfig.CalculatePrice(base: number?, rName: string, vNameString: st
 	return income, sellPrice
 end
 
+function GameConfig.CalculateDriveSpeed(rarityName: string?, variantString: string?, carName: string?): number
+	local baseSpeed = 80 -- Standar kecepatan dasar (studs/sec)
+	local rName = rarityName or "Common"
+	local rData = GameConfig.Rarities[rName] or GameConfig.Rarities.Common
+
+	-- Bonus kecepatan berdasarkan Rarity (Common = +0%, Celestial = +100%)
+	local rarityBonusMap = {
+		["Common"] = 0,
+		["Uncommon"] = 10,
+		["Rare"] = 25,
+		["Epic"] = 45,
+		["Legendary"] = 70,
+		["Mythic"] = 100,
+		["God"] = 140,
+		["Celestial"] = 200,
+	}
+	local raritySpeedBonus = rarityBonusMap[rName] or 0
+
+	-- Bonus kecepatan berdasarkan Varian
+	local variantBonus = 0
+	if variantString and variantString ~= "" then
+		local activeVariants = string.split(variantString, ",")
+		for _, vName in pairs(activeVariants) do
+			if vName == "Golden" then
+				variantBonus = variantBonus + 15
+			elseif vName == "Rainbow" then
+				variantBonus = variantBonus + 30
+			elseif vName == "Frostbite" then
+				variantBonus = variantBonus + 45
+			elseif vName == "Galaxy" then
+				variantBonus = variantBonus + 65
+			elseif vName == "Hellfire" then
+				variantBonus = variantBonus + 90
+			elseif vName == "Cosmic" then
+				variantBonus = variantBonus + 120
+			end
+		end
+	end
+
+	local totalSpeed = baseSpeed + raritySpeedBonus + variantBonus
+	return totalSpeed
+end
+
 function GameConfig.cleanupAndWeldCar(model: Model)
 	local primary = model.PrimaryPart
 	if not primary then
