@@ -60,9 +60,7 @@ function RoleManager.determineRole(player: Player): string
 	local userIdStr = tostring(player.UserId)
 
 	-- Otomatis jadikan Owner jika testing di Roblox Studio (biar gak stuck saat test play)
-	if
-		RunService:IsStudio() and (player.UserId == game.CreatorId or player.UserId < 0 or #Players:GetPlayers() <= 1)
-	then
+	if RunService:IsStudio() then
 		return "Owner"
 	end
 

@@ -168,8 +168,18 @@ function MountAdminEventPanel.init()
 	-- Hubungkan ke perubahan role dinamis
 	player:GetAttributeChangedSignal("Role"):Connect(onRoleChanged)
 
-	-- Jalankan sekali di awal (gunakan task.spawn/defer jika attribute butuh waktu replikasi)
-	task.defer(onRoleChanged)
+	-- Jalankan polling awal untuk menunggu replikasi atribut Role dari server
+	task.spawn(function()
+		local attempts = 0
+		while attempts < 20 do
+			onRoleChanged()
+			if adminBtnRegistered or checkAdminPermission() then
+				break
+			end
+			task.wait(0.2)
+			attempts = attempts + 1
+		end
+	end)
 
 	-- ===== SHORTCUT KEYBOARD TOGGLE (F4) =====
 	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
