@@ -103,6 +103,9 @@ local function resetPlayerPlotAndAssets(player: Player)
 		-- Recalculate passive income based on remaining (Admin) cars on rebirth
 		local ParkingAreaManager = require(game.ServerScriptService.ParkingAreaManager.ParkingAreaManager)
 		ParkingAreaManager.recalculatePassiveIncome(player)
+		task.defer(function()
+			ParkingAreaManager.recalculatePassiveIncome(player)
+		end)
 		
 		-- Reset Tycoon Machines purchase attributes & active boxes
 		local machines = myPlot:FindFirstChild("Machines")
