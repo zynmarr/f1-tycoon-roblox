@@ -28,11 +28,11 @@ Implementation plan for major gameplay extensions:
 - [x] **Task 6**: Implement 5-minute automated server race loop (`RaceManager.luau`).
 - [x] **Task 7**: Add Pit Stop quick-time minigame (`PitStopMinigame.luau`) to grant pit strategy buffs.
 
-### Phase 3: Global F1 Trade Market & Auction House (Feature 4)
-- [ ] **Task 8**: Build `MarketManager.luau` backend engine (listing, bidding, buyout, 5% fee & item transfer logic).
-- [ ] **Task 9**: Create `TradeMarketModal.luau` UI for browsing active listings, placing bids, and buyout purchases.
-- [ ] **Task 10**: Add "List on Market" action button to `InventoryModal.luau` for owned cars.
+### Phase 3: Global F1 Trade Market & Auction House (Feature 4) - [COMPLETED]
+- [x] **Task 8**: Build `MarketManager.luau` backend engine (listing, bidding, buyout, 5% fee & item transfer logic).
+- [x] **Task 9**: Create `TradeMarketModal.luau` UI for browsing active listings, placing bids, and buyout purchases.
+- [x] **Task 10**: Add "List on Market" action button to `InventoryModal.luau` for owned cars.
 
-### Checkpoint 3: Complete Feature Suite
-- [ ] Market listings persist and process buyout/bidding transactions cleanly.
-- [ ] All unit and build tests pass via `rojo build`.
+### Checkpoint 3: Complete Feature Suite - [COMPLETED]
+- [x] Market listings persist and process buyout/bidding transactions cleanly.
+- [x] All unit and build tests pass via `rojo build`.

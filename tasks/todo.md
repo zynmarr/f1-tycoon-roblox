@@ -11,7 +11,7 @@
 - [x] **Task 6**: Implement 5-minute automated championship loop in `RaceManager.luau`.
 - [x] **Task 7**: Add `PitStopMinigame.luau` for pit strategy time buffs.
 
-## Phase 3: Global F1 Trade Market & Auction House (Feature 4)
-- [ ] **Task 8**: Build `MarketManager.luau` backend engine (listing, bidding, buyout, 5% fee & item transfer logic).
-- [ ] **Task 9**: Create `TradeMarketModal.luau` UI for browsing active listings, placing bids, and buyout purchases.
-- [ ] **Task 10**: Add "List on Market" action button to `InventoryModal.luau` for owned cars.
+## Phase 3: Global F1 Trade Market & Auction House (Feature 4) - [COMPLETED]
+- [x] **Task 8**: Build `MarketManager.luau` backend engine (listing, bidding, buyout, 5% fee & item transfer logic).
+- [x] **Task 9**: Create `TradeMarketModal.luau` UI for browsing active listings, placing bids, and buyout purchases.
+- [x] **Task 10**: Add "List on Market" action button to `InventoryModal.luau` for owned cars.
