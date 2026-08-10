@@ -472,12 +472,7 @@ local function MainHUD(props: { Buttons: any })
 			end,
 		}) or nil,
 
-		-- 9. Track Speedometer & Lap HUD
-		TrackHUD = e(TrackHUD, {
-			IsMobile = isMobile,
-		}),
-
-		-- 10. Drag Preview Thumbnail
+		-- 11. Drag Preview Thumbnail
 		DragThumbnail = dragThumbnail,
 	})
 end
