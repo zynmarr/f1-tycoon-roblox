@@ -7,21 +7,31 @@ function UpgradeMachineArea.init()
 	local player = Players.LocalPlayer
 	local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 
-	-- 1. WAIT FOR PLOT AND MACHINES FOLDER
-	local plot = GameUtils.getPlayerPlot(player)
-	if not plot then
-		player:GetAttributeChangedSignal("MyPlotName"):Wait()
-		plot = GameUtils.getPlayerPlot(player)
-		while not plot do
-			task.wait(0.5)
-			plot = GameUtils.getPlayerPlot(player)
+	local function bindPlotMachines()
+		local plot = GameUtils.getPlayerPlot(player)
+		if not plot then
+			return
 		end
-	end
 
-	local machines = plot:WaitForChild("Machines", 15) :: Folder?
-	if not machines then
-		warn("[UpgradeClient] Folder Machines tidak ditemukan di plot!")
-		return
+		local machines = plot:WaitForChild("Machines", 5) :: Folder?
+		if not machines then
+			return
+		end
+
+		for _, machineArea in ipairs(machines:GetChildren()) do
+			if machineArea:IsA("Folder") then
+				task.spawn(setupMachineArea, machineArea)
+			end
+		end
+
+		if not machines:GetAttribute("ClientConnected") then
+			machines:SetAttribute("ClientConnected", true)
+			machines.ChildAdded:Connect(function(child)
+				if child:IsA("Folder") then
+					task.spawn(setupMachineArea, child)
+				end
+			end)
+		end
 	end
 
 	local Networker = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Networker"))
@@ -108,17 +118,26 @@ function UpgradeMachineArea.init()
 		end
 	end
 
-	-- Setup existing machines
-	for _, machineArea in ipairs(machines:GetChildren()) do
-		if machineArea:IsA("Folder") then
-			task.spawn(setupMachineArea, machineArea)
-		end
-	end
+	player:GetAttributeChangedSignal("MyPlotName"):Connect(function()
+		task.wait(0.2)
+		bindPlotMachines()
+	end)
 
-	-- Handle dynamically added machines
-	machines.ChildAdded:Connect(function(child)
-		if child:IsA("Folder") then
-			task.spawn(setupMachineArea, child)
+	player.CharacterAdded:Connect(function()
+		task.wait(0.5)
+		bindPlotMachines()
+	end)
+
+	task.spawn(function()
+		local attempts = 0
+		while attempts < 20 do
+			bindPlotMachines()
+			local plot = GameUtils.getPlayerPlot(player)
+			if plot and plot:FindFirstChild("Machines") then
+				break
+			end
+			task.wait(0.5)
+			attempts = attempts + 1
 		end
 	end)
 

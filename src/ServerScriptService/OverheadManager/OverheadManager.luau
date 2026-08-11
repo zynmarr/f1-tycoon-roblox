@@ -130,7 +130,12 @@ end
 -- Hubungkan listener untuk setup character
 local function setupPlayer(player: Player)
 	player.CharacterAdded:Connect(function(character)
-		createOverhead(player, character)
+		task.spawn(function()
+			local head = character:WaitForChild("Head", 10)
+			if head then
+				createOverhead(player, character)
+			end
+		end)
 	end)
 
 	player:GetAttributeChangedSignal("Role"):Connect(function()
