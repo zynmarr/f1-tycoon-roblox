@@ -7,33 +7,6 @@ function UpgradeMachineArea.init()
 	local player = Players.LocalPlayer
 	local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 
-	local function bindPlotMachines()
-		local plot = GameUtils.getPlayerPlot(player)
-		if not plot then
-			return
-		end
-
-		local machines = plot:WaitForChild("Machines", 5) :: Folder?
-		if not machines then
-			return
-		end
-
-		for _, machineArea in ipairs(machines:GetChildren()) do
-			if machineArea:IsA("Folder") then
-				task.spawn(setupMachineArea, machineArea)
-			end
-		end
-
-		if not machines:GetAttribute("ClientConnected") then
-			machines:SetAttribute("ClientConnected", true)
-			machines.ChildAdded:Connect(function(child)
-				if child:IsA("Folder") then
-					task.spawn(setupMachineArea, child)
-				end
-			end)
-		end
-	end
-
 	local Networker = require(ReplicatedStorage:WaitForChild("Packages"):WaitForChild("Networker"))
 	local serviceClient = {}
 	local networker = Networker.client.new("UpgradeMachine", serviceClient)
@@ -115,6 +88,33 @@ function UpgradeMachineArea.init()
 					end
 				end
 			end
+		end
+	end
+
+	local function bindPlotMachines()
+		local plot = GameUtils.getPlayerPlot(player)
+		if not plot then
+			return
+		end
+
+		local machines = plot:WaitForChild("Machines", 5) :: Folder?
+		if not machines then
+			return
+		end
+
+		for _, machineArea in ipairs(machines:GetChildren()) do
+			if machineArea:IsA("Folder") then
+				task.spawn(setupMachineArea, machineArea)
+			end
+		end
+
+		if not machines:GetAttribute("ClientConnected") then
+			machines:SetAttribute("ClientConnected", true)
+			machines.ChildAdded:Connect(function(child)
+				if child:IsA("Folder") then
+					task.spawn(setupMachineArea, child)
+				end
+			end)
 		end
 	end
 
