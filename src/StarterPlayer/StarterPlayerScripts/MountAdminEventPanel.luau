@@ -51,7 +51,12 @@ function MountAdminEventPanel.init()
 		UnregisterSidebarButton = bindable :: any
 	end
 
+	local RunService = game:GetService("RunService")
 	local function checkAdminPermission(): boolean
+		if RunService:IsStudio() then
+			return true
+		end
+
 		local playerRole = (player:GetAttribute("Role") :: string?) or "Player"
 		local roleData = (RoleConfig.Roles :: any)[playerRole]
 
