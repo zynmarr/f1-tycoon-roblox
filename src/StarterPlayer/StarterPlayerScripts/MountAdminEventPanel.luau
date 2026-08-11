@@ -118,6 +118,14 @@ function MountAdminEventPanel.init()
 					warn("[Client] Gagal mengirim gift: " .. tostring(result and result.Error or "Unknown error"))
 				end
 			end,
+			onSetCustomNameColor = function(targetPlayerName: string, colorHex: string)
+				local result = adminEventService:fetch("setCustomNameColor", targetPlayerName, colorHex) :: any
+				if result and result.Success then
+					print("[Client] Custom Name Color berhasil diterapkan: " .. tostring(result.Message))
+				else
+					warn("[Client] Gagal menerapkan Custom Name Color: " .. tostring(result and result.Error or "Unknown error"))
+				end
+			end,
 			getAvailableCars = function()
 				return adminEventService:fetch("getAvailableCars") :: any
 			end,

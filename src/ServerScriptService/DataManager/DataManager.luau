@@ -9,6 +9,7 @@ local DEFAULT_DATA = {
 		Rebirth = 0,
 		RebirthPoints = 0,
 		RPMTokens = 0, -- Saldo RPM Tokens pemain (bermula dari 0)
+		CustomNameColor = "", -- Format Hex: "#FFD700" atau empty string
 		RaceStats = {
 			Wins = 0,
 			Losses = 0,
@@ -346,6 +347,7 @@ function DataManager.syncData(player)
 	-- Replikasi data ke player attribute agar client React UI bisa membaca reaktif
 	local HttpService = game:GetService("HttpService")
 	player:SetAttribute("RebirthPoints", finalSave.Stats.RebirthPoints or 0)
+	player:SetAttribute("CustomNameColor", finalSave.Stats.CustomNameColor or "")
 	player:SetAttribute("RebirthUpgrades", HttpService:JSONEncode(profile.Data.RebirthUpgrades or {}))
 	player:SetAttribute("DailyRewards", HttpService:JSONEncode(profile.Data.DailyRewards or {}))
 	player:SetAttribute("Quests", HttpService:JSONEncode(profile.Data.Quests or {}))

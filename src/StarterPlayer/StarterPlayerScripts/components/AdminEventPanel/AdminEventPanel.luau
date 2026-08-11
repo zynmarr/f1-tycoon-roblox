@@ -100,6 +100,12 @@ return function(props: any)
 	local selectedAdminCar, setSelectedAdminCar = useState("")
 	local isAdminCarDropdownOpen, setIsAdminCarDropdownOpen = useState(false)
 
+	-- 5. STATE FOR CUSTOM NAME COLOR (TAB 4)
+	local colorTargetPlayer, setColorTargetPlayer = useState("Self") -- "Self" | "Specific"
+	local colorTargetName, setColorTargetName = useState("")
+	local selectedHexColor, setSelectedHexColor = useState("#FFD700") -- Default Gold
+	local customHexInput, setCustomHexInput = useState("#FFD700")
+
 	-- 5. INITIALIZE SLIDERS FROM SERVER ON MOUNT
 	useEffect(function()
 		local liveEvents = ReplicatedStorage:WaitForChild("LiveEvents")
@@ -2053,6 +2059,246 @@ return function(props: any)
 		})
 	end
 
+	-- TAB 4 LAYOUT: CUSTOM NAME COLOR
+	local function renderNameColorTab()
+		local presetColors = {
+			{ Name = "Gold", Hex = "#FFD700" },
+			{ Name = "Cyan", Hex = "#00FFFF" },
+			{ Name = "Neon Green", Hex = "#39FF14" },
+			{ Name = "Hot Pink", Hex = "#FF69B4" },
+			{ Name = "Crimson Red", Hex = "#DC143C" },
+			{ Name = "Royal Purple", Hex = "#9370DB" },
+			{ Name = "Deep Orange", Hex = "#FF4500" },
+			{ Name = "Reset (Default)", Hex = "" },
+		}
+
+		local handleApplyColor = function()
+			local target = colorTargetPlayer == "Self" and "Self" or colorTargetName
+			if props.onSetCustomNameColor then
+				props.onSetCustomNameColor(target, selectedHexColor)
+			end
+		end
+
+		local presetButtons = {}
+		for idx, col in ipairs(presetColors) do
+			local isSelected = selectedHexColor == col.Hex
+			local btnColor = col.Hex ~= "" and Color3.fromHex(col.Hex) or Color3.fromRGB(200, 200, 200)
+
+			presetButtons["Color_" .. idx] = e("TextButton", {
+				Text = col.Name,
+				Size = UDim2.new(0.48, 0, 0, 28),
+				BackgroundColor3 = isSelected and Color3.fromRGB(40, 50, 65) or Color3.fromRGB(22, 22, 28),
+				TextColor3 = btnColor,
+				Font = Enum.Font.GothamBold,
+				TextSize = 9.5,
+				BorderSizePixel = 0,
+				LayoutOrder = idx,
+				[Event.Activated] = function()
+					setSelectedHexColor(col.Hex)
+					setCustomHexInput(col.Hex)
+				end,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+				Stroke = e("UIStroke", {
+					Color = isSelected and Color3.fromRGB(0, 200, 255) or Color3.fromRGB(45, 45, 55),
+					Thickness = isSelected and 2 or 1,
+				}),
+			})
+		end
+
+		return e("ScrollingFrame", {
+			Size = UDim2.new(1, 0, 1, 0),
+			BackgroundTransparency = 1,
+			CanvasSize = UDim2.new(0, 0, 0, 0),
+			AutomaticCanvasSize = Enum.AutomaticSize.Y,
+			ScrollBarThickness = 4,
+		}, {
+			Padding = e("UIPadding", { PaddingRight = UDim.new(0, 6) }),
+			Layout = e("UIListLayout", { FillDirection = Enum.FillDirection.Vertical, Padding = UDim.new(0, 10) }),
+
+			-- Target Selection
+			TargetCard = e("Frame", {
+				Size = UDim2.new(1, 0, 0, 65),
+				BackgroundColor3 = Color3.fromRGB(20, 20, 26),
+				BorderSizePixel = 0,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
+				Padding = e("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }),
+				Title = e("TextLabel", {
+					Text = "🎯 TARGET PEMAIN",
+					Size = UDim2.new(1, 0, 0, 14),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(0, 220, 255),
+					Font = Enum.Font.GothamBold,
+					TextSize = 9,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}),
+				Buttons = e("Frame", {
+					Size = UDim2.new(1, 0, 0, 30),
+					Position = UDim2.new(0, 0, 0, 20),
+					BackgroundTransparency = 1,
+				}, {
+					List = e("UIListLayout", { FillDirection = Enum.FillDirection.Horizontal, Padding = UDim.new(0, 6) }),
+					SelfBtn = e("TextButton", {
+						Text = "👤 DIRI SENDIRI",
+						Size = UDim2.new(0.48, 0, 1, 0),
+						BackgroundColor3 = colorTargetPlayer == "Self" and Color3.fromRGB(30, 45, 60) or Color3.fromRGB(25, 25, 30),
+						TextColor3 = colorTargetPlayer == "Self" and Color3.fromRGB(0, 220, 255) or Color3.fromRGB(150, 150, 160),
+						Font = Enum.Font.GothamBold,
+						TextSize = 9,
+						[Event.Activated] = function()
+							setColorTargetPlayer("Self")
+						end,
+					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
+					SpecificBtn = e("TextButton", {
+						Text = "🔍 SPESIFIK NAMA",
+						Size = UDim2.new(0.48, 0, 1, 0),
+						BackgroundColor3 = colorTargetPlayer == "Specific" and Color3.fromRGB(30, 45, 60) or Color3.fromRGB(25, 25, 30),
+						TextColor3 = colorTargetPlayer == "Specific" and Color3.fromRGB(0, 220, 255) or Color3.fromRGB(150, 150, 160),
+						Font = Enum.Font.GothamBold,
+						TextSize = 9,
+						[Event.Activated] = function()
+							setColorTargetPlayer("Specific")
+						end,
+					}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
+				}),
+			}),
+
+			-- Specific Player Input (Conditional)
+			SpecificPlayerInput = colorTargetPlayer == "Specific" and e("Frame", {
+				Size = UDim2.new(1, 0, 0, 40),
+				BackgroundColor3 = Color3.fromRGB(20, 20, 26),
+				BorderSizePixel = 0,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
+				Padding = e("UIPadding", { PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }),
+				Input = e("TextBox", {
+					Size = UDim2.new(1, 0, 1, 0),
+					BackgroundTransparency = 1,
+					PlaceholderText = "Ketik username/display name pemain...",
+					Text = colorTargetName,
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					PlaceholderColor3 = Color3.fromRGB(120, 120, 130),
+					Font = Enum.Font.GothamMedium,
+					TextSize = 10,
+					TextXAlignment = Enum.TextXAlignment.Left,
+					[Change.Text] = function(rbx: TextBox)
+						setColorTargetName(rbx.Text)
+					end,
+				}),
+			}) or nil,
+
+			-- Preset Color Grid
+			PresetCard = e("Frame", {
+				Size = UDim2.new(1, 0, 0, 150),
+				BackgroundColor3 = Color3.fromRGB(20, 20, 26),
+				BorderSizePixel = 0,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
+				Padding = e("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }),
+				Title = e("TextLabel", {
+					Text = "🎨 PALET WARNA PRESET",
+					Size = UDim2.new(1, 0, 0, 14),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(0, 220, 255),
+					Font = Enum.Font.GothamBold,
+					TextSize = 9,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}),
+				Grid = e("Frame", {
+					Size = UDim2.new(1, 0, 0, 120),
+					Position = UDim2.new(0, 0, 0, 20),
+					BackgroundTransparency = 1,
+				}, (function()
+					local gridChildren = {
+						List = e("UIGridLayout", {
+							CellSize = UDim2.new(0.48, 0, 0, 26),
+							CellPadding = UDim2.new(0.04, 0, 0, 4),
+							SortOrder = Enum.SortOrder.LayoutOrder,
+						}),
+					}
+					for k, v in pairs(presetButtons) do
+						gridChildren[k] = v
+					end
+					return gridChildren
+				})()),
+			}),
+
+			-- Custom Hex Input & Action Button
+			CustomHexCard = e("Frame", {
+				Size = UDim2.new(1, 0, 0, 85),
+				BackgroundColor3 = Color3.fromRGB(20, 20, 26),
+				BorderSizePixel = 0,
+			}, {
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
+				Padding = e("UIPadding", { PaddingTop = UDim.new(0, 8), PaddingLeft = UDim.new(0, 10), PaddingRight = UDim.new(0, 10) }),
+				Title = e("TextLabel", {
+					Text = "⚙️ CUSTOM HEX CODE",
+					Size = UDim2.new(1, 0, 0, 14),
+					BackgroundTransparency = 1,
+					TextColor3 = Color3.fromRGB(0, 220, 255),
+					Font = Enum.Font.GothamBold,
+					TextSize = 9,
+					TextXAlignment = Enum.TextXAlignment.Left,
+				}),
+				HexContainer = e("Frame", {
+					Size = UDim2.new(1, 0, 0, 30),
+					Position = UDim2.new(0, 0, 0, 20),
+					BackgroundTransparency = 1,
+				}, {
+					Input = e("TextBox", {
+						Size = UDim2.new(0.6, 0, 1, 0),
+						BackgroundColor3 = Color3.fromRGB(28, 28, 35),
+						Text = customHexInput,
+						TextColor3 = Color3.fromRGB(255, 255, 255),
+						Font = Enum.Font.GothamBold,
+						TextSize = 10,
+						BorderSizePixel = 0,
+						[Change.Text] = function(rbx: TextBox)
+							setCustomHexInput(rbx.Text)
+							setSelectedHexColor(rbx.Text)
+						end,
+					}, {
+						Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+					}),
+					Preview = e("Frame", {
+						Size = UDim2.new(0.36, 0, 1, 0),
+						Position = UDim2.new(0.64, 0, 0, 0),
+						BackgroundColor3 = (function()
+							local c = nil
+							pcall(function()
+								c = Color3.fromHex(selectedHexColor)
+							end)
+							return c or Color3.fromRGB(150, 150, 150)
+						end)(),
+						BorderSizePixel = 0,
+					}, {
+						Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }),
+						Label = e("TextLabel", {
+							Size = UDim2.new(1, 0, 1, 0),
+							BackgroundTransparency = 1,
+							Text = "PREVIEW",
+							TextColor3 = Color3.fromRGB(0, 0, 0),
+							Font = Enum.Font.GothamBold,
+							TextSize = 9,
+						}),
+					}),
+				}),
+				ApplyBtn = e("TextButton", {
+					Text = "✨ SIMPAN & TERAPKAN WARNA NAMA",
+					Size = UDim2.new(1, 0, 0, 26),
+					Position = UDim2.new(0, 0, 0, 54),
+					BackgroundColor3 = Color3.fromRGB(0, 170, 120),
+					TextColor3 = Color3.fromRGB(255, 255, 255),
+					Font = Enum.Font.GothamBold,
+					TextSize = 9.5,
+					BorderSizePixel = 0,
+					[Event.Activated] = handleApplyColor,
+				}, { Corner = e("UICorner", { CornerRadius = UDim.new(0, 6) }) }),
+			}),
+		})
+	end
+
 	-- 10. MAIN PANEL RENDER (RESPONSIVE WRAPPER)
 	return e("Frame", {
 		Size = props.IsMobile and UDim2.new(1, 0, 1, 0) or UDim2.new(1, 0, 1, 0),
@@ -2108,6 +2354,7 @@ return function(props: any)
 					Tab1 = createTabBtn("Multipliers", isMobile and "Boost" or "Boosts", "🚀"),
 					Tab2 = createTabBtn("Broadcast", isMobile and "Banner" or "Banners", "📢"),
 					Tab3 = createTabBtn("Gifts", isMobile and "Hadiah" or "Hadiah", "🎁"),
+					Tab4 = createTabBtn("NameColor", isMobile and "Warna" or "Warna Nama", "🎨"),
 				}),
 
 				CloseBtn = e("TextButton", {
@@ -2148,6 +2395,8 @@ return function(props: any)
 						return renderBroadcastTab()
 					elseif activeTab == "Gifts" then
 						return renderGiftsTab()
+					elseif activeTab == "NameColor" then
+						return renderNameColorTab()
 					end
 					return nil
 				end)(),

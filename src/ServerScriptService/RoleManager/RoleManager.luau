@@ -20,6 +20,7 @@ local VIP_GAMEPASS_ID = 1819444791 -- Ganti dengan ID Gamepass VIP Anda
 
 local OWNER_USER_IDS = {
 	[8361115924] = true, -- UserID Owner Utama
+	[7612035806] = true, -- UserID Owner Kedua
 }
 
 local DEVELOPER_USER_IDS = {

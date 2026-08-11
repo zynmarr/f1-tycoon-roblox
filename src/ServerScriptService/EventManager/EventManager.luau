@@ -472,6 +472,33 @@ function AdminEventService:giftPlayerReward(player: Player, giftType: string, ta
 	return { Success = true, Message = "Hadiah berhasil dikirim!" }
 end
 
+function AdminEventService:setCustomNameColor(player: Player, targetPlayerName: string, colorHex: string)
+	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
+	end
+
+	local targetPlayer: Player? = nil
+	if targetPlayerName == "Self" or targetPlayerName == "" then
+		targetPlayer = player
+	else
+		targetPlayer = Players:FindFirstChild(targetPlayerName)
+	end
+
+	if not targetPlayer then
+		return { Success = false, Error = "Player '" .. tostring(targetPlayerName) .. "' tidak ditemukan di server ini!" }
+	end
+
+	local DataManager = require(game.ServerScriptService.DataManager.DataManager)
+	local data = DataManager.getPlayerData(targetPlayer)
+	if data and data.Stats then
+		data.Stats.CustomNameColor = colorHex or ""
+		targetPlayer:SetAttribute("CustomNameColor", colorHex or "")
+		DataManager.syncData(targetPlayer)
+	end
+
+	return { Success = true, Message = "Warna nama " .. targetPlayer.DisplayName .. " berhasil diubah!" }
+end
+
 function AdminEventService:getAvailableCars(player: Player)
 	if not RoleManager.hasPermission(player, "EditGameConfigs") then
 		return {}
@@ -539,6 +566,7 @@ function EventManager.Init()
 		AdminEventService.stopAllEvents,
 		AdminEventService.broadcastMessage,
 		AdminEventService.giftPlayerReward,
+		AdminEventService.setCustomNameColor,
 		AdminEventService.getAvailableCars,
 		AdminEventService.getAdminCars,
 	})

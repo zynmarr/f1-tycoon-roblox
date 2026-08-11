@@ -40,6 +40,14 @@ local function createOverhead(player: Player, character: Model)
 	frame.BackgroundTransparency = 1
 	frame.Parent = billboard
 
+	local customColorHex = player:GetAttribute("CustomNameColor") :: string?
+	local customColor: Color3? = nil
+	if customColorHex and typeof(customColorHex) == "string" and customColorHex ~= "" then
+		pcall(function()
+			customColor = Color3.fromHex(customColorHex)
+		end)
+	end
+
 	if roleName == "Player" then
 		billboard.Size = UDim2.new(0, 300, 0, 30)
 		billboard.StudsOffset = Vector3.new(0, 2.5, 0) -- Ketinggian lebih rendah untuk text biasa
@@ -49,7 +57,7 @@ local function createOverhead(player: Player, character: Model)
 		nameLabel.Size = UDim2.new(1, 0, 1, 0)
 		nameLabel.BackgroundTransparency = 1
 		nameLabel.Text = player.DisplayName
-		nameLabel.TextColor3 = Color3.fromRGB(240, 240, 240)
+		nameLabel.TextColor3 = customColor or Color3.fromRGB(240, 240, 240)
 		nameLabel.Font = Enum.Font.GothamBold
 		nameLabel.TextSize = 15
 		nameLabel.TextScaled = false
@@ -76,7 +84,7 @@ local function createOverhead(player: Player, character: Model)
 		nameLabel.Size = UDim2.new(0, 0, 1, 0)
 		nameLabel.BackgroundTransparency = 1
 		nameLabel.Text = player.DisplayName
-		nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+		nameLabel.TextColor3 = customColor or Color3.fromRGB(255, 255, 255)
 		nameLabel.Font = Enum.Font.GothamBold
 		nameLabel.TextSize = 15
 		nameLabel.TextScaled = false
@@ -126,6 +134,13 @@ local function setupPlayer(player: Player)
 	end)
 
 	player:GetAttributeChangedSignal("Role"):Connect(function()
+		local character = player.Character
+		if character then
+			createOverhead(player, character)
+		end
+	end)
+
+	player:GetAttributeChangedSignal("CustomNameColor"):Connect(function()
 		local character = player.Character
 		if character then
 			createOverhead(player, character)
