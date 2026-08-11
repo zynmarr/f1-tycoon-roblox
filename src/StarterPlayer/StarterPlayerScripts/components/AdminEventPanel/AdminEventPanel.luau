@@ -2210,18 +2210,14 @@ return function(props: any)
 					Position = UDim2.new(0, 0, 0, 20),
 					BackgroundTransparency = 1,
 				}, (function()
-					local gridChildren = {
-						List = e("UIGridLayout", {
-							CellSize = UDim2.new(0.48, 0, 0, 26),
-							CellPadding = UDim2.new(0.04, 0, 0, 4),
-							SortOrder = Enum.SortOrder.LayoutOrder,
-						}),
-					}
-					for k, v in pairs(presetButtons) do
-						gridChildren[k] = v
-					end
+					local gridChildren = table.clone(presetButtons)
+					gridChildren.List = e("UIGridLayout", {
+						CellSize = UDim2.new(0.48, 0, 0, 26),
+						CellPadding = UDim2.new(0.04, 0, 0, 4),
+						SortOrder = Enum.SortOrder.LayoutOrder,
+					})
 					return gridChildren
-				})()),
+				end)()),
 			}),
 
 			-- Custom Hex Input & Action Button
