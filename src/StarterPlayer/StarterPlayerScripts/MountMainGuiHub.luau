@@ -59,8 +59,9 @@ function MountMainGuiHub.init()
 
 		screenGui.Enabled = true
 
-		local cash = leaderstats and leaderstats:FindFirstChild("Cash") and leaderstats.Cash.Value or 0
-		local rebirthLevel = leaderstats and leaderstats:FindFirstChild("Rebirth") and leaderstats.Rebirth.Value or 0
+		local statsFolder = player:FindFirstChild("leaderstats")
+		local cash = statsFolder and statsFolder:FindFirstChild("Cash") and (statsFolder.Cash :: IntValue).Value or 0
+		local rebirthLevel = statsFolder and statsFolder:FindFirstChild("Rebirth") and (statsFolder.Rebirth :: IntValue).Value or 0
 		local rebirthPoints = player:GetAttribute("RebirthPoints") or 0
 		local upgrades = getJSONAttribute("RebirthUpgrades", {})
 		local dailyData = getJSONAttribute("DailyRewards", { Streak = 0, LastClaimTime = 0 })
@@ -135,25 +136,44 @@ function MountMainGuiHub.init()
 	end
 
 	-- ===== LISTEN TO STATS CHANGES TO RENDER REACTIVE =====
-	if leaderstats then
-		local cashVal = leaderstats:FindFirstChild("Cash")
-		if cashVal then
-			cashVal.Changed:Connect(function()
+	local function listenToLeaderstats(statsFolder: Folder)
+		statsFolder.ChildAdded:Connect(function(child)
+			if child.Name == "Cash" or child.Name == "Rebirth" then
+				child.Changed:Connect(function()
+					if uiIsOpen then
+						updateUIRender()
+					end
+				end)
 				if uiIsOpen then
 					updateUIRender()
 				end
-			end)
-		end
+			end
+		end)
 
-		local rebirthVal = leaderstats:FindFirstChild("Rebirth")
-		if rebirthVal then
-			rebirthVal.Changed:Connect(function()
-				if uiIsOpen then
-					updateUIRender()
-				end
-			end)
+		for _, child in ipairs(statsFolder:GetChildren()) do
+			if child.Name == "Cash" or child.Name == "Rebirth" then
+				child.Changed:Connect(function()
+					if uiIsOpen then
+						updateUIRender()
+					end
+				end)
+			end
 		end
 	end
+
+	local currentLeaderstats = player:FindFirstChild("leaderstats")
+	if currentLeaderstats then
+		listenToLeaderstats(currentLeaderstats)
+	end
+
+	player.ChildAdded:Connect(function(child)
+		if child.Name == "leaderstats" and child:IsA("Folder") then
+			listenToLeaderstats(child)
+			if uiIsOpen then
+				updateUIRender()
+			end
+		end
+	end)
 
 	player.AttributeChanged:Connect(function(attrName)
 		if

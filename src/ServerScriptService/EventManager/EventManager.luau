@@ -304,12 +304,14 @@ local function giftLocalPlayer(targetPlayerName, giftType, params)
 
 	for _, p in ipairs(targetPlayers) do
 		local success, err = pcall(function()
+			local DataManager = require(game.ServerScriptService.DataManager.DataManager)
 			if giftType == "Cash" then
 				local amount = params.Amount or 0
 				local leaderstats = p:FindFirstChild("leaderstats")
 				local cash = leaderstats and leaderstats:FindFirstChild("Cash")
 				if cash then
 					cash.Value = cash.Value + amount
+					DataManager.syncData(p)
 				end
 			elseif giftType == "24hCash" then
 				local rate = ParkingAreaManager.getPlayerPassiveIncome(p)
@@ -318,6 +320,7 @@ local function giftLocalPlayer(targetPlayerName, giftType, params)
 				local cash = leaderstats and leaderstats:FindFirstChild("Cash")
 				if cash then
 					cash.Value = cash.Value + amount
+					DataManager.syncData(p)
 				end
 			elseif giftType == "Box" then
 				local level = params.Level or 30

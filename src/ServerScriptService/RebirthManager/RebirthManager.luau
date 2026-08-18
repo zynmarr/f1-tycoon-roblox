@@ -15,7 +15,9 @@ end
 -- Dipanggil setiap kali karakter spawn atau pemain membeli upgrade
 local function applyRebirthUpgrades(player: Player)
 	local data = DataManager.getPlayerData(player)
-	if not data or not data.RebirthUpgrades then return end
+	if not data or not data.RebirthUpgrades then
+		return
+	end
 
 	local upgrades = data.RebirthUpgrades
 
@@ -43,9 +45,11 @@ local function resetPlayerPlotAndAssets(player: Player)
 	local leaderstats = player:FindFirstChild("leaderstats")
 	if leaderstats then
 		local cash = leaderstats:FindFirstChild("Cash")
-		if cash then cash.Value = 0 end
+		if cash then
+			cash.Value = 0
+		end
 	end
-	
+
 	-- 2. Destroy non-Admin items from Backpack
 	local backpack = player:FindFirstChild("Backpack")
 	if backpack then
@@ -59,7 +63,7 @@ local function resetPlayerPlotAndAssets(player: Player)
 			end
 		end
 	end
-	
+
 	-- 3. Destroy non-Admin items from Character
 	local character = player.Character
 	if character then
@@ -73,7 +77,7 @@ local function resetPlayerPlotAndAssets(player: Player)
 			end
 		end
 	end
-	
+
 	-- 4. Clear Profile Data PlotData.MyCars cache for non-Admin cars
 	local data = DataManager.getPlayerData(player)
 	if data and data.PlotData and data.PlotData.MyCars then
@@ -100,8 +104,9 @@ local function resetPlayerPlotAndAssets(player: Player)
 				if carsFolder then
 					for _, car in ipairs(carsFolder:GetChildren()) do
 						local isVariantAdmin = car:GetAttribute("Variant") == "Admin"
-						local hasAdminName = string.find(string.lower(car.Name), "admin") ~= nil
-						if not isVariantAdmin and not hasAdminName then
+						-- local hasAdminName = string.find(string.lower(car.Name), "admin") ~= nil
+						-- if not isVariantAdmin and not hasAdminName then
+						if not isVariantAdmin then
 							car:Destroy()
 						else
 							hasRemainingCar = true
@@ -121,7 +126,7 @@ local function resetPlayerPlotAndAssets(player: Player)
 		task.defer(function()
 			ParkingAreaManager.recalculatePassiveIncome(player)
 		end)
-		
+
 		-- Reset Tycoon Machines purchase attributes & active boxes
 		local machines = myPlot:FindFirstChild("Machines")
 		if machines then
@@ -158,48 +163,64 @@ end
 -- ===== REBIRTH ACTION =====
 function RebirthManager:requestRebirth(player: Player)
 	local data = DataManager.getPlayerData(player)
-	if not data then return { Success = false, Error = "Data tidak ditemukan!" } end
-	
+	if not data then
+		return { Success = false, Error = "Data tidak ditemukan!" }
+	end
+
 	local currentRebirth = data.Stats.Rebirth or 0
 
 	-- Cek batas maksimum rebirth
 	if currentRebirth >= RebirthConfig.MAX_REBIRTH then
-		return { Success = false, Error = "Anda sudah mencapai Rebirth Level Maksimum (" .. RebirthConfig.MAX_REBIRTH .. ")!" }
+		return {
+			Success = false,
+			Error = "Anda sudah mencapai Rebirth Level Maksimum (" .. RebirthConfig.MAX_REBIRTH .. ")!",
+		}
 	end
 
 	-- Formula biaya baru: 1,000,000 * (1.6 ^ currentRebirth)
 	local cost = math.floor(1000000 * (1.6 ^ currentRebirth))
-	
+
 	local leaderstats = player:FindFirstChild("leaderstats")
 	local cashVal = leaderstats and leaderstats:FindFirstChild("Cash")
 	if not cashVal or cashVal.Value < cost then
-		return { Success = false, Error = "Cash Anda tidak cukup untuk Rebirth! Butuh $" .. GameUtils.formatCompact(cost) }
+		return {
+			Success = false,
+			Error = "Cash Anda tidak cukup untuk Rebirth! Butuh $" .. GameUtils.formatCompact(cost),
+		}
 	end
-	
+
 	local pointsToGrant = RebirthManager:calculateRebirthPoints(currentRebirth)
-	
+
 	data.Stats.Rebirth = currentRebirth + 1
 	data.Stats.RebirthPoints = (data.Stats.RebirthPoints or 0) + pointsToGrant
 	data.Stats.Cash = 0
-	
+
 	local rebirthVal = leaderstats:FindFirstChild("Rebirth")
 	local pointsVal = leaderstats:FindFirstChild("RebirthPoints")
-	if rebirthVal then rebirthVal.Value = data.Stats.Rebirth end
-	if pointsVal then pointsVal.Value = data.Stats.RebirthPoints end
-	
+	if rebirthVal then
+		rebirthVal.Value = data.Stats.Rebirth
+	end
+	if pointsVal then
+		pointsVal.Value = data.Stats.RebirthPoints
+	end
+
 	resetPlayerPlotAndAssets(player)
 	DataManager.syncData(player)
-	
+
 	return { Success = true, Message = "Rebirth Berhasil! Kelipatan poin +" .. pointsToGrant .. " RP" }
 end
 
 -- ===== PURCHASE REBIRTH UPGRADE =====
 function RebirthManager:purchaseRebirthUpgrade(player: Player, upgradeName: string)
 	local data = DataManager.getPlayerData(player)
-	if not data or not data.RebirthUpgrades then return { Success = false, Error = "Data upgrade tidak ditemukan!" } end
-	
+	if not data or not data.RebirthUpgrades then
+		return { Success = false, Error = "Data upgrade tidak ditemukan!" }
+	end
+
 	local currentLevel = data.RebirthUpgrades[upgradeName]
-	if currentLevel == nil then return { Success = false, Error = "Upgrade '" .. upgradeName .. "' tidak valid!" } end
+	if currentLevel == nil then
+		return { Success = false, Error = "Upgrade '" .. upgradeName .. "' tidak valid!" }
+	end
 
 	-- Cek batas maksimum level upgrade
 	local maxLevel = RebirthConfig.UPGRADE_CAPS[upgradeName]
@@ -212,20 +233,25 @@ function RebirthManager:purchaseRebirthUpgrade(player: Player, upgradeName: stri
 	if (data.Stats.RebirthPoints or 0) < cost then
 		return { Success = false, Error = "Rebirth Points tidak cukup! Butuh " .. cost .. " RP" }
 	end
-	
+
 	data.Stats.RebirthPoints = data.Stats.RebirthPoints - cost
 	data.RebirthUpgrades[upgradeName] = currentLevel + 1
-	
+
 	local leaderstats = player:FindFirstChild("leaderstats")
 	local pointsVal = leaderstats and leaderstats:FindFirstChild("RebirthPoints")
-	if pointsVal then pointsVal.Value = data.Stats.RebirthPoints end
-	
+	if pointsVal then
+		pointsVal.Value = data.Stats.RebirthPoints
+	end
+
 	DataManager.syncData(player)
 
 	-- Terapkan efek upgrade langsung ke karakter pemain
 	applyRebirthUpgrades(player)
 
-	return { Success = true, Message = "Upgrade " .. upgradeName .. " berhasil ditingkatkan ke Level " .. (currentLevel + 1) .. "!" }
+	return {
+		Success = true,
+		Message = "Upgrade " .. upgradeName .. " berhasil ditingkatkan ke Level " .. (currentLevel + 1) .. "!",
+	}
 end
 
 -- ===== DAILY REWARDS & QUESTS LOGIC =====
@@ -241,8 +267,8 @@ local function generateDailyQuests(player: Player, data: any)
 	if now - lastGen >= 86400 or #data.Quests.Daily.ActiveQuests == 0 then
 		data.Quests.Daily.LastGeneratedTime = now
 		data.Quests.Daily.ActiveQuests = {}
-		
-		local pool = {1, 2, 3}
+
+		local pool = { 1, 2, 3 }
 		for i = 1, 3 do
 			local randIdx = table.remove(pool, math.random(1, #pool))
 			local t = DAILY_QUEST_TEMPLATES[randIdx]
@@ -262,49 +288,60 @@ end
 
 function RebirthManager:claimDailyReward(player: Player)
 	local data = DataManager.getPlayerData(player)
-	if not data or not data.DailyRewards then return { Success = false, Error = "Data login harian error!" } end
-	
+	if not data or not data.DailyRewards then
+		return { Success = false, Error = "Data login harian error!" }
+	end
+
 	local now = os.time()
 	local lastClaim = data.DailyRewards.LastClaimTime or 0
 	local streak = data.DailyRewards.Streak or 0
-	
+
 	if now - lastClaim < 72000 then -- Jeda waktu 20 jam
 		local nextTime = 72000 - (now - lastClaim)
 		local jam = math.ceil(nextTime / 3600)
 		return { Success = false, Error = "Tunggu " .. jam .. " jam lagi untuk mengeklaim!" }
 	end
-	
+
 	if now - lastClaim > 172800 then -- Jeda waktu 48 jam, reset streak
 		streak = 0
 	end
-	
+
 	streak = (streak % 7) + 1
 	data.DailyRewards.Streak = streak
 	data.DailyRewards.LastClaimTime = now
-	
+
 	local rewardCash = 5000 * streak
 	local leaderstats = player:FindFirstChild("leaderstats")
 	local cashVal = leaderstats and leaderstats:FindFirstChild("Cash")
-	if cashVal then cashVal.Value = cashVal.Value + rewardCash end
-	
+	if cashVal then
+		cashVal.Value = cashVal.Value + rewardCash
+	end
+
 	DataManager.syncData(player)
-	return { Success = true, Message = "Klaim Hari ke-" .. streak .. " Berhasil! +$" .. GameUtils.formatCompact(rewardCash) }
+	return {
+		Success = true,
+		Message = "Klaim Hari ke-" .. streak .. " Berhasil! +$" .. GameUtils.formatCompact(rewardCash),
+	}
 end
 
 function RebirthManager:claimDailyQuest(player: Player, questId: string)
 	local data = DataManager.getPlayerData(player)
-	if not data or not data.Quests or not data.Quests.Daily then return { Success = false, Error = "Data misi error!" } end
-	
+	if not data or not data.Quests or not data.Quests.Daily then
+		return { Success = false, Error = "Data misi error!" }
+	end
+
 	for _, q in ipairs(data.Quests.Daily.ActiveQuests) do
 		if q.ID == questId then
 			if q.Progress >= q.Target and not q.Claimed then
 				q.Claimed = true
 				q.Completed = true
-				
+
 				local leaderstats = player:FindFirstChild("leaderstats")
 				local cashVal = leaderstats and leaderstats:FindFirstChild("Cash")
-				if cashVal then cashVal.Value = cashVal.Value + q.RewardCash end
-				
+				if cashVal then
+					cashVal.Value = cashVal.Value + q.RewardCash
+				end
+
 				DataManager.syncData(player)
 				return { Success = true, Message = "Hadiah Misi diklaim! +$" .. GameUtils.formatCompact(q.RewardCash) }
 			end
@@ -315,8 +352,10 @@ end
 
 function RebirthManager.incrementQuestProgress(player: Player, questType: string, amount: number)
 	local data = DataManager.getPlayerData(player)
-	if not data or not data.Quests then return end
-	
+	if not data or not data.Quests then
+		return
+	end
+
 	-- 1. Pastikan data Quests lengkap
 	if not data.Quests.Daily then
 		data.Quests.Daily = {
@@ -331,9 +370,9 @@ function RebirthManager.incrementQuestProgress(player: Player, questType: string
 			ClaimedMilestones = {},
 		}
 	end
-	
+
 	generateDailyQuests(player, data)
-	
+
 	-- 2. Increment Daily Quest Progress
 	for _, q in ipairs(data.Quests.Daily.ActiveQuests) do
 		if q.Type == questType and not q.Completed then
@@ -343,14 +382,14 @@ function RebirthManager.incrementQuestProgress(player: Player, questType: string
 			end
 		end
 	end
-	
+
 	-- 3. Increment Lifetime Milestones Progress
 	if questType == "SellCars" then
 		data.Quests.Milestones.TotalCarsSold = (data.Quests.Milestones.TotalCarsSold or 0) + amount
 	elseif questType == "OpenBoxes" then
 		data.Quests.Milestones.TotalBoxesOpened = (data.Quests.Milestones.TotalBoxesOpened or 0) + amount
 	end
-	
+
 	-- 4. Replikasi instan atribut Quests ke Client agar React UI reaktif
 	local HttpService = game:GetService("HttpService")
 	player:SetAttribute("Quests", HttpService:JSONEncode(data.Quests))
@@ -423,9 +462,13 @@ function RebirthManager.Init()
 	Players.PlayerAdded:Connect(function(player)
 		local function setupCashListener()
 			local leaderstats = player:WaitForChild("leaderstats", 15)
-			if not leaderstats then return end
+			if not leaderstats then
+				return
+			end
 			local cash = leaderstats:WaitForChild("Cash", 15)
-			if not cash then return end
+			if not cash then
+				return
+			end
 
 			local lastValue = cash.Value
 			cash.Changed:Connect(function(newValue)
@@ -470,7 +513,7 @@ function RebirthManager.Init()
 			end
 		end)
 	end
-	
+
 	print("[RebirthManager] ✅ Rebirth, Daily Rewards, dan Quests Service siap digunakan.")
 end
 

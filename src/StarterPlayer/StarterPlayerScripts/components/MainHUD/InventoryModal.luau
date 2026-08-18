@@ -113,7 +113,7 @@ local function InventoryModal(props: {
 
 		if not isMappedToHotbar then
 			local name = tool:GetAttribute("Name") or tool.Name
-			local itemType = tool:GetAttribute("Type") or "Other"
+			local itemType = tool:GetAttribute("Type") or tool.Type or "Unknown"
 
 			local matchesTab = (selectedTab == "All")
 				or (selectedTab == "Car" and itemType == "Car")
