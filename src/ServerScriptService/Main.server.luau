@@ -31,6 +31,7 @@ local TeleportManager = safeRequire(script.Parent.TeleportManager.TeleportManage
 local TestRunner = safeRequire(script.Parent.TestRunner.TestRunner, "TestRunner")
 local FusionManager = safeRequire(script.Parent.FusionManager.FusionManager, "FusionManager")
 local MarketManager = safeRequire(script.Parent.MarketManager.MarketManager, "MarketManager")
+local AntiCheatManager = safeRequire(script.Parent.AntiCheatManager.AntiCheatManager, "AntiCheatManager")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 
@@ -409,6 +410,9 @@ local function InitializeServer()
 	end
 	if typeof(MarketManager.Init) == "function" then
 		MarketManager.Init()
+	end
+	if typeof(AntiCheatManager.Init) == "function" then
+		AntiCheatManager.Init()
 	end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)
