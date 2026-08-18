@@ -8,7 +8,7 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 
-local RoleManager = require(script.Parent.RoleManager.RoleManager)
+local RoleManager = require(script.Parent.Parent.RoleManager.RoleManager)
 
 -- Config Thresholds
 local MAX_WALKSPEED = 36 -- Toleransi maksimal walkspeed server (Base 16 + Upgrades/Buffs)
