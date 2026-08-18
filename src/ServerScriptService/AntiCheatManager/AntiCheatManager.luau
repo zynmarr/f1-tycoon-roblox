@@ -6,7 +6,7 @@
 local AntiCheatManager = {}
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
+local _ = game:GetService("Workspace")
 
 local RoleManager = require(script.Parent.Parent.RoleManager.RoleManager)
 
@@ -23,7 +23,8 @@ local playerTrackers: { [Player]: {
 	LastCheckTime: number,
 	Strikes: number,
 	LastStrikeTime: number,
-} } = {}
+} } =
+	{}
 
 local function sendWarningNotif(player: Player, message: string)
 	local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
@@ -37,9 +38,9 @@ end
 local function handleViolation(player: Player, reason: string)
 	-- Skip check jika player adalah Staff / Owner / Developer
 	local role = RoleManager.getPlayerRole(player)
-	if role == "Owner" or role == "Developer" then
-		return
-	end
+	-- if role == "Owner" or role == "Developer" then
+	-- 	return
+	-- end
 
 	local tracker = playerTrackers[player]
 	if not tracker then
@@ -50,7 +51,16 @@ local function handleViolation(player: Player, reason: string)
 	tracker.Strikes = tracker.Strikes + 1
 	tracker.LastStrikeTime = now
 
-	warn(string.format("[AntiCheat] 🚨 Detect %s (%s) - Violation: %reason (Strike %d/%d)", player.Name, tostring(player.UserId), reason, tracker.Strikes, VIOLATION_STRIKE_LIMIT))
+	warn(
+		string.format(
+			"[AntiCheat] 🚨 Detect %s (%s) - Violation: %s (Strike %d/%d)",
+			player.Name,
+			tostring(player.UserId),
+			reason,
+			tracker.Strikes,
+			VIOLATION_STRIKE_LIMIT
+		)
+	)
 	sendWarningNotif(player, "Deteksi perilaku tidak wajar: " .. reason)
 
 	-- Teleport kembali ke posisi valid jika terkena Speed/Teleport Hack
@@ -63,8 +73,16 @@ local function handleViolation(player: Player, reason: string)
 
 	-- Jika melebihi batas strike, keluarkan pemain
 	if tracker.Strikes >= VIOLATION_STRIKE_LIMIT then
-		warn(string.format("[AntiCheat] ⛔ KICKING %s karena melebihi batas pelanggaran anti-cheat!", player.Name))
-		player:Kick("🚫 Terdeteksi aktivitas tidak wajar/eksploitasi pada karakter Anda (" .. reason .. ").")
+		if role == "Owner" or role == "Developer" then
+			sendWarningNotif(
+				player,
+				"⚠️ Anda telah melebihi batas pelanggaran anti-cheat, tetapi karena Anda adalah Staff/Owner/Developer, Anda tidak akan dikeluarkan. Harap periksa perilaku Anda."
+			)
+			return
+		else
+			warn(string.format("[AntiCheat] ⛔ KICKING %s karena melebihi batas pelanggaran anti-cheat!", player.Name))
+			player:Kick("🚫 Terdeteksi aktivitas tidak wajar/eksploitasi pada karakter Anda (" .. reason .. ").")
+		end
 	end
 end
 
