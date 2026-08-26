@@ -413,9 +413,9 @@ local function InitializeServer()
 	if typeof(MarketManager.Init) == "function" then
 		MarketManager.Init()
 	end
-	-- if typeof(AntiCheatManager.Init) == "function" then
-	-- 	AntiCheatManager.Init()
-	-- end
+	if typeof(AntiCheatManager.Init) == "function" then
+		AntiCheatManager.Init()
+	end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)
 	Players.PlayerRemoving:Connect(onPlayerRemoving)
