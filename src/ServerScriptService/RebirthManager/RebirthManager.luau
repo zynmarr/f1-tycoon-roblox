@@ -98,26 +98,33 @@ local function resetPlayerPlotAndAssets(player: Player)
 	if myPlot then
 		local parkingLots = myPlot:FindFirstChild("AllParkingLots")
 		if parkingLots then
-			for _, parking in ipairs(parkingLots:GetChildren()) do
-				local carsFolder = parking:FindFirstChild("MyCars", true)
-				local hasRemainingCar = false
-				if carsFolder then
-					for _, car in ipairs(carsFolder:GetChildren()) do
-						local isVariantAdmin = car:GetAttribute("Variant") == "Admin"
-						-- local hasAdminName = string.find(string.lower(car.Name), "admin") ~= nil
-						-- if not isVariantAdmin and not hasAdminName then
-						if not isVariantAdmin then
-							car:Destroy()
-						else
-							hasRemainingCar = true
+			print("Waiting to remove non-Admin cars from parking lots for player:", player.Name)
+			for _, lot in ipairs(parkingLots:GetChildren()) do
+				print("Processing lot:", lot.Name, "for player:", player.Name)
+				for _, parking in ipairs(lot:GetChildren()) do
+					print("Processing parking:", parking.Name, "in lot:", lot.Name, "for player:", player.Name)
+					local carsFolder: Folder = parking:FindFirstChild("MyCars", true) :: Folder
+					local hasRemainingCar = false
+
+					if carsFolder then
+						for _, car in ipairs(carsFolder:GetChildren()) do
+							local isVariantAdmin = car:GetAttribute("Variant") == "Admin"
+							-- local hasAdminName = string.find(string.lower(car.Name), "admin") ~= nil
+							-- if not isVariantAdmin and not hasAdminName then
+							if not isVariantAdmin then
+								car:Destroy()
+							else
+								hasRemainingCar = true
+							end
 						end
 					end
-				end
-				local prompt = parking:FindFirstChild("ProximityPrompt")
-				if prompt then
-					prompt:SetAttribute("IsActive", hasRemainingCar)
+					local prompt = parking:FindFirstChild("ProximityPrompt")
+					if prompt then
+						prompt:SetAttribute("IsActive", hasRemainingCar)
+					end
 				end
 			end
+			print("Finished removing non-Admin cars from parking lots for player:", player.Name)
 		end
 
 		-- Recalculate passive income based on remaining (Admin) cars on rebirth
@@ -311,6 +318,14 @@ function RebirthManager:claimDailyReward(player: Player)
 	data.DailyRewards.LastClaimTime = now
 
 	local rewardCash = 5000 * streak
+	local RoleManager = require(game:GetService("ServerScriptService"):WaitForChild("RoleManager"):WaitForChild("RoleManager"))
+	local playerRole = RoleManager.getPlayerRole(player)
+	local isVIP = playerRole == "VIP" or playerRole == "Owner" or playerRole == "Developer"
+
+	if isVIP then
+		rewardCash = rewardCash * 2 -- 2x Multiplier Daily Absen khusus pemilik F1 Pass / VIP
+	end
+
 	local leaderstats = player:FindFirstChild("leaderstats")
 	local cashVal = leaderstats and leaderstats:FindFirstChild("Cash")
 	if cashVal then
@@ -318,9 +333,10 @@ function RebirthManager:claimDailyReward(player: Player)
 	end
 
 	DataManager.syncData(player)
+	local vipNote = isVIP and " (Bonus F1 Pass 2x 🎁)" or ""
 	return {
 		Success = true,
-		Message = "Klaim Hari ke-" .. streak .. " Berhasil! +$" .. GameUtils.formatCompact(rewardCash),
+		Message = "Klaim Hari ke-" .. streak .. " Berhasil! +$" .. GameUtils.formatCompact(rewardCash) .. vipNote,
 	}
 end
 

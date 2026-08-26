@@ -175,6 +175,39 @@ function RoleManager.demote(executor: Player, targetUserId: number): (boolean, s
 	return true, "Berhasil menurunkan pangkat UserID " .. targetUserId
 end
 
+-- Memberikan hadiah mobil Celestial (Rarity Tertinggi) 1 kali untuk pembeli F1 Pass / VIP
+local function checkAndGiveF1PassBonusCar(player: Player)
+	local DataManager = require(game:GetService("ServerScriptService"):WaitForChild("DataManager"):WaitForChild("DataManager"))
+	local pData = DataManager.getPlayerData(player)
+	if not pData then
+		return
+	end
+
+	-- Pastikan bonus hanya diberikan 1 kali (Cek flag HasReceivedF1PassCar)
+	if not pData.HasReceivedF1PassCar then
+		pData.HasReceivedF1PassCar = true
+		DataManager.syncData(player)
+
+		-- Berikan mobil Rarity Tertinggi (Celestial): Triple Crown MCL60 - Lando Norris
+		local EventManager = require(game:GetService("ServerScriptService"):WaitForChild("EventManager"):WaitForChild("EventManager"))
+		local bonusCarName = "Triple Crown MCL60 - Lando Norris"
+		pcall(function()
+			(EventManager :: any).giftCarToPlayer(player, bonusCarName, { "Cosmic" })
+		end)
+
+		local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
+		if NotifEvent then
+			NotifEvent:FireClient(
+				player,
+				"🎁 F1 PASS BONUS",
+				"Selamat! Anda mendapatkan mobil Rarity Tertinggi (Celestial): " .. bonusCarName .. "!",
+				5
+			)
+		end
+		print(`[RoleManager] 🏎️ Berhasil memberikan F1 Pass Bonus Car (Celestial) ke {player.Name}`)
+	end
+end
+
 -- Memproses pembelian gamepass dan memicu pengumuman global
 function RoleManager.handleGamePassPurchase(player: Player, gamePassId: number)
 	-- Update instan role VIP di server jika membeli VIP gamepass
@@ -182,6 +215,7 @@ function RoleManager.handleGamePassPurchase(player: Player, gamePassId: number)
 		playerRoles[player] = "VIP"
 		player:SetAttribute("Role", "VIP")
 		print(`[RoleManager] {player.Name} membeli VIP gamepass. Role diupdate secara instan!`)
+		task.spawn(checkAndGiveF1PassBonusCar, player)
 	end
 
 	-- Dapatkan info gamepass secara dinamis
@@ -227,6 +261,14 @@ function RoleManager.Init()
 				roleData.Rank
 			)
 		)
+
+		-- Cek jika pemilik F1 Pass / VIP belum menerima bonus mobil Celestial saat login
+		if role == "VIP" or role == "Owner" or role == "Developer" then
+			task.spawn(function()
+				task.wait(3) -- Tunggu data ter-load penuh
+				checkAndGiveF1PassBonusCar(player)
+			end)
+		end
 
 		-- Setup Chat Commands untuk Owner
 		player.Chatted:Connect(function(msg)
