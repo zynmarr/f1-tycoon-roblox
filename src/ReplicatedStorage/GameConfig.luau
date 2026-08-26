@@ -367,28 +367,52 @@ function GameConfig.CheckVariantBoost(): number
 	return 0
 end
 
-function GameConfig.CheckLuckyChanceBoost(): number
+function GameConfig.CheckLuckyChanceBoost(player: Player?): number
+	local boost = 0
 	local repStorage = game:GetService("ReplicatedStorage")
 	local liveEvents = repStorage:FindFirstChild("LiveEvents")
 	if liveEvents then
 		local boostNode = liveEvents:FindFirstChild("LuckyChanceBoost") :: NumberValue?
 		if boostNode then
-			return boostNode.Value
+			boost = boost + boostNode.Value
 		end
 	end
-	return 0
+
+	if player then
+		local MarketplaceService = game:GetService("MarketplaceService")
+		local hasGamepass, result = pcall(function()
+			return MarketplaceService:UserOwnsGamePassAsync(player.UserId, 1819643657)
+		end)
+		if hasGamepass and result then
+			boost = boost + 1.0 -- +100% Luck Boost (x2)
+		end
+	end
+
+	return boost
 end
 
-function GameConfig.CheckExpBoost(): number
+function GameConfig.CheckExpBoost(player: Player?): number
+	local boost = 0
 	local repStorage = game:GetService("ReplicatedStorage")
 	local liveEvents = repStorage:FindFirstChild("LiveEvents")
 	if liveEvents then
 		local boostNode = liveEvents:FindFirstChild("ExpBoost") :: NumberValue?
 		if boostNode then
-			return boostNode.Value
+			boost = boost + boostNode.Value
 		end
 	end
-	return 0
+
+	if player then
+		local MarketplaceService = game:GetService("MarketplaceService")
+		local hasGamepass, result = pcall(function()
+			return MarketplaceService:UserOwnsGamePassAsync(player.UserId, 1819787740)
+		end)
+		if hasGamepass and result then
+			boost = boost + 1.0 -- +100% EXP Boost (x2)
+		end
+	end
+
+	return boost
 end
 
 -- =============================================================================
@@ -399,13 +423,18 @@ function GameConfig.CanPlayerPickUp(player: Player, item: Instance): (boolean, s
 	local itemOwner = item:GetAttribute("Owner")
 	local itemType = item:GetAttribute("Type")
 
+	local roleManager =
+		require(game:GetService("ServerScriptService"):WaitForChild("RoleManager"):WaitForChild("RoleManager"))
+
+	local playerRole = roleManager.getPlayerRole(player)
+
 	-- Jika item tidak memiliki owner, izinkan
 	if not itemOwner or itemOwner == "" then
 		return true
 	end
 
 	-- Jika item milik sendiri, izinkan
-	if itemOwner == player.Name then
+	if itemOwner == player.Name or playerRole == "Owner" then
 		return true
 	end
 
@@ -421,7 +450,7 @@ function GameConfig.CanPlayerPickUp(player: Player, item: Instance): (boolean, s
 		local MarketplaceService = game:GetService("MarketplaceService")
 		local hasGamepass = false
 		local success, result = pcall(function()
-			return MarketplaceService:UserOwnsGamePassAsync(player.UserId, 1819444793)
+			return MarketplaceService:UserOwnsGamePassAsync(player.UserId, 1948437771)
 		end)
 		if success then
 			hasGamepass = result
@@ -509,9 +538,13 @@ end
 
 function GameConfig.ClearHands(player: Player)
 	local character = player.Character
-	if not character then return end
+	if not character then
+		return
+	end
 	local humanoid = character:FindFirstChildOfClass("Humanoid")
-	if not humanoid then return end
+	if not humanoid then
+		return
+	end
 
 	humanoid:UnequipTools()
 end
@@ -590,7 +623,12 @@ function GameConfig.RollRarity(luck: number): string
 	return "Common"
 end
 
-function GameConfig.CalculatePrice(base: number?, rName: string, vNameString: string?, carName: string?): (number, number)
+function GameConfig.CalculatePrice(
+	base: number?,
+	rName: string,
+	vNameString: string?,
+	carName: string?
+): (number, number)
 	local rData = GameConfig.Rarities[rName] or GameConfig.Rarities.Common
 	local totalVariantMulti = 1.0
 
@@ -631,7 +669,7 @@ end
 function GameConfig.CalculateDriveSpeed(rarityName: string?, variantString: string?, carName: string?): number
 	local baseSpeed = 80 -- Standar kecepatan dasar (studs/sec)
 	local rName = rarityName or "Common"
-	local rData = GameConfig.Rarities[rName] or GameConfig.Rarities.Common
+	-- local rData = GameConfig.Rarities[rName] or GameConfig.Rarities.Common
 
 	-- Bonus kecepatan berdasarkan Rarity (Common = +0%, Celestial = +100%)
 	local rarityBonusMap = {
@@ -739,8 +777,9 @@ GameConfig.RarityFusionRates = {
 	["Rare"] = 0.70,
 	["Epic"] = 0.60,
 	["Legendary"] = 0.50,
-	["Mythic"] = 0.40,
-	["God"] = 0.25,
+	["Mythic"] = 0.25,
+	["God"] = 0.10,
+	["Celestial"] = 0.01,
 }
 
 function GameConfig.CalculateCollectionMultiplier(playerData: any): number
@@ -752,7 +791,7 @@ function GameConfig.CalculateCollectionMultiplier(playerData: any): number
 
 	for key, _ in pairs(collection) do
 		local parts = string.split(key, "_")
-		local rarity = parts[2] or "Common"
+		-- local rarity = parts[2] or "Common"
 		local variantString = parts[3] or "Normal"
 
 		-- Rarity unlock: +0.2% Cash Multiplier

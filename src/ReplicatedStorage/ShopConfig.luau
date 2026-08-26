@@ -48,24 +48,31 @@ ShopConfig.Items = {
 -- Daftar Gamepass yang dipajang di Toko (pembelian via Robux Gamepass)
 ShopConfig.Gamepasses = {
 	{
-		ID = 1819444791, -- ID Gamepass VIP yang sudah ada di RoleManager
-		Name = "VIP Access",
+		ID = 1819444791,
+		Name = "F1 Pass / VIP",
 		CostRobux = 400,
-		Description = "Dapatkan cash 1.2x lebih banyak, tag obrolan VIP khusus, dan akses ke area VIP eksklusif.",
+		Description = "Dapatkan cash 1.2x lebih banyak, tag obrolan VIP khusus, dan akses ke fitur F1 Pass eksklusif.",
 		Icon = "rbxassetid://15682855589",
 	},
 	{
-		ID = 1819444792, -- Ganti dengan ID Gamepass Double Cash asli Anda nanti
-		Name = "Double Cash",
+		ID = 1819643657,
+		Name = "Lucky Boost x2",
 		CostRobux = 250,
-		Description = "Kesempatan 25% mendapatkan Cash 2x lipat saat menjual mobil di area penjualan.",
+		Description = "Meningkatkan peluang (luck rate) mendapatkan mobil ber-rarity tinggi 2x lipat dari Gacha Box.",
 		Icon = "rbxassetid://15682855590",
 	},
 	{
-		ID = 1819444793,
-		Name = "Steal Box Pass",
+		ID = 1819787740,
+		Name = "EXP Boost x2",
+		CostRobux = 250,
+		Description = "Meningkatkan perolehan EXP karakter 2x lebih cepat.",
+		Icon = "rbxassetid://15682855592",
+	},
+	{
+		ID = 1948437771,
+		Name = "Steel Box Pass",
 		CostRobux = 150,
-		Description = "Memungkinkan Anda mencuri hingga 5 box dari plot pemain lain setiap harinya (mobil tidak bisa dicuri).",
+		Description = "Memungkinkan Anda mencuri box dari plot pemain lain (mobil tidak bisa dicuri).",
 		Icon = "rbxassetid://15682855591",
 	},
 }
