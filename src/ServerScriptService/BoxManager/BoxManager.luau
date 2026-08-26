@@ -261,20 +261,20 @@ local function processPickup(player: Player, box: Tool)
 					NotifEvent:FireClient(
 						player,
 						"Kuota Segar",
-						"Batas pencurian box harian Anda telah di-reset (0/5)!",
+						"Batas pencurian box harian Anda telah di-reset (0/3)!",
 						3
 					)
 				end
 			end
 
-			if (pData.DailyStolenBoxes.Count or 0) >= 5 then
+			if (pData.DailyStolenBoxes.Count or 0) >= 3 then
 				local NotifEvent = ReplicatedStorage:FindFirstChild("NotifEvent")
 				if NotifEvent then
 					NotifEvent:FireClient(
 						player,
 						"Akses Ditolak",
-						"Batas pencurian box harian Anda sudah penuh hari ini (5/5 box)!",
-						3
+						"Batas pencurian box harian Anda sudah penuh hari ini (3/3 box)! Silakan coba lagi besok.",
+						4
 					)
 				end
 				return
