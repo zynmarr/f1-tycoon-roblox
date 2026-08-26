@@ -22,16 +22,18 @@ local ShopManager = safeRequire(script.Parent.ShopManager.ShopManager, "ShopMana
 local EventVariantManager = safeRequire(script.Parent.EventVariantManager.EventVariantManager, "EventVariantManager")
 
 -- New Managers
-local DeveloperBoostManager = safeRequire(script.Parent.DeveloperBoostManager.DeveloperBoostManager, "DeveloperBoostManager")
+local DeveloperBoostManager =
+	safeRequire(script.Parent.DeveloperBoostManager.DeveloperBoostManager, "DeveloperBoostManager")
 local EventManager = safeRequire(script.Parent.EventManager.EventManager, "EventManager")
-local LegacyChatTagsManager = safeRequire(script.Parent.LegacyChatTagsManager.LegacyChatTagsManager, "LegacyChatTagsManager")
+local LegacyChatTagsManager =
+	safeRequire(script.Parent.LegacyChatTagsManager.LegacyChatTagsManager, "LegacyChatTagsManager")
 local OverheadManager = safeRequire(script.Parent.OverheadManager.OverheadManager, "OverheadManager")
 local SellGuiManager = safeRequire(script.Parent.SellGuiManager.SellGuiManager, "SellGuiManager")
 local TeleportManager = safeRequire(script.Parent.TeleportManager.TeleportManager, "TeleportManager")
 local TestRunner = safeRequire(script.Parent.TestRunner.TestRunner, "TestRunner")
 local FusionManager = safeRequire(script.Parent.FusionManager.FusionManager, "FusionManager")
 local MarketManager = safeRequire(script.Parent.MarketManager.MarketManager, "MarketManager")
-local AntiCheatManager = safeRequire(script.Parent.AntiCheatManager.AntiCheatManager, "AntiCheatManager")
+-- local AntiCheatManager = safeRequire(script.Parent.AntiCheatManager.AntiCheatManager, "AntiCheatManager")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 
@@ -411,9 +413,9 @@ local function InitializeServer()
 	if typeof(MarketManager.Init) == "function" then
 		MarketManager.Init()
 	end
-	if typeof(AntiCheatManager.Init) == "function" then
-		AntiCheatManager.Init()
-	end
+	-- if typeof(AntiCheatManager.Init) == "function" then
+	-- 	AntiCheatManager.Init()
+	-- end
 
 	Players.PlayerAdded:Connect(onPlayerAdded)
 	Players.PlayerRemoving:Connect(onPlayerRemoving)
@@ -445,7 +447,7 @@ local function InitializeServer()
 				DataManager.saveData(player)
 			end)
 		end
-		
+
 		-- Tunggu hingga seluruh profil selesai dilepas (dengan 5 detik safety timeout)
 		local startTime = os.clock()
 		while next(DataManager.Profiles) ~= nil and (os.clock() - startTime) < 5 do

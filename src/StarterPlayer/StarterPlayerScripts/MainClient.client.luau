@@ -15,7 +15,6 @@ local CORE_MODULES: {string} = {
 local FEATURE_MODULES: {string} = {
 	"ShopGui",
 	"SellGui",
-	"MenuSellGui",
 	"UpgradeMachineArea",
 	"AnnouncementGui",
 	"MountMainHUD",

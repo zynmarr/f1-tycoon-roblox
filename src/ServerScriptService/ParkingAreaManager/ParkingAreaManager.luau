@@ -21,7 +21,7 @@ local function getOrCalculateCarIncome(car: Instance): number
 	local rarity: string = car:GetAttribute("Rarity") :: string or "Common"
 	local variant: string? = car:GetAttribute("Variant") :: string? or "Normal"
 	local tierData = GameConfig.Rarities[rarity] or GameConfig.Rarities.Common
-	local carName = car:GetAttribute("Name") or car.Name
+	local carName: string = car:GetAttribute("Name") :: string? or car.Name
 	local baseIncome, _ = GameConfig.CalculatePrice(tierData.BasePrice, rarity, variant, carName)
 
 	car:SetAttribute("Income", baseIncome)
@@ -54,9 +54,9 @@ local function processPickup(player: Player, car: Tool)
 	car:ScaleTo(0.2)
 
 	-- Bind drive speed attribute based on Rarity and Variant
-	local rarity = car:GetAttribute("Rarity") or "Common"
-	local variant = car:GetAttribute("Variant") or "Normal"
-	local carName = car:GetAttribute("Name") or car.Name
+	local rarity = car:GetAttribute("Rarity") :: string or "Common"
+	local variant = car:GetAttribute("Variant") :: string or "Normal"
+	local carName = car:GetAttribute("Name") :: string or car.Name
 	local speed = GameConfig.CalculateDriveSpeed(rarity, variant, carName)
 	car:SetAttribute("DriveSpeed", speed)
 
@@ -281,8 +281,9 @@ function ParkingAreaManager.Init()
 						-- Collection Index Multiplier
 						local collectionMulti = player:GetAttribute("CollectionMultiplier") or 1.0
 
-						local addedCash =
-							math.floor(totalIncome * multiplier * cashMulBonus * doubleMultiplier * collectionMulti :: number)
+						local addedCash = math.floor(
+							totalIncome * multiplier * cashMulBonus * doubleMultiplier * collectionMulti :: number
+						)
 						cash.Value = cash.Value + addedCash
 					end
 				end

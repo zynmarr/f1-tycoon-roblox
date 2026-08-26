@@ -74,7 +74,7 @@ local function handleViolation(player: Player, reason: string)
 	-- Jika melebihi batas strike, keluarkan pemain
 	if tracker.Strikes >= VIOLATION_STRIKE_LIMIT then
 		if role == "Owner" or role == "Developer" then
-			sendWarningNotif(
+			warn(
 				player,
 				"⚠️ Anda telah melebihi batas pelanggaran anti-cheat, tetapi karena Anda adalah Staff/Owner/Developer, Anda tidak akan dikeluarkan. Harap periksa perilaku Anda."
 			)
@@ -87,6 +87,7 @@ local function handleViolation(player: Player, reason: string)
 end
 
 local function monitorCharacter(player: Player, character: Model)
+	print("[AntiCheat] 🔍 Monitoring character for player:", player.Name)
 	local humanoid = character:WaitForChild("Humanoid", 10) :: Humanoid?
 	local hrp = character:WaitForChild("HumanoidRootPart", 10) :: BasePart?
 

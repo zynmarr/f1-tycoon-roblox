@@ -17,7 +17,6 @@ local IndexModal = require(script.Parent.IndexModal)
 local FusionModal = require(script.Parent.FusionModal)
 local TeamManagerModal = require(script.Parent.TeamManagerModal)
 local TradeMarketModal = require(script.Parent.TradeMarketModal)
-local TrackHUD = require(script.Parent.TrackHUD)
 local OpenBoxOverlay = require(script.Parent.OpenBoxOverlay)
 local ViewportManager = require(script.Parent.Parent.ViewportManager)
 
