@@ -43,8 +43,12 @@ local function createOverhead(player: Player, character: Model)
 	local customColorHex = player:GetAttribute("CustomNameColor") :: string?
 	local customColor: Color3? = nil
 	if customColorHex and typeof(customColorHex) == "string" and customColorHex ~= "" then
+		local cleanHex = customColorHex
+		if not string.find(cleanHex, "^#") then
+			cleanHex = "#" .. cleanHex
+		end
 		pcall(function()
-			customColor = Color3.fromHex(customColorHex)
+			customColor = Color3.fromHex(cleanHex)
 		end)
 	end
 

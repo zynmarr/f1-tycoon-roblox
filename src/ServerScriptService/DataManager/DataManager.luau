@@ -246,6 +246,9 @@ function DataManager.syncData(player)
 	finalSave.Stats.Rebirth = leaderstats:FindFirstChild("Rebirth") and leaderstats.Rebirth.Value or 0
 	finalSave.Stats.RebirthPoints = leaderstats:FindFirstChild("RebirthPoints") and leaderstats.RebirthPoints.Value or 0
 	finalSave.Stats.RPMTokens = leaderstats:FindFirstChild("RPM Tokens") and leaderstats["RPM Tokens"].Value or 0
+	finalSave.Stats.CustomNameColor = (player:GetAttribute("CustomNameColor") :: string?)
+		or (profile.Data.Stats and profile.Data.Stats.CustomNameColor)
+		or ""
 	finalSave.Stats.RaceStats = profile.Data.Stats and profile.Data.Stats.RaceStats
 		or {
 			Wins = 0,
