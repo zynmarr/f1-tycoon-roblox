@@ -4,8 +4,6 @@
 
 -- local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CollectionService = game:GetService("CollectionService")
-local GameConfig = require(script.Parent.GameConfig)
-
 local GameUtils = {}
 
 -- ===== NUMBER/CURRENCY FORMATTING =====
@@ -106,6 +104,7 @@ function GameUtils.updateTextLabel(car: Tool)
 		nameText.Text = carName .. " [" .. rarity .. "]"
 	end
 	if variantText then
+		local GameConfig = require(script.Parent.GameConfig)
 		variantText.Text = GameConfig.GetColoredVariantList(carVariant)
 	end
 	if PriceText then
