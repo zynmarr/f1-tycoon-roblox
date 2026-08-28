@@ -98,13 +98,13 @@ local function onPlayerAdded(player)
 			else
 				warn("[EVENT] Format salah! Gunakan: /exp [angka]")
 			end
-		elseif command == "/speed" then
+		elseif command == "/speed" or command == "/run" then
 			if value then
-				local clampedSpeed = math.clamp(value, 0, 100)
+				local clampedSpeed = math.clamp(value, 0, 500)
 				ReplicatedStorage:SetAttribute("SpeedBoost", clampedSpeed)
-				print(string.format("[EVENT] ⚡ Speed Boost aktif: %d%% | Admin: %s (ID: %d)", clampedSpeed, player.Name, player.UserId))
+				print(string.format("[EVENT] ⚡ Speed/Run Boost aktif: %d%% (WalkSpeed) | Admin: %s (ID: %d)", clampedSpeed, player.Name, player.UserId))
 			else
-				warn("[EVENT] Format salah! Gunakan: /speed [angka]")
+				warn("[EVENT] Format salah! Gunakan: /run [angka] atau /speed [angka]")
 			end
 		elseif command == "/stop" then
 			if #args > 1 then
@@ -131,7 +131,8 @@ local function applyEventValues(values)
 	variantBoost.Value = math.clamp(values.VariantBoost or values.Variant or 0, 0, 100)
 	luckBoost.Value = math.clamp(values.LuckBoost or values.Luck or 0, 0, 500)
 	expBoost.Value = math.clamp(values.ExpBoost or values.Exp or 0, 0, 500)
-	ReplicatedStorage:SetAttribute("SpeedBoost", math.clamp(values.SpeedBoost or values.Speed or 0, 0, 100))
+	local speedVal = values.SpeedBoost or values.Speed or values.RunBoost or values.Run or 0
+	ReplicatedStorage:SetAttribute("SpeedBoost", math.clamp(speedVal, 0, 500))
 
 	goldenBoost.Value = math.clamp(values.VariantBoost_Golden or values.Golden or 0, 0, 50)
 	rainbowBoost.Value = math.clamp(values.VariantBoost_Rainbow or values.Rainbow or 0, 0, 50)
@@ -568,6 +569,16 @@ function EventManager.Init()
 	if not subscribeSuccess then
 		warn("[EventManager] Gagal berlangganan ke MessagingService: " .. tostring(subscribeConnection))
 	end
+
+	-- Listener perubahan SpeedBoost real-time untuk update WalkSpeed seluruh player
+	ReplicatedStorage:GetAttributeChangedSignal("SpeedBoost"):Connect(function()
+		local RebirthManager = require(game.ServerScriptService.RebirthManager.RebirthManager)
+		for _, p in ipairs(Players:GetPlayers()) do
+			if p.Character then
+				pcall(RebirthManager.applyRebirthUpgrades, p)
+			end
+		end
+	end)
 
 	Networker.server.new("AdminEventService", AdminEventService, {
 		AdminEventService.setEventValues,

@@ -415,6 +415,12 @@ function GameConfig.CheckExpBoost(player: Player?): number
 	return boost
 end
 
+function GameConfig.CheckSpeedBoost(): number
+	local repStorage = game:GetService("ReplicatedStorage")
+	local speedBoost = repStorage:GetAttribute("SpeedBoost")
+	return typeof(speedBoost) == "number" and speedBoost or 0
+end
+
 -- =============================================================================
 -- GAME CONFIG: INVENTORY & ITEM MANAGEMENT
 -- =============================================================================

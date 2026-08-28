@@ -28,7 +28,9 @@ local function applyRebirthUpgrades(player: Player)
 		if humanoid then
 			local wsLevel = upgrades.WalkspeedBoost or 0
 			local wsBonus = RebirthConfig.getUpgradeEffect("WalkspeedBoost", wsLevel)
-			humanoid.WalkSpeed = 16 + wsBonus
+			local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
+			local eventSpeedBoost = GameConfig.CheckSpeedBoost()
+			humanoid.WalkSpeed = 16 + wsBonus + eventSpeedBoost
 		end
 	end
 
