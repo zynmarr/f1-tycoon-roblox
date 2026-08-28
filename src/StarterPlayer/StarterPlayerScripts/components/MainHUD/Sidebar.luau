@@ -57,7 +57,9 @@ local function Sidebar(props: {
 			if not props.FusionOpen then
 				props.SetInventoryOpen(false)
 				props.SetIndexOpen(false)
-				if props.SetTeamOpen then props.SetTeamOpen(false) end
+				if props.SetTeamOpen then
+					props.SetTeamOpen(false)
+				end
 			end
 		end,
 	})
@@ -75,7 +77,9 @@ local function Sidebar(props: {
 					props.SetInventoryOpen(false)
 					props.SetIndexOpen(false)
 					props.SetFusionOpen(false)
-					if props.SetMarketOpen then props.SetMarketOpen(false) end
+					if props.SetMarketOpen then
+						props.SetMarketOpen(false)
+					end
 				end
 			end
 		end,
@@ -94,7 +98,9 @@ local function Sidebar(props: {
 					props.SetInventoryOpen(false)
 					props.SetIndexOpen(false)
 					props.SetFusionOpen(false)
-					if props.SetTeamOpen then props.SetTeamOpen(false) end
+					if props.SetTeamOpen then
+						props.SetTeamOpen(false)
+					end
 				end
 			end
 		end,
@@ -117,52 +123,35 @@ local function Sidebar(props: {
 	-- Merender masing-masing tombol
 	local buttonElements = {}
 	for index, btn in ipairs(sortedButtons) do
-		local isActive = (btn.Name == "Backpack" and props.InventoryOpen) or (btn.Name == "CarIndex" and props.IndexOpen) or (btn.Name == "CarFusion" and props.FusionOpen) or (btn.Name == "TeamManager" and props.TeamOpen) or (btn.Name == "TradeMarket" and props.MarketOpen)
+		local isActive = (btn.Name == "Backpack" and props.InventoryOpen)
+			or (btn.Name == "CarIndex" and props.IndexOpen)
+			or (btn.Name == "CarFusion" and props.FusionOpen)
+			or (btn.Name == "TeamManager" and props.TeamOpen)
+			or (btn.Name == "TradeMarket" and props.MarketOpen)
 		local size = props.IsMobile and UDim2.fromOffset(36, 36) or UDim2.fromOffset(42, 42)
 
 		buttonElements[btn.Name] = e("TextButton", {
 			Size = size,
-			BackgroundColor3 = isActive and Color3.fromRGB(35, 15, 20) or Color3.fromRGB(15, 18, 26),
-			BackgroundTransparency = 0.2,
+			BackgroundColor3 = isActive and Color3.fromRGB(255, 60, 0) or Color3.fromRGB(25, 25, 30),
+			BackgroundTransparency = 0.1,
 			Text = btn.Icon,
 			Font = Enum.Font.GothamBold,
-			TextColor3 = isActive and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(240, 240, 250),
+			TextColor3 = isActive and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(200, 200, 210),
 			TextSize = props.IsMobile and 14 or 18,
 			LayoutOrder = index,
 			AutoButtonColor = true,
 			[React.Event.Activated] = btn.Callback,
 		}, {
-			Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
+			Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
 			Stroke = e("UIStroke", {
-				Color = isActive and Color3.fromRGB(255, 60, 0) or Color3.fromRGB(0, 180, 235),
+				Color = isActive and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(50, 50, 60),
 				Thickness = isActive and 2 or 1,
-			}, {
-				Gradient = e("UIGradient", {
-					Color = ColorSequence.new({
-						ColorSequenceKeypoint.new(
-							0,
-							isActive and Color3.fromRGB(255, 60, 0) or Color3.fromRGB(0, 220, 255)
-						),
-						ColorSequenceKeypoint.new(
-							1,
-							isActive and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(0, 120, 255)
-						),
-					}),
-					Rotation = 45,
-				}),
-			}),
-			BackgroundGradient = e("UIGradient", {
-				Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, isActive and Color3.fromRGB(45, 12, 18) or Color3.fromRGB(18, 22, 32)),
-					ColorSequenceKeypoint.new(1, isActive and Color3.fromRGB(25, 8, 12) or Color3.fromRGB(10, 12, 20)),
-				}),
-				Rotation = 45,
 			}),
 			ActiveIndicator = isActive and e("Frame", {
 				Size = UDim2.new(0.5, 0, 0, 3),
 				Position = UDim2.new(0.5, 0, 1, -4),
 				AnchorPoint = Vector2.new(0.5, 1),
-				BackgroundColor3 = Color3.fromRGB(255, 215, 0),
+				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 				BorderSizePixel = 0,
 				ZIndex = 4,
 			}, {
