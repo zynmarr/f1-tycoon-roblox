@@ -4,11 +4,14 @@ local Players = game:GetService("Players")
 local MessagingService = game:GetService("MessagingService")
 local HttpService = game:GetService("HttpService")
 
-local RoleManager = require(game.ServerScriptService.RoleManager.RoleManager)
 local Networker = require(ReplicatedStorage.Packages.Networker)
 local ParkingAreaManager = require(game.ServerScriptService.ParkingAreaManager.ParkingAreaManager)
 local BoxManager = require(game.ServerScriptService.BoxManager.BoxManager)
 local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
+
+local function getRoleManager()
+	return require(game.ServerScriptService.RoleManager.RoleManager)
+end
 
 -- Variables & Folder Setup
 local announcementEvent = ReplicatedStorage:FindFirstChild("AnnouncementEvent")
@@ -61,7 +64,7 @@ end
 
 local function onPlayerAdded(player)
 	player.Chatted:Connect(function(msg)
-		if not RoleManager.hasPermission(player, "EditGameConfigs") then
+		if not getRoleManager().hasPermission(player, "EditGameConfigs") then
 			return
 		end
 
@@ -291,6 +294,8 @@ local function giftCarToPlayer(player: Player, carName: string, extraVariants: {
 	return true
 end
 
+EventManager.giftCarToPlayer = giftCarToPlayer
+
 local function giftLocalPlayer(targetPlayerName, giftType, params)
 	local targetPlayers = {}
 	if targetPlayerName == "All" then
@@ -377,7 +382,7 @@ local function onGlobalMessageReceived(messageData)
 end
 
 function AdminEventService:getAdminCars(player: Player): { { Name: string } }
-	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+	if not getRoleManager().hasPermission(player, "EditGameConfigs") then
 		warn("[EventManager] Player " .. player.Name .. " mencoba mengambil list admin car tanpa permission!")
 		return {}
 	end
@@ -406,7 +411,7 @@ function AdminEventService:getAdminCars(player: Player): { { Name: string } }
 end
 
 function AdminEventService:setEventValues(player: Player, values: any, isGlobal: boolean)
-	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+	if not getRoleManager().hasPermission(player, "EditGameConfigs") then
 		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
 	end
 	if typeof(values) ~= "table" then
@@ -424,7 +429,7 @@ function AdminEventService:setEventValues(player: Player, values: any, isGlobal:
 end
 
 function AdminEventService:stopAllEvents(player: Player, isGlobal: boolean)
-	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+	if not getRoleManager().hasPermission(player, "EditGameConfigs") then
 		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
 	end
 
@@ -439,7 +444,7 @@ function AdminEventService:stopAllEvents(player: Player, isGlobal: boolean)
 end
 
 function AdminEventService:broadcastMessage(player: Player, message: string, isGlobal: boolean)
-	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+	if not getRoleManager().hasPermission(player, "EditGameConfigs") then
 		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
 	end
 	if type(message) ~= "string" or message == "" then
@@ -458,7 +463,7 @@ function AdminEventService:broadcastMessage(player: Player, message: string, isG
 end
 
 function AdminEventService:giftPlayerReward(player: Player, giftType: string, targetPlayerName: string, isGlobal: boolean, params: any)
-	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+	if not getRoleManager().hasPermission(player, "EditGameConfigs") then
 		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
 	end
 	if type(giftType) ~= "string" or type(targetPlayerName) ~= "string" then
@@ -476,7 +481,7 @@ function AdminEventService:giftPlayerReward(player: Player, giftType: string, ta
 end
 
 function AdminEventService:setCustomNameColor(player: Player, targetPlayerName: string, colorHex: string)
-	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+	if not getRoleManager().hasPermission(player, "EditGameConfigs") then
 		return { Success = false, Error = "Akses ditolak! Anda tidak memiliki izin." }
 	end
 
@@ -503,7 +508,7 @@ function AdminEventService:setCustomNameColor(player: Player, targetPlayerName: 
 end
 
 function AdminEventService:getAvailableCars(player: Player)
-	if not RoleManager.hasPermission(player, "EditGameConfigs") then
+	if not getRoleManager().hasPermission(player, "EditGameConfigs") then
 		return {}
 	end
 	
