@@ -422,11 +422,7 @@ end
 function GameConfig.CanPlayerPickUp(player: Player, item: Instance): (boolean, string?)
 	local itemOwner = item:GetAttribute("Owner")
 	local itemType = item:GetAttribute("Type")
-
-	local roleManager =
-		require(game:GetService("ServerScriptService"):WaitForChild("RoleManager"):WaitForChild("RoleManager"))
-
-	local playerRole = roleManager.getPlayerRole(player)
+	local playerRole = (player:GetAttribute("Role") :: string?) or "Player"
 
 	-- Jika item tidak memiliki owner, izinkan
 	if not itemOwner or itemOwner == "" then
