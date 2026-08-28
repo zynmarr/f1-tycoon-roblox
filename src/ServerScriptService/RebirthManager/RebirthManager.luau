@@ -318,8 +318,7 @@ function RebirthManager:claimDailyReward(player: Player)
 	data.DailyRewards.LastClaimTime = now
 
 	local rewardCash = 5000 * streak
-	local RoleManager = require(game:GetService("ServerScriptService"):WaitForChild("RoleManager"):WaitForChild("RoleManager"))
-	local playerRole = RoleManager.getPlayerRole(player)
+	local playerRole = (player:GetAttribute("Role") :: string?) or "Player"
 	local isVIP = playerRole == "VIP" or playerRole == "Owner" or playerRole == "Developer"
 
 	if isVIP then

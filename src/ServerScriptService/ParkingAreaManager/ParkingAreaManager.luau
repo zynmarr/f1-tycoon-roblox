@@ -5,7 +5,6 @@ local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local GameUtils = require(ReplicatedStorage.GameUtils)
-local RoleManager = require(game.ServerScriptService.RoleManager.RoleManager)
 local RebirthConfig = require(ReplicatedStorage:WaitForChild("RebirthConfig"))
 local GameConfig = require(ReplicatedStorage:WaitForChild("GameConfig"))
 
@@ -253,16 +252,13 @@ function ParkingAreaManager.Init()
 					if cash then
 						-- Calculate VIP/Staff Multiplier
 						local multiplier = 1.0
-						local roleInfo = RoleManager.getPlayerRole(player)
+						local roleInfo = (player:GetAttribute("Role") :: string?) or "Player"
 						if
-							roleInfo
-							and (
-								roleInfo == "VIP"
-								or roleInfo == "Staff"
-								or roleInfo == "Moderator"
-								or roleInfo == "Developer"
-								or roleInfo == "Owner"
-							)
+							roleInfo == "VIP"
+							or roleInfo == "Staff"
+							or roleInfo == "Moderator"
+							or roleInfo == "Developer"
+							or roleInfo == "Owner"
 						then
 							multiplier = 1.2
 						end
