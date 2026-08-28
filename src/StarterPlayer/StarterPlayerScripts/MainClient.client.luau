@@ -5,6 +5,7 @@
 print("[MainClient] Memulai inisialisasi seluruh sistem client...")
 
 local CORE_MODULES: {string} = {
+	"LoadingScreen",
 	"ScreenOrientation",
 	"NotifHandlerGui",
 	"ChatAnnounceHandler",
