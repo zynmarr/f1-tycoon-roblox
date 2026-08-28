@@ -1,6 +1,5 @@
 local DataManager = {}
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 
 local DEFAULT_DATA = {
 	Stats = {
@@ -295,7 +294,7 @@ function DataManager.syncData(player)
 		-- Jika sedang keluar, pertahankan data inventori yang sudah tersinkron sebelumnya
 		finalSave.Inventory = profile.Data.Inventory or {}
 	end
-
+	local GameUtils = require(ReplicatedStorage:WaitForChild("GameUtils"))
 	-- 3. Scan Seluruh Mobil di Lahan Parkir & Mesin secara Dinamis (Hanya jika data sudah ter-load)
 	local myPlot = GameUtils.getPlayerPlot(player)
 
@@ -361,7 +360,12 @@ function DataManager.syncData(player)
 		)
 	)
 	player:SetAttribute("CarIndexCollection", HttpService:JSONEncode(profile.Data.CarIndexCollection or {}))
-	player:SetAttribute("TeamManager", HttpService:JSONEncode(profile.Data.TeamManager or { Driver1 = "", Driver2 = "", Strategy = "Balanced", PitBuff = 0 }))
+	player:SetAttribute(
+		"TeamManager",
+		HttpService:JSONEncode(
+			profile.Data.TeamManager or { Driver1 = "", Driver2 = "", Strategy = "Balanced", PitBuff = 0 }
+		)
+	)
 
 	return true
 end

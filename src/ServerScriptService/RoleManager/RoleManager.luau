@@ -177,7 +177,8 @@ end
 
 -- Memberikan hadiah mobil Celestial (Rarity Tertinggi) 1 kali untuk pembeli F1 Pass / VIP
 local function checkAndGiveF1PassBonusCar(player: Player)
-	local DataManager = require(game:GetService("ServerScriptService"):WaitForChild("DataManager"):WaitForChild("DataManager"))
+	local DataManager =
+		require(game:GetService("ServerScriptService"):WaitForChild("DataManager"):WaitForChild("DataManager"))
 	local pData = DataManager.getPlayerData(player)
 	if not pData then
 		return
@@ -189,7 +190,8 @@ local function checkAndGiveF1PassBonusCar(player: Player)
 		DataManager.syncData(player)
 
 		-- Berikan mobil Rarity Tertinggi (Celestial): Triple Crown MCL60 - Lando Norris
-		local EventManager = require(game:GetService("ServerScriptService"):WaitForChild("EventManager"):WaitForChild("EventManager"))
+		local EventManager =
+			require(game:GetService("ServerScriptService"):WaitForChild("EventManager"):WaitForChild("EventManager"))
 		local bonusCarName = "Triple Crown MCL60 - Lando Norris"
 		pcall(function()
 			(EventManager :: any).giftCarToPlayer(player, bonusCarName, { "Cosmic" })
