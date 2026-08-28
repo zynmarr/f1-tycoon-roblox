@@ -5,13 +5,17 @@ local e = React.createElement
 
 local function Sidebar(props: {
 	IsMobile: boolean,
-	Buttons: { [string]: { Name: string, Label: string, Icon: string, Callback: () -> (), Order: number? } },
+	Buttons: { [string]: { Name: string, Label: string, Icon: string, Callback: () -> (), Order: number? } }?,
 	InventoryOpen: boolean,
 	SetInventoryOpen: (boolean) -> (),
 	IndexOpen: boolean,
 	SetIndexOpen: (boolean) -> (),
 	FusionOpen: boolean,
 	SetFusionOpen: (boolean) -> (),
+	TeamOpen: boolean?,
+	SetTeamOpen: ((boolean) -> ())?,
+	MarketOpen: boolean?,
+	SetMarketOpen: ((boolean) -> ())?,
 })
 	-- Menggabungkan tombol internal (Backpack) dengan tombol dinamis dari props
 	local sortedButtons = {}
