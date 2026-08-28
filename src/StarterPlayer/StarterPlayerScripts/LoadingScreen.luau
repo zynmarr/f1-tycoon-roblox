@@ -1,4 +1,4 @@
-﻿--!strict
+--!strict
 -- src/StarterPlayer/StarterPlayerScripts/LoadingScreen.luau
 -- Custom F1-Tycoon Loading Screen dengan Animasi Progress Bar, Tip Rotasi & Smooth Fade Out
 
