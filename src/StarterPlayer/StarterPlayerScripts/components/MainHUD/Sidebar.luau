@@ -122,30 +122,30 @@ local function Sidebar(props: {
 
 		buttonElements[btn.Name] = e("TextButton", {
 			Size = size,
-			BackgroundColor3 = isActive and Color3.fromRGB(35, 25, 28) or Color3.fromRGB(20, 20, 24),
-			BackgroundTransparency = 0.35,
+			BackgroundColor3 = isActive and Color3.fromRGB(35, 15, 20) or Color3.fromRGB(15, 18, 26),
+			BackgroundTransparency = 0.2,
 			Text = btn.Icon,
 			Font = Enum.Font.GothamBold,
-			TextColor3 = isActive and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(240, 240, 240),
+			TextColor3 = isActive and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(240, 240, 250),
 			TextSize = props.IsMobile and 14 or 18,
 			LayoutOrder = index,
 			AutoButtonColor = true,
 			[React.Event.Activated] = btn.Callback,
 		}, {
-			Corner = e("UICorner", { CornerRadius = UDim.new(0, 8) }),
+			Corner = e("UICorner", { CornerRadius = UDim.new(0, 10) }),
 			Stroke = e("UIStroke", {
-				Color = isActive and Color3.fromRGB(255, 35, 85) or Color3.fromRGB(55, 55, 65),
-				Thickness = isActive and 1.5 or 1,
+				Color = isActive and Color3.fromRGB(255, 60, 0) or Color3.fromRGB(0, 180, 235),
+				Thickness = isActive and 2 or 1,
 			}, {
 				Gradient = e("UIGradient", {
 					Color = ColorSequence.new({
 						ColorSequenceKeypoint.new(
 							0,
-							isActive and Color3.fromRGB(255, 0, 60) or Color3.fromRGB(0, 0, 255)
+							isActive and Color3.fromRGB(255, 60, 0) or Color3.fromRGB(0, 220, 255)
 						),
 						ColorSequenceKeypoint.new(
 							1,
-							isActive and Color3.fromRGB(255, 0, 60) or Color3.fromRGB(0, 0, 255)
+							isActive and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(0, 120, 255)
 						),
 					}),
 					Rotation = 45,
@@ -153,20 +153,20 @@ local function Sidebar(props: {
 			}),
 			BackgroundGradient = e("UIGradient", {
 				Color = ColorSequence.new({
-					ColorSequenceKeypoint.new(0, isActive and Color3.fromRGB(255, 0, 38) or Color3.fromRGB(0, 0, 255)),
-					ColorSequenceKeypoint.new(1, isActive and Color3.fromRGB(255, 1, 52) or Color3.fromRGB(0, 0, 255)),
+					ColorSequenceKeypoint.new(0, isActive and Color3.fromRGB(45, 12, 18) or Color3.fromRGB(18, 22, 32)),
+					ColorSequenceKeypoint.new(1, isActive and Color3.fromRGB(25, 8, 12) or Color3.fromRGB(10, 12, 20)),
 				}),
 				Rotation = 45,
 			}),
 			ActiveIndicator = isActive and e("Frame", {
-				Size = UDim2.new(0.4, 0, 0, 2),
-				Position = UDim2.new(0.5, 0, 1, -3),
+				Size = UDim2.new(0.5, 0, 0, 3),
+				Position = UDim2.new(0.5, 0, 1, -4),
 				AnchorPoint = Vector2.new(0.5, 1),
-				BackgroundColor3 = Color3.fromRGB(255, 35, 85),
+				BackgroundColor3 = Color3.fromRGB(255, 215, 0),
 				BorderSizePixel = 0,
 				ZIndex = 4,
 			}, {
-				Corner = e("UICorner", { CornerRadius = UDim.new(0, 1) }),
+				Corner = e("UICorner", { CornerRadius = UDim.new(0, 2) }),
 			}) or nil,
 		})
 	end
